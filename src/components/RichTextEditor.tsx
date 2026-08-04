@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button, Space } from "antd";
+import Button from "@/components/ui/button/Button";
 
 interface RichTextEditorProps {
   value: string;
@@ -25,9 +25,9 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   if (!editor) return null;
 
   return (
-    <div style={{ border: "1px solid #d9d9d9", borderRadius: 8 }}>
+    <div className="rounded-lg border border-gray-300 dark:border-gray-700">
       <RichTextToolbar editor={editor} />
-      <div style={{ padding: 12, minHeight: 160 }}>
+      <div className="p-3" style={{ minHeight: 160 }}>
         <EditorContent editor={editor} />
       </div>
     </div>
@@ -36,42 +36,42 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
 
 function RichTextToolbar({ editor }: { editor: Editor }) {
   return (
-    <Space style={{ padding: 8, borderBottom: "1px solid #d9d9d9" }} wrap>
+    <div className="flex flex-wrap gap-2 border-b border-gray-300 p-2 dark:border-gray-700">
       <Button
-        size="small"
-        type={editor.isActive("bold") ? "primary" : "default"}
+        size="sm"
+        variant={editor.isActive("bold") ? "primary" : "outline"}
         onClick={() => editor.chain().focus().toggleBold().run()}
       >
         In đậm
       </Button>
       <Button
-        size="small"
-        type={editor.isActive("italic") ? "primary" : "default"}
+        size="sm"
+        variant={editor.isActive("italic") ? "primary" : "outline"}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
         In nghiêng
       </Button>
       <Button
-        size="small"
-        type={editor.isActive("heading", { level: 2 }) ? "primary" : "default"}
+        size="sm"
+        variant={editor.isActive("heading", { level: 2 }) ? "primary" : "outline"}
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
       >
         Tiêu đề
       </Button>
       <Button
-        size="small"
-        type={editor.isActive("bulletList") ? "primary" : "default"}
+        size="sm"
+        variant={editor.isActive("bulletList") ? "primary" : "outline"}
         onClick={() => editor.chain().focus().toggleBulletList().run()}
       >
         Danh sách
       </Button>
       <Button
-        size="small"
-        type={editor.isActive("orderedList") ? "primary" : "default"}
+        size="sm"
+        variant={editor.isActive("orderedList") ? "primary" : "outline"}
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
       >
         Danh sách số
       </Button>
-    </Space>
+    </div>
   );
 }

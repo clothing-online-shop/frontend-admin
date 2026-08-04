@@ -1,12 +1,10 @@
-import { Typography } from "antd";
-
 export default function CustomerList() {
   return (
     <div>
-      <Typography.Title level={3}>Khách hàng</Typography.Title>
-      <Typography.Paragraph type="secondary">
+      <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Khách hàng</h3>
+      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
         Quản lý khách hàng sẽ được triển khai ở sprint sau.
-      </Typography.Paragraph>
+      </p>
     </div>
   );
 }
