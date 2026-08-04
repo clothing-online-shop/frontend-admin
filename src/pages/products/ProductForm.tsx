@@ -1,17 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Button,
-  Card,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Space,
-  Spin,
-  Typography,
-  message,
-} from "antd";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { ProductStatus } from "@/lib/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
@@ -20,24 +7,32 @@ import type { CreateProductPayload } from "@/lib/products-api";
 import { ImageUploader } from "@/components/ImageUploader";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { getErrorMessage } from "@/lib/error";
+import ComponentCard from "@/components/common/ComponentCard";
+import Button from "@/components/ui/button/Button";
+import Input from "@/components/form/input/InputField";
+import Select from "@/components/form/Select";
+import Spinner from "@/components/ui/spinner/Spinner";
+import { useToast } from "@/hooks/useToast";
+import { PlusIcon, TrashBinIcon } from "@/icons";
 
 interface VariantFormValue {
   id?: string;
   size: string;
   color: string;
-  sku?: string;
-  price?: number;
-  stockQuantity?: number;
+  sku: string;
+  price: string;
+  stockQuantity: string;
 }
 
 interface ProductFormValues {
   name: string;
-  slug?: string;
+  slug: string;
   categoryId: string;
-  basePrice: number;
+  basePrice: string;
   status: ProductStatus;
-  variants: VariantFormValue[];
 }
+
+const EMPTY_VARIANT: VariantFormValue = { size: "", color: "", sku: "", price: "", stockQuantity: "" };
 
 function slugifyClientSide(input: string): string {
   return input
@@ -52,10 +47,19 @@ function slugifyClientSide(input: string): string {
 
 export default function ProductForm() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { slug: editingSlug } = useParams<{ slug: string }>();
   const isEditing = Boolean(editingSlug);
 
-  const [form] = Form.useForm<ProductFormValues>();
+  const [values, setValues] = useState<ProductFormValues>({
+    name: "",
+    slug: "",
+    categoryId: "",
+    basePrice: "",
+    status: ProductStatus.DRAFT,
+  });
+  const [errors, setErrors] = useState<Partial<Record<keyof ProductFormValues, string>>>({});
+  const [variants, setVariants] = useState<VariantFormValue[]>([{ ...EMPTY_VARIANT }]);
   const [description, setDescription] = useState("");
   const [thumbnail, setThumbnail] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
@@ -81,54 +85,82 @@ export default function ProductForm() {
 
   useEffect(() => {
     if (product) {
-      form.setFieldsValue({
+      setValues({
         name: product.name,
         slug: product.slug,
         categoryId: product.categoryId,
-        basePrice: product.basePrice,
+        basePrice: String(product.basePrice),
         status: product.status,
-        variants: product.variants.map((v) => ({
+      });
+      setVariants(
+        product.variants.map((v) => ({
           id: v.id,
           size: v.size,
           color: v.color,
           sku: v.sku,
-          price: v.price,
-          stockQuantity: v.stockQuantity,
+          price: String(v.price),
+          stockQuantity: String(v.stockQuantity),
         })),
-      });
+      );
       setDescription(product.description ?? "");
       setThumbnail(product.thumbnail ? [product.thumbnail] : []);
       setImages(product.images ?? []);
     }
-  }, [product, form]);
+  }, [product]);
 
-  function suggestSku(index: number) {
-    const values = form.getFieldsValue();
-    const variant = values.variants?.[index];
-    if (!variant || variant.sku) return;
-    const baseSlug = values.slug || slugifyClientSide(values.name || "");
-    if (!baseSlug || !variant.size || !variant.color) return;
-    const sku = slugifyClientSide(`${baseSlug}-${variant.size}-${variant.color}`).toUpperCase();
-    const nextVariants = [...(values.variants ?? [])];
-    nextVariants[index] = { ...variant, sku };
-    form.setFieldValue("variants", nextVariants);
+  function updateVariant(index: number, patch: Partial<VariantFormValue>) {
+    setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
   }
 
-  async function handleSubmit(values: ProductFormValues) {
+  function addVariant() {
+    setVariants((prev) => [...prev, { ...EMPTY_VARIANT }]);
+  }
+
+  function removeVariant(index: number) {
+    setVariants((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function suggestSku(index: number) {
+    const variant = variants[index];
+    if (!variant || variant.sku) return;
+    const baseSlug = values.slug || slugifyClientSide(values.name);
+    if (!baseSlug || !variant.size || !variant.color) return;
+    const sku = slugifyClientSide(`${baseSlug}-${variant.size}-${variant.color}`).toUpperCase();
+    updateVariant(index, { sku });
+  }
+
+  function validate(): boolean {
+    const newErrors: Partial<Record<keyof ProductFormValues, string>> = {};
+    if (!values.name.trim()) newErrors.name = "Vui lòng nhập tên sản phẩm";
+    if (!values.categoryId) newErrors.categoryId = "Chọn danh mục";
+    if (!values.basePrice || Number(values.basePrice) <= 0) newErrors.basePrice = "Nhập giá gốc";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  async function handleSubmit() {
+    if (!validate()) return;
+
     if (thumbnail.length === 0) {
-      message.error("Vui lòng chọn ảnh đại diện sản phẩm");
+      toast.error("Vui lòng chọn ảnh đại diện sản phẩm");
       return;
     }
-    if (!values.variants || values.variants.length === 0) {
-      message.error("Sản phẩm cần ít nhất 1 biến thể");
+    if (variants.length === 0) {
+      toast.error("Sản phẩm cần ít nhất 1 biến thể");
       return;
+    }
+    for (const variant of variants) {
+      if (!variant.size.trim() || !variant.color.trim()) {
+        toast.error("Vui lòng nhập đủ size và màu cho từng biến thể");
+        return;
+      }
     }
 
     const seen = new Set<string>();
-    for (const variant of values.variants) {
+    for (const variant of variants) {
       const key = `${variant.size.trim().toLowerCase()}|${variant.color.trim().toLowerCase()}`;
       if (seen.has(key)) {
-        message.error(`Biến thể trùng lặp: ${variant.size} / ${variant.color}`);
+        toast.error(`Biến thể trùng lặp: ${variant.size} / ${variant.color}`);
         return;
       }
       seen.add(key);
@@ -139,155 +171,207 @@ export default function ProductForm() {
       slug: values.slug || undefined,
       description,
       categoryId: values.categoryId,
-      basePrice: values.basePrice,
+      basePrice: Number(values.basePrice),
       status: values.status,
       thumbnail: thumbnail[0],
       images,
-      variants: values.variants.map((v) => ({
+      variants: variants.map((v) => ({
         id: v.id,
         size: v.size,
         color: v.color,
         sku: v.sku || undefined,
-        price: v.price,
-        stockQuantity: v.stockQuantity ?? 0,
+        price: v.price ? Number(v.price) : undefined,
+        stockQuantity: v.stockQuantity ? Number(v.stockQuantity) : 0,
       })),
     };
 
     try {
       if (isEditing && product) {
         await updateMutation.mutateAsync({ id: product.id, payload });
-        message.success("Đã cập nhật sản phẩm");
+        toast.success("Đã cập nhật sản phẩm");
       } else {
         await createMutation.mutateAsync(payload);
-        message.success("Đã tạo sản phẩm");
+        toast.success("Đã tạo sản phẩm");
       }
       navigate("/products");
     } catch (error) {
-      message.error(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   }
 
   if (isEditing && isLoadingProduct) {
-    return <Spin />;
+    return <Spinner />;
   }
 
   return (
     <div>
-      <Typography.Title level={3}>
+      <h3 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
         {isEditing ? "Sửa sản phẩm" : "Thêm sản phẩm"}
-      </Typography.Title>
+      </h3>
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{ status: ProductStatus.DRAFT, variants: [{ size: "", color: "" }] }}
-      >
-        <Card title="Thông tin chung" style={{ marginBottom: 16 }}>
-          <Form.Item
-            name="name"
-            label="Tên sản phẩm"
-            rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm" }]}
-          >
-            <Input placeholder="Ví dụ: Áo sơ mi nam trắng" />
-          </Form.Item>
-          <Form.Item name="slug" label="Slug (bỏ trống để tự sinh)">
-            <Input placeholder="ao-so-mi-nam-trang" />
-          </Form.Item>
-          <Form.Item label="Mô tả sản phẩm">
+      <div className="space-y-4">
+        <ComponentCard title="Thông tin chung">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Tên sản phẩm <span className="text-error-500">*</span>
+            </label>
+            <Input
+              placeholder="Ví dụ: Áo sơ mi nam trắng"
+              value={values.name}
+              onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
+              error={!!errors.name}
+              hint={errors.name}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Slug (bỏ trống để tự sinh)
+            </label>
+            <Input
+              placeholder="ao-so-mi-nam-trang"
+              value={values.slug}
+              onChange={(e) => setValues((v) => ({ ...v, slug: e.target.value }))}
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Mô tả sản phẩm
+            </label>
             <RichTextEditor value={description} onChange={setDescription} />
-          </Form.Item>
-          <div style={{ display: "flex", gap: 16 }}>
-            <Form.Item
-              name="categoryId"
-              label="Danh mục"
-              rules={[{ required: true, message: "Chọn danh mục" }]}
-              style={{ flex: 1 }}
-            >
-              <Select options={categoryOptions} placeholder="Chọn danh mục" />
-            </Form.Item>
-            <Form.Item
-              name="basePrice"
-              label="Giá gốc"
-              rules={[{ required: true, message: "Nhập giá gốc" }]}
-              style={{ flex: 1 }}
-            >
-              <InputNumber min={1000} step={1000} style={{ width: "100%" }} />
-            </Form.Item>
-            <Form.Item name="status" label="Trạng thái" style={{ flex: 1 }}>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Danh mục <span className="text-error-500">*</span>
+              </label>
               <Select
+                placeholder="Chọn danh mục"
+                options={categoryOptions}
+                value={values.categoryId || undefined}
+                onChange={(value) => setValues((v) => ({ ...v, categoryId: value ?? "" }))}
+              />
+              {errors.categoryId && (
+                <p className="mt-1.5 text-xs text-error-500">{errors.categoryId}</p>
+              )}
+            </div>
+            <div className="flex-1">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Giá gốc <span className="text-error-500">*</span>
+              </label>
+              <Input
+                type="number"
+                min="1000"
+                step={1000}
+                placeholder="0"
+                value={values.basePrice}
+                onChange={(e) => setValues((v) => ({ ...v, basePrice: e.target.value }))}
+                error={!!errors.basePrice}
+                hint={errors.basePrice}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Trạng thái
+              </label>
+              <Select
+                value={values.status}
+                onChange={(value) => setValues((v) => ({ ...v, status: (value as ProductStatus) ?? ProductStatus.DRAFT }))}
                 options={[
                   { value: ProductStatus.DRAFT, label: "Nháp" },
                   { value: ProductStatus.ACTIVE, label: "Đang bán" },
                   { value: ProductStatus.INACTIVE, label: "Ngừng bán" },
                 ]}
               />
-            </Form.Item>
+            </div>
           </div>
-        </Card>
+        </ComponentCard>
 
-        <Card title="Hình ảnh" style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 16 }}>
-            <ImageUploader value={thumbnail} onChange={setThumbnail} max={1} label="Ảnh đại diện" />
-          </div>
+        <ComponentCard title="Hình ảnh">
+          <ImageUploader value={thumbnail} onChange={setThumbnail} max={1} label="Ảnh đại diện" />
           <ImageUploader value={images} onChange={setImages} max={8} label="Thư viện ảnh" />
-        </Card>
+        </ComponentCard>
 
-        <Card title="Biến thể (size / màu)" style={{ marginBottom: 16 }}>
-          <Form.List name="variants">
-            {(fields, { add, remove }) => (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {fields.map((field) => (
-                  <Space key={field.key} align="baseline" wrap>
-                    <Form.Item
-                      name={[field.name, "size"]}
-                      rules={[{ required: true, message: "Size" }]}
-                      style={{ marginBottom: 0 }}
-                    >
-                      <Input
-                        placeholder="Size (S, M, L...)"
-                        style={{ width: 110 }}
-                        onBlur={() => suggestSku(field.name)}
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      name={[field.name, "color"]}
-                      rules={[{ required: true, message: "Màu" }]}
-                      style={{ marginBottom: 0 }}
-                    >
-                      <Input
-                        placeholder="Màu sắc"
-                        style={{ width: 130 }}
-                        onBlur={() => suggestSku(field.name)}
-                      />
-                    </Form.Item>
-                    <Form.Item name={[field.name, "sku"]} style={{ marginBottom: 0 }}>
-                      <Input placeholder="SKU (tự sinh)" style={{ width: 200 }} />
-                    </Form.Item>
-                    <Form.Item name={[field.name, "price"]} style={{ marginBottom: 0 }}>
-                      <InputNumber placeholder="Giá (= giá gốc nếu bỏ trống)" style={{ width: 200 }} />
-                    </Form.Item>
-                    <Form.Item name={[field.name, "stockQuantity"]} style={{ marginBottom: 0 }}>
-                      <InputNumber min={0} placeholder="Tồn kho" style={{ width: 120 }} />
-                    </Form.Item>
-                    <Button danger icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
-                  </Space>
-                ))}
-                <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ size: "", color: "" })}>
-                  Thêm biến thể
+        <ComponentCard title="Biến thể (size / màu)">
+          <div className="flex flex-col gap-3">
+            {variants.map((variant, index) => (
+              <div key={index} className="flex flex-wrap items-end gap-3">
+                <div className="w-28">
+                  <Input
+                    placeholder="Size (S, M, L...)"
+                    value={variant.size}
+                    onChange={(e) => updateVariant(index, { size: e.target.value })}
+                    onBlur={() => suggestSku(index)}
+                  />
+                </div>
+                <div className="w-32">
+                  <Input
+                    placeholder="Màu sắc"
+                    value={variant.color}
+                    onChange={(e) => updateVariant(index, { color: e.target.value })}
+                    onBlur={() => suggestSku(index)}
+                  />
+                </div>
+                <div className="w-50">
+                  <Input
+                    placeholder="SKU (tự sinh)"
+                    value={variant.sku}
+                    onChange={(e) => updateVariant(index, { sku: e.target.value })}
+                  />
+                </div>
+                <div className="w-50">
+                  <Input
+                    type="number"
+                    placeholder="Giá (= giá gốc nếu bỏ trống)"
+                    value={variant.price}
+                    onChange={(e) => updateVariant(index, { price: e.target.value })}
+                  />
+                </div>
+                <div className="w-30">
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="Tồn kho"
+                    value={variant.stockQuantity}
+                    onChange={(e) => updateVariant(index, { stockQuantity: e.target.value })}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  className="!px-2.5 !py-2.5 !text-error-500 hover:!bg-error-50"
+                  onClick={() => removeVariant(index)}
+                >
+                  <TrashBinIcon className="h-4 w-4" />
                 </Button>
               </div>
-            )}
-          </Form.List>
-        </Card>
+            ))}
+            <Button
+              variant="outline"
+              startIcon={<PlusIcon className="h-4 w-4" />}
+              onClick={addVariant}
+              className="self-start"
+            >
+              Thêm biến thể
+            </Button>
+          </div>
+        </ComponentCard>
 
-        <Space>
-          <Button type="primary" htmlType="submit" loading={isSaving}>
+        <div className="flex gap-3">
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={isSaving}
+            startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+          >
             Lưu
           </Button>
-          <Button onClick={() => navigate("/products")}>Hủy</Button>
-        </Space>
-      </Form>
+          <Button variant="outline" onClick={() => navigate("/products")}>
+            Hủy
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

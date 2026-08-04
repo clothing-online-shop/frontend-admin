@@ -1,7 +1,4 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Button, Popconfirm, Space, Spin, Tree, Typography, message } from "antd";
-import type { TreeDataNode, TreeProps } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import type { CategoryNode } from "@/lib/shared-types";
 import {
   useCategoryTree,
@@ -10,8 +7,14 @@ import {
 } from "@/hooks/useCategories";
 import { getErrorMessage } from "@/lib/error";
 import { CategoryFormModal, type CategoryOption } from "./CategoryFormModal";
+import Button from "@/components/ui/button/Button";
+import Spinner from "@/components/ui/spinner/Spinner";
+import DragTree, { type DragTreeNode } from "@/components/ui/tree/DragTree";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import { useToast } from "@/hooks/useToast";
+import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
 
-interface CategoryTreeNode extends TreeDataNode {
+interface CategoryTreeNode extends DragTreeNode {
   key: string;
   children?: CategoryTreeNode[];
 }
@@ -48,6 +51,7 @@ function findNodeById(nodes: CategoryNode[], id: string): CategoryNode | null {
 }
 
 export default function CategoryList() {
+  const toast = useToast();
   const { data, isLoading } = useCategoryTree();
   const deleteMutation = useDeleteCategory();
   const reorderMutation = useReorderCategories();
@@ -55,6 +59,7 @@ export default function CategoryList() {
   const [treeData, setTreeData] = useState<CategoryTreeNode[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
     if (data) setTreeData(toTreeData(data));
@@ -73,40 +78,48 @@ export default function CategoryList() {
     setModalOpen(true);
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete() {
+    if (!deleteTarget) return;
     try {
-      await deleteMutation.mutateAsync(id);
-      message.success("Đã xóa danh mục");
+      await deleteMutation.mutateAsync(deleteTarget);
+      toast.success("Đã xóa danh mục");
+      setDeleteTarget(null);
     } catch (error) {
-      message.error(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
   }
 
   function renderTitle(node: CategoryTreeNode): ReactNode {
     return (
-      <Space>
+      <div className="flex items-center gap-3">
         <span>{node.title as string}</span>
-        <EditOutlined
+        <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             handleEdit(node.key);
           }}
-        />
-        <Popconfirm
-          title="Xóa danh mục này?"
-          description="Không thể xóa nếu còn sản phẩm hoặc danh mục con bên trong."
-          onConfirm={() => handleDelete(node.key)}
+          className="text-gray-400 hover:text-brand-500"
+          aria-label="Sửa danh mục"
         >
-          <DeleteOutlined
-            onClick={(e) => e.stopPropagation()}
-            style={{ color: "#b3261e" }}
-          />
-        </Popconfirm>
-      </Space>
+          <PencilIcon className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setDeleteTarget(node.key);
+          }}
+          className="text-gray-400 hover:text-error-500"
+          aria-label="Xóa danh mục"
+        >
+          <TrashBinIcon className="h-4 w-4" />
+        </button>
+      </div>
     );
   }
 
-  function withRenderedTitles(nodes: CategoryTreeNode[]): TreeDataNode[] {
+  function withRenderedTitles(nodes: CategoryTreeNode[]): DragTreeNode[] {
     return nodes.map((node) => ({
       ...node,
       title: renderTitle(node),
@@ -114,12 +127,7 @@ export default function CategoryList() {
     }));
   }
 
-  const onDrop: TreeProps["onDrop"] = async (info) => {
-    const dropKey = info.node.key as string;
-    const dragKey = info.dragNode.key as string;
-    const dropPos = info.node.pos.split("-");
-    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
-
+  async function handleDrop(dragKey: string, dropKey: string, position: "before" | "after" | "inside") {
     const data = cloneTree(treeData);
     let dragObj: CategoryTreeNode | undefined;
 
@@ -143,7 +151,7 @@ export default function CategoryList() {
     });
     if (!dragObj) return;
 
-    if (!info.dropToGap) {
+    if (position === "inside") {
       loop(data, dropKey, (item) => {
         item.children = item.children ?? [];
         item.children.unshift(dragObj!);
@@ -155,7 +163,7 @@ export default function CategoryList() {
         targetArr = arr;
         targetIndex = index;
       });
-      if (dropPosition === -1) {
+      if (position === "before") {
         targetArr.splice(targetIndex, 0, dragObj);
       } else {
         targetArr.splice(targetIndex + 1, 0, dragObj);
@@ -175,42 +183,27 @@ export default function CategoryList() {
 
     try {
       await reorderMutation.mutateAsync(items);
-      message.success("Đã cập nhật thứ tự danh mục");
+      toast.success("Đã cập nhật thứ tự danh mục");
     } catch (error) {
-      message.error(getErrorMessage(error));
+      toast.error(getErrorMessage(error));
     }
-  };
+  }
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          Danh mục
-        </Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Danh mục</h3>
+        <Button variant="primary" onClick={handleAdd} startIcon={<PlusIcon className="h-4 w-4" />}>
           Thêm danh mục
         </Button>
       </div>
 
       {isLoading ? (
-        <Spin />
+        <Spinner />
       ) : treeData.length === 0 ? (
-        <Typography.Paragraph type="secondary">Chưa có danh mục nào.</Typography.Paragraph>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có danh mục nào.</p>
       ) : (
-        <Tree
-          treeData={withRenderedTitles(treeData)}
-          draggable
-          blockNode
-          defaultExpandAll
-          onDrop={onDrop}
-        />
+        <DragTree treeData={withRenderedTitles(treeData)} onDrop={handleDrop} />
       )}
 
       <CategoryFormModal
@@ -218,6 +211,15 @@ export default function CategoryList() {
         onClose={() => setModalOpen(false)}
         editing={editingNode}
         parentOptions={parentOptions}
+      />
+
+      <ConfirmModal
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Xóa danh mục này?"
+        description="Không thể xóa nếu còn sản phẩm hoặc danh mục con bên trong."
+        danger
       />
     </div>
   );

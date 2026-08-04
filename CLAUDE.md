@@ -1,6 +1,6 @@
 # Frontend CMS (apps/cms) — Quy tắc & Chuẩn code
 
-React + Vite + TypeScript + Ant Design + React Router + React Query + Zustand. Trang quản trị nội bộ, không cần SEO/SSR.
+React + Vite + TypeScript + React Router + React Query + Zustand. UI dùng bộ component nội bộ ở `src/components` (không dùng Ant Design). Trang quản trị nội bộ, không cần SEO/SSR.
 
 ## Cấu trúc thư mục (bắt buộc theo mẫu)
 
@@ -39,9 +39,24 @@ src/
 
 ## UI
 
-- Dùng component Ant Design (`Form`, `Table`, `Card`...) làm chuẩn, không trộn thêm UI kit khác trong cùng 1 page.
-- Form dùng `Form` của AntD với `rules` validate, không tự viết validate tay bằng `useState` lỗi.
-- Bảng danh sách (ProductList, OrderList...) dùng `Table` với phân trang server-side khi nối API thật (sprint 2+), không load hết dữ liệu về client rồi tự phân trang.
+- Design System nền là **TailAdmin** (spacing, bo góc, màu, bố cục sidebar/header/content) nhưng implementation là component nội bộ tự viết trong `src/components/ui`, `src/components/form`, `src/components/common` (`Button`, `Input`, `Select`, `Modal`, `Table`, `Badge`, `ComponentCard`, `Spinner`, `Pagination`, `ConfirmModal`, `ToastProvider`/`useToast`...) — không thêm UI kit ngoài (đã bỏ Ant Design), không cài lại package TailAdmin. Còn thiếu component nào thì thêm mới vào đúng thư mục này theo pattern có sẵn, không tự chế inline trong page.
+  - Khi component gốc TailAdmin dùng thẻ HTML không style được xuyên suốt (vd `<select>` native — dropdown list do OS/browser tự vẽ, không set màu/dark mode được), được phép viết lại thành component tự dựng (div/button + absolute panel) miễn giữ nguyên props API và bám đúng token màu/spacing hiện có (xem `form/Select.tsx` làm mẫu).
+- Icon lấy từ `src/icons` (barrel `src/icons/index.ts`, import qua `?react` nhờ `vite-plugin-svgr`).
+- `form/Form.tsx` không có engine validate — tự quản lý `values`/`errors` bằng `useState` + hàm `validate()` tay (xem mẫu `Login.tsx`, `ProductForm.tsx`), không cố gán `rules` kiểu AntD.
+- Bảng danh sách (ProductList, OrderList...) dùng `ui/table` (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`) tự render row + `ui/pagination/Pagination` cho phân trang server-side khi nối API thật (sprint 2+), không load hết dữ liệu về client rồi tự phân trang.
+- Thông báo thành công/lỗi dùng `useToast()` (`@/hooks/useToast`), không tự dựng toast/alert riêng lẻ trong từng page.
+- Không hardcode màu sắc, spacing hay border-radius bằng số tuỳ ý — dùng đúng token/class Tailwind đã có trong `index.css` (`--color-*`, `--text-*`, `dark:` variant qua `@custom-variant dark`).
+
+## Typography & kích thước chuẩn (token TailAdmin)
+
+- Font: **Inter** (`font-inter` trong `index.css`, fallback `system-ui, sans-serif`).
+- Font size: Body/Sidebar/Input/Button/Label 14px · Table 13–14px · Card title 16px · Section title 18px · Page title 24px. Error message dưới input: 12px.
+- Font weight: Regular 400 · Medium 500 (label, table header) · Semibold 600 · Bold 700.
+- Line-height theo size: 14px→20px, 16px→24px, 18px→28px, 24px→32px.
+- Input/Button cao 36–40px (đang dùng `h-11` ≈ 44px cho input, giữ nguyên nếu đã nhất quán trong file, không tự đổi sang giá trị khác khi không được yêu cầu).
+- Table: row cao ~48–52px, header font Medium, hover nhẹ (`hover:bg-gray-50 dark:hover:bg-white/5`).
+- Layout: sidebar trái + header trên + content giữa, responsive desktop-first, giữ nguyên spacing đã có thay vì tự chế giá trị mới.
+- Mọi màn hình mới phải trông như một phần tự nhiên của các trang hiện có — không đổi màu mặc định, không lệch spacing/typography nếu không được yêu cầu rõ.
 
 ## Trước khi mở PR
 

@@ -1,13 +1,9 @@
-import { useState } from "react";
-import { Button, Space, Upload, message } from "antd";
-import type { UploadProps } from "antd";
-import {
-  DeleteOutlined,
-  LeftOutlined,
-  PlusOutlined,
-  RightOutlined,
-} from "@ant-design/icons";
+import { useRef, useState } from "react";
 import { deleteImage, uploadImage } from "@/lib/upload-api";
+import Button from "@/components/ui/button/Button";
+import Spinner from "@/components/ui/spinner/Spinner";
+import { PlusIcon, TrashBinIcon, AngleLeftIcon, AngleRightIcon } from "@/icons";
+import { useToast } from "@/hooks/useToast";
 
 interface ImageUploaderProps {
   value: string[];
@@ -19,22 +15,32 @@ interface ImageUploaderProps {
 export function ImageUploader({ value, onChange, max = 8, label }: ImageUploaderProps) {
   const [publicIds, setPublicIds] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
 
-  const customRequest: UploadProps["customRequest"] = async (options) => {
-    const { file, onSuccess, onError } = options;
+  async function handleFilesSelected(files: FileList | null) {
+    if (!files || files.length === 0) return;
     setUploading(true);
     try {
-      const result = await uploadImage(file as File);
-      setPublicIds((prev) => ({ ...prev, [result.url]: result.publicId }));
-      onChange([...value, result.url]);
-      onSuccess?.(result);
-    } catch (error) {
-      message.error("Upload ảnh thất bại");
-      onError?.(error as Error);
+      const uploaded: string[] = [];
+      const nextPublicIds: Record<string, string> = {};
+      for (const file of Array.from(files).slice(0, max - value.length)) {
+        try {
+          const result = await uploadImage(file);
+          uploaded.push(result.url);
+          nextPublicIds[result.url] = result.publicId;
+        } catch {
+          toast.error("Upload ảnh thất bại");
+        }
+      }
+      if (uploaded.length > 0) {
+        setPublicIds((prev) => ({ ...prev, ...nextPublicIds }));
+        onChange([...value, ...uploaded]);
+      }
     } finally {
       setUploading(false);
     }
-  };
+  }
 
   function handleRemove(url: string) {
     onChange(value.filter((v) => v !== url));
@@ -54,61 +60,65 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
 
   return (
     <div>
-      {label ? <div style={{ marginBottom: 8, fontWeight: 500 }}>{label}</div> : null}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+      {label ? <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">{label}</div> : null}
+      <div className="flex flex-wrap gap-4">
         {value.map((url, index) => (
-          <div
-            key={url}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}
-          >
-            <div
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: 8,
-                overflow: "hidden",
-                border: "1px solid #e5e3dd",
-              }}
-            >
-              <img
-                src={url}
-                alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
+          <div key={url} className="flex flex-col items-center gap-1.5">
+            <div className="h-24 w-24 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+              <img src={url} alt="" className="h-full w-full object-cover" />
             </div>
-            <Space size={4}>
+            <div className="flex items-center gap-1">
               <Button
-                size="small"
-                icon={<LeftOutlined />}
+                size="sm"
+                variant="outline"
+                className="!px-2 !py-1.5"
                 disabled={index === 0}
                 onClick={() => moveImage(index, -1)}
-              />
+              >
+                <AngleLeftIcon className="h-4 w-4" />
+              </Button>
               <Button
-                size="small"
-                danger
-                icon={<DeleteOutlined />}
+                size="sm"
+                variant="outline"
+                className="!px-2 !py-1.5 !text-error-500 hover:!bg-error-50"
                 onClick={() => handleRemove(url)}
-              />
+              >
+                <TrashBinIcon className="h-4 w-4" />
+              </Button>
               <Button
-                size="small"
-                icon={<RightOutlined />}
+                size="sm"
+                variant="outline"
+                className="!px-2 !py-1.5"
                 disabled={index === value.length - 1}
                 onClick={() => moveImage(index, 1)}
-              />
-            </Space>
+              >
+                <AngleRightIcon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
         {value.length < max ? (
-          <Upload
-            accept="image/png,image/jpeg,image/webp,image/jpg"
-            showUploadList={false}
-            customRequest={customRequest}
-            multiple={max > 1}
-          >
-            <Button icon={<PlusOutlined />} loading={uploading} style={{ width: 96, height: 96 }}>
-              Tải ảnh
-            </Button>
-          </Upload>
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/jpg"
+              multiple={max - value.length > 1}
+              className="hidden"
+              onChange={(e) => {
+                void handleFilesSelected(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex h-24 w-24 items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 text-sm text-gray-500 transition hover:border-brand-400 hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400"
+            >
+              {uploading ? <Spinner size="sm" /> : <PlusIcon className="h-5 w-5" />}
+            </button>
+          </>
         ) : null}
       </div>
     </div>
