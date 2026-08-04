@@ -1,4 +1,5 @@
 import ComponentCard from "@/components/common/ComponentCard";
+import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 
 const STATS = [
   { label: "Doanh thu hôm nay", value: "0đ" },
@@ -7,6 +8,8 @@ const STATS = [
 ];
 
 export default function Dashboard() {
+  useBreadcrumb([]);
+
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Dashboard</h3>

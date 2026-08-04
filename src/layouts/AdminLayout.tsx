@@ -1,8 +1,9 @@
 import { useMemo } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
+import { useBreadcrumbStore } from "@/store/breadcrumb-store";
+import { ADMIN_ROLE_LABELS, toAdminRole, type AdminRole } from "@/lib/roles";
 import { useToast } from "@/hooks/useToast";
-import Button from "@/components/ui/button/Button";
 import {
   PieChartIcon,
   BoxIcon,
@@ -11,16 +12,28 @@ import {
   GroupIcon,
   PageIcon,
   PlugInIcon,
+  AngleRightIcon,
 } from "@/icons";
 
-const MENU_ITEMS = [
-  { key: "/dashboard", icon: PieChartIcon, label: "Dashboard" },
-  { key: "/products", icon: BoxIcon, label: "Sản phẩm" },
-  { key: "/categories", icon: GridIcon, label: "Danh mục" },
-  { key: "/orders", icon: ListIcon, label: "Đơn hàng" },
-  { key: "/customers", icon: GroupIcon, label: "Khách hàng" },
-  { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS" },
-  { key: "/settings", icon: PlugInIcon, label: "Cấu hình" },
+interface MenuItem {
+  key: string;
+  icon: typeof PieChartIcon;
+  label: string;
+  allow: AdminRole[];
+}
+
+function getInitial(name: string | undefined): string {
+  return (name?.trim()?.[0] ?? "?").toUpperCase();
+}
+
+const MENU_ITEMS: MenuItem[] = [
+  { key: "/dashboard", icon: PieChartIcon, label: "Dashboard", allow: ["ADMIN", "WAREHOUSE_STAFF", "MARKETING"] },
+  { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: ["ADMIN", "WAREHOUSE_STAFF"] },
+  { key: "/categories", icon: GridIcon, label: "Danh mục", allow: ["ADMIN", "WAREHOUSE_STAFF"] },
+  { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ["ADMIN", "WAREHOUSE_STAFF"] },
+  { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: ["ADMIN", "MARKETING"] },
+  { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: ["ADMIN", "MARKETING"] },
+  { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ["ADMIN"] },
 ];
 
 export default function AdminLayout() {
@@ -29,11 +42,18 @@ export default function AdminLayout() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const toast = useToast();
+  const breadcrumbItems = useBreadcrumbStore((state) => state.items);
+  const role = toAdminRole(user?.role ?? "ADMIN");
+
+  const menuItems = useMemo(
+    () => MENU_ITEMS.filter((item) => item.allow.includes(role)),
+    [role],
+  );
 
   const selectedKey = useMemo(() => {
-    const match = MENU_ITEMS.find((item) => location.pathname.startsWith(item.key));
+    const match = menuItems.find((item) => location.pathname.startsWith(item.key));
     return match?.key ?? "/dashboard";
-  }, [location.pathname]);
+  }, [location.pathname, menuItems]);
 
   return (
     <div className="flex min-h-screen">
@@ -42,7 +62,7 @@ export default function AdminLayout() {
           Clothing Shop CMS
         </div>
         <nav className="flex-1 space-y-2 px-4">
-          {MENU_ITEMS.map((item) => {
+          {menuItems.map((item) => {
             const isActive = item.key === selectedKey;
             const Icon = item.icon;
             return (
@@ -71,18 +91,66 @@ export default function AdminLayout() {
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-end gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
-          <span className="text-sm text-gray-700 dark:text-gray-300">{user?.fullName}</span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              logout();
-              toast.success("Đã đăng xuất");
-              navigate("/login");
-            }}
-            startIcon={
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
+          <nav className="flex items-center gap-1.5 text-sm">
+            <Link
+              to="/dashboard"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            >
+              Trang chủ
+            </Link>
+            {breadcrumbItems.map((item, index) => {
+              const isLast = index === breadcrumbItems.length - 1;
+              return (
+                <span key={`${item.label}-${index}`} className="flex items-center gap-1.5">
+                  <AngleRightIcon className="size-3.5 text-gray-400" />
+                  {item.href && !isLast ? (
+                    <Link
+                      to={item.href}
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span
+                      className={
+                        isLast
+                          ? "font-medium text-gray-800 dark:text-white/90"
+                          : "text-gray-500 dark:text-gray-400"
+                      }
+                    >
+                      {item.label}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            {/* Mock tạm — role lấy thẳng từ user session lúc đăng nhập, xem @/lib/roles.ts */}
+            <div className="flex items-center gap-2.5 rounded-full border border-gray-200 py-1 pl-1 pr-3 dark:border-gray-800">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+                {getInitial(user?.fullName)}
+              </div>
+              <div className="leading-tight">
+                <p className="text-sm font-medium text-gray-800 dark:text-white/90">{user?.fullName}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{ADMIN_ROLE_LABELS[role]}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label="Đăng xuất"
+              title="Đăng xuất"
+              onClick={() => {
+                logout();
+                toast.success("Đã đăng xuất");
+                navigate("/login");
+              }}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M15 17l5-5-5-5M20 12H9M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"
                   stroke="currentColor"
@@ -91,10 +159,8 @@ export default function AdminLayout() {
                   strokeLinejoin="round"
                 />
               </svg>
-            }
-          >
-            Đăng xuất
-          </Button>
+            </button>
+          </div>
         </header>
         <main className="flex-1 bg-gray-50 p-6 dark:bg-gray-950">
           <Outlet />

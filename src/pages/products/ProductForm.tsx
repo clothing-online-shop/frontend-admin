@@ -13,6 +13,7 @@ import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
+import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { PlusIcon, TrashBinIcon } from "@/icons";
 
 interface VariantFormValue {
@@ -50,6 +51,10 @@ export default function ProductForm() {
   const toast = useToast();
   const { slug: editingSlug } = useParams<{ slug: string }>();
   const isEditing = Boolean(editingSlug);
+  useBreadcrumb([
+    { label: "Sản phẩm", href: "/products" },
+    { label: isEditing ? "Sửa sản phẩm" : "Thêm sản phẩm" },
+  ]);
 
   const [values, setValues] = useState<ProductFormValues>({
     name: "",

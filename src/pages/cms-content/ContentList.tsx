@@ -1,4 +1,8 @@
+import { useBreadcrumb } from "@/hooks/useBreadcrumb";
+
 export default function ContentList() {
+  useBreadcrumb([{ label: "Nội dung CMS" }]);
+
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Nội dung CMS</h3>
