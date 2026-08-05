@@ -12,6 +12,7 @@ import Spinner from "@/components/ui/spinner/Spinner";
 import DragTree, { type DragTreeNode } from "@/components/ui/tree/DragTree";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
+import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
 
 interface CategoryTreeNode extends DragTreeNode {
@@ -52,6 +53,7 @@ function findNodeById(nodes: CategoryNode[], id: string): CategoryNode | null {
 
 export default function CategoryList() {
   const toast = useToast();
+  useBreadcrumb([{ label: "Danh mục" }]);
   const { data, isLoading } = useCategoryTree();
   const deleteMutation = useDeleteCategory();
   const reorderMutation = useReorderCategories();

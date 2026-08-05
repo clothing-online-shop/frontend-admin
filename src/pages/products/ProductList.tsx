@@ -14,6 +14,7 @@ import Spinner from "@/components/ui/spinner/Spinner";
 import Pagination from "@/components/ui/pagination/Pagination";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
+import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
 
@@ -26,6 +27,7 @@ const STATUS_LABELS: Record<ProductStatus, { label: string; color: "light" | "su
 export default function ProductList() {
   const navigate = useNavigate();
   const toast = useToast();
+  useBreadcrumb([{ label: "Sản phẩm" }]);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | undefined>(undefined);

@@ -2,6 +2,19 @@
 
 React + Vite + TypeScript + React Router + React Query + Zustand. UI dùng bộ component nội bộ ở `src/components` (không dùng Ant Design). Trang quản trị nội bộ, không cần SEO/SSR.
 
+## Clean code
+
+- Đặt tên biến/hàm/component theo đúng vai trò, viết đủ chữ, không viết tắt tuỳ tiện. Boolean đặt tên `is`/`has`/`should` (`isLoading`, `hasError`, `isEditing`).
+- Component/hàm chỉ làm một việc. File JSX phình to hoặc trộn nhiều concern không liên quan (fetch + validate + render nhiều block độc lập) → tách component con hoặc custom hook (`hooks/use<Ten>.ts`), không dồn hết vào 1 file.
+- Không để code chết: xoá hẳn code/import/biến không dùng thay vì comment lại "phòng khi cần" — đã có `noUnusedLocals`/`noUnusedParameters` chặn ở `tsc -b`, đừng để tới lúc build mới dọn. Dùng git history nếu cần xem lại code cũ.
+- Giá trị hoặc logic lặp lại ≥ 2 nơi (mảng hằng số, chuỗi cấu hình, block xử lý...) → tách thành biến/hàm dùng chung trong `lib/` hoặc `hooks/`, import ra dùng — không copy-paste, không gõ lại literal. Sửa 1 chỗ phải đủ.
+- Không dùng `any`; nếu bắt buộc ép kiểu (`as`), viết comment 1 dòng giải thích tại sao kiểu gốc không đủ.
+- Ưu tiên early return thay vì lồng nhiều `if/else` (xem mẫu `validate()` trong `Login.tsx`, `ProductForm.tsx`).
+- Comment chỉ giải thích "tại sao" (constraint, workaround, edge case không hiển nhiên) — không giải thích "làm gì" khi tên biến/hàm đã đủ rõ nghĩa.
+- Xử lý lỗi nhất quán: mutation lỗi → `toast.error(getErrorMessage(error))` (xem `ProductForm.tsx`), không tự viết `alert()`/`console.error` trong page thật. Không để sót `console.log` debug trong code đang active dùng.
+- Component 1 file 1 export chính → `export default`, theo đúng đa số codebase hiện tại (`Button`, `Badge`, `Input`, `Select`, page...). Chỉ dùng named export (`export const`/`export function`) khi file export nhiều binding cùng lúc (vd `ui/table/index.tsx` export cả `Table`/`TableHeader`/`TableBody`/`TableRow`/`TableCell`, hoặc cặp Context+Provider như `ToastContext`/`ToastProvider`) — không đổi các file named export hiện có nếu không đụng tới, chỉ áp dụng cho file mới.
+- Format ngày/giá tiền dùng `formatDate`/`formatPrice` trong `lib/format.ts`, không tự gọi `toLocaleString()`/`Intl.NumberFormat` rải rác trong component.
+
 ## Cấu trúc thư mục (bắt buộc theo mẫu)
 
 ```
@@ -16,6 +29,7 @@ src/
 
 - Thêm page mới → tạo file trong `pages/<feature>/`, khai báo route trong `routes/index.tsx`, không tự tạo router riêng lẻ trong component.
 - Mọi trang quản trị (trừ `/login`) phải nằm trong nhánh con của `PrivateRoute` + `AdminLayout` trong `routes/index.tsx` — không bypass.
+- `src/components/charts`, `ecommerce`, `UserProfile`, `auth`, `header`, `tables`, `form/form-elements` là code demo gốc từ template TailAdmin, **không được app thật import ở đâu cả** — giữ lại có chủ đích (đã sửa sạch lỗi type-check) làm tài liệu tham khảo pattern, không phải tính năng đang chạy. Không tự ý xoá, nhưng cũng không coi đây là ví dụ "đang dùng trong app" khi tìm chỗ tham chiếu code thật.
 
 ## Import path
 
@@ -37,6 +51,12 @@ src/
 - `PrivateRoute` (`routes/PrivateRoute.tsx`) chặn theo `user.role !== 'ADMIN'`. Khi thêm role mới (vd nhân viên kho, marketing — xem mục 4.3 kế hoạch dự án), mở rộng điều kiện ở đây, không kiểm tra role rải rác trong từng page.
 - Ẩn/hiện menu item trong `AdminLayout` theo role khi có nhiều role — không chỉ dựa vào chặn route, tránh hiển thị mục admin không dùng được.
 
+## Breadcrumb
+
+- Mọi page thật (trừ `/login`) gọi `useBreadcrumb(items)` (`hooks/useBreadcrumb.ts`) ngay đầu component để hiện đường dẫn ở header `AdminLayout`. `items: { label: string; href?: string }[]` — mục cuối cùng (trang hiện tại) không cần `href`.
+- Trang danh sách: 1 item, vd `useBreadcrumb([{ label: "Sản phẩm" }])`. Trang con (thêm/sửa): thêm item cha có `href` trỏ về trang danh sách trước item hiện tại — xem mẫu `ProductForm.tsx`.
+- `Dashboard.tsx` gọi `useBreadcrumb([])` để reset về chỉ "Trang chủ" — bắt buộc, nếu bỏ qua thì breadcrumb của trang trước đó bị dính lại khi quay về Dashboard.
+
 ## UI
 
 - Design System nền là **TailAdmin** (spacing, bo góc, màu, bố cục sidebar/header/content) nhưng implementation là component nội bộ tự viết trong `src/components/ui`, `src/components/form`, `src/components/common` (`Button`, `Input`, `Select`, `Modal`, `Table`, `Badge`, `ComponentCard`, `Spinner`, `Pagination`, `ConfirmModal`, `ToastProvider`/`useToast`...) — không thêm UI kit ngoài (đã bỏ Ant Design), không cài lại package TailAdmin. Còn thiếu component nào thì thêm mới vào đúng thư mục này theo pattern có sẵn, không tự chế inline trong page.
@@ -57,6 +77,19 @@ src/
 - Table: row cao ~48–52px, header font Medium, hover nhẹ (`hover:bg-gray-50 dark:hover:bg-white/5`).
 - Layout: sidebar trái + header trên + content giữa, responsive desktop-first, giữ nguyên spacing đã có thay vì tự chế giá trị mới.
 - Mọi màn hình mới phải trông như một phần tự nhiên của các trang hiện có — không đổi màu mặc định, không lệch spacing/typography nếu không được yêu cầu rõ.
+
+## Accessibility
+
+- Icon-only button (không có text hiển thị, vd nút đăng xuất trong `AdminLayout.tsx`) bắt buộc có `aria-label` mô tả hành động.
+- Input luôn có `<label htmlFor>` gắn đúng `id` của input tương ứng (xem `Login.tsx`, `ProductForm.tsx`) — không dùng `placeholder` thay label.
+- `ui/modal/index.tsx` (`Modal`) đã hỗ trợ sẵn đóng bằng phím `Esc` và click overlay ngoài modal — không tự viết lại logic này khi dùng `Modal`/`ConfirmModal`, chỉ truyền đúng `isOpen`/`onClose`.
+
+## Performance
+
+- Bundle build hiện > 500kB (`vite build` tự cảnh báo `chunkSizeWarningLimit`). Khi thêm thư viện nặng (chart, rich text editor, date picker...) hoặc route ít dùng, cân nhắc `React.lazy()` + `Suspense` thay vì import thẳng ở đầu `routes/index.tsx`.
+- Chỉ dùng `useMemo`/`useCallback` khi có phép tính lặp lại thật sự tốn (map/filter mảng lớn, callback truyền xuống nhiều child re-render) như `categoryOptions`/`categoryNameById` trong `ProductForm.tsx` — không optimize sớm khi chưa thấy vấn đề thật.
+- Input tìm kiếm submit qua nút/Enter (state `searchInput` tách khỏi `search` dùng để gọi API, xem `ProductList.tsx`), không gọi API mỗi lần gõ phím.
+
 
 ## Trước khi mở PR
 
