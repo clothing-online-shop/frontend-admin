@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ProductStatus } from "@/lib/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
+import { useBrands } from "@/hooks/useBrands";
 import { useCreateProduct, useProductDetail, useUpdateProduct } from "@/hooks/useProducts";
 import type { CreateProductPayload } from "@/lib/products-api";
 import { ImageUploader } from "@/components/ImageUploader";
@@ -29,6 +30,7 @@ interface ProductFormValues {
   name: string;
   slug: string;
   categoryId: string;
+  brandId: string;
   basePrice: string;
   status: ProductStatus;
 }
@@ -60,6 +62,7 @@ export default function ProductForm() {
     name: "",
     slug: "",
     categoryId: "",
+    brandId: "",
     basePrice: "",
     status: ProductStatus.DRAFT,
   });
@@ -83,6 +86,12 @@ export default function ProductForm() {
     return flatten(categoryTree);
   }, [categoryTree]);
 
+  const { data: brands } = useBrands();
+  const brandOptions = useMemo(
+    () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
+    [brands],
+  );
+
   const { data: product, isLoading: isLoadingProduct } = useProductDetail(editingSlug);
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
@@ -94,6 +103,7 @@ export default function ProductForm() {
         name: product.name,
         slug: product.slug,
         categoryId: product.categoryId,
+        brandId: product.brand?.id ?? "",
         basePrice: String(product.basePrice),
         status: product.status,
       });
@@ -176,6 +186,7 @@ export default function ProductForm() {
       slug: values.slug || undefined,
       description,
       categoryId: values.categoryId,
+      brandId: values.brandId || undefined,
       basePrice: Number(values.basePrice),
       status: values.status,
       thumbnail: thumbnail[0],
@@ -261,6 +272,18 @@ export default function ProductForm() {
               {errors.categoryId && (
                 <p className="mt-1.5 text-xs text-error-500">{errors.categoryId}</p>
               )}
+            </div>
+            <div className="flex-1">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Thương hiệu
+              </label>
+              <Select
+                allowClear
+                placeholder="Chọn thương hiệu"
+                options={brandOptions}
+                value={values.brandId || undefined}
+                onChange={(value) => setValues((v) => ({ ...v, brandId: value ?? "" }))}
+              />
             </div>
             <div className="flex-1">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">

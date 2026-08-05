@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
   BoxIcon,
+  BoxCubeIcon,
   GridIcon,
   ListIcon,
   GroupIcon,
@@ -31,6 +32,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/dashboard", icon: PieChartIcon, label: "Dashboard", allow: ALL_ADMIN_ROLES },
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
+  { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
   { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
   { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
   { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
@@ -163,7 +165,7 @@ export default function AdminLayout() {
             </button>
           </div>
         </header>
-        <main className="flex-1 bg-gray-50 p-6 dark:bg-gray-950">
+        <main className="flex flex-1 flex-col bg-gray-50 p-6 dark:bg-gray-950">
           <Outlet />
         </main>
       </div>

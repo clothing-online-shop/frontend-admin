@@ -9,7 +9,7 @@ import type {
 export interface ListProductsAdminParams {
   category?: string;
   search?: string;
-  brand?: string;
+  brandId?: string;
   status?: ProductStatus;
   page?: number;
   limit?: number;
@@ -29,6 +29,7 @@ export interface CreateProductPayload {
   name: string;
   slug?: string;
   description?: string;
+  brandId?: string;
   categoryId: string;
   basePrice: number;
   status?: ProductStatus;
