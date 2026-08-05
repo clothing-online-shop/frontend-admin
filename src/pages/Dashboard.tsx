@@ -13,6 +13,7 @@ export default function Dashboard() {
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Dashboard</h3>
+      <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">Môi trường UAT — dữ liệu thử nghiệm</p>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {STATS.map((stat) => (
           <ComponentCard key={stat.label} title={stat.label}>
