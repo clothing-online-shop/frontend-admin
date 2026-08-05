@@ -1,13 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/lib/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
 import { useDeleteProduct, useProductsAdmin } from "@/hooks/useProducts";
+import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
-import Form from "@/components/form/Form";
 import Select from "@/components/form/Select";
 import Badge from "@/components/ui/badge/Badge";
 import Spinner from "@/components/ui/spinner/Spinner";
@@ -29,7 +29,9 @@ export default function ProductList() {
   const toast = useToast();
   useBreadcrumb([{ label: "Sản phẩm" }]);
   const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const [brandInput, setBrandInput] = useState("");
+  const search = useDebounce(searchInput, 500);
+  const brand = useDebounce(brandInput, 500);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -59,8 +61,19 @@ export default function ProductList() {
     return map;
   }, [categoryTree]);
 
-  const { data, isLoading } = useProductsAdmin({ search: search || undefined, category, status, page, limit });
+  const { data, isLoading } = useProductsAdmin({
+    search: search || undefined,
+    brand: brand || undefined,
+    category,
+    status,
+    page,
+    limit,
+  });
   const deleteMutation = useDeleteProduct();
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, brand]);
 
   async function handleDelete() {
     if (!deleteTarget) return;
@@ -87,19 +100,20 @@ export default function ProductList() {
       </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
-        <Form
-          onSubmit={() => {
-            setSearch(searchInput);
-            setPage(1);
-          }}
-          className="w-65"
-        >
+        <div className="w-65">
           <Input
-            placeholder="Tìm theo tên sản phẩm"
+            placeholder="Tìm theo tên/SKU sản phẩm"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
-        </Form>
+        </div>
+        <div className="w-48">
+          <Input
+            placeholder="Thương hiệu"
+            value={brandInput}
+            onChange={(e) => setBrandInput(e.target.value)}
+          />
+        </div>
         <div className="w-50">
           <Select
             allowClear
@@ -134,7 +148,7 @@ export default function ProductList() {
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-gray-800">
               <TableRow>
-                {["Ảnh", "Tên sản phẩm", "Danh mục", "Giá", "Tồn kho", "Trạng thái", "Ngày tạo", ""].map(
+                {["Ảnh", "Tên sản phẩm", "Danh mục", "Thương hiệu", "Giá", "Tồn kho", "Trạng thái", "Ngày tạo", ""].map(
                   (heading) => (
                     <TableCell
                       key={heading}
@@ -150,13 +164,13 @@ export default function ProductList() {
             <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
               {isLoading ? (
                 <TableRow>
-                  <TableCell className="px-5 py-8 text-center" colSpan={8}>
+                  <TableCell className="px-5 py-8 text-center" colSpan={9}>
                     <Spinner className="mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : (data?.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell className="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={8}>
+                  <TableCell className="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={9}>
                     Chưa có sản phẩm nào.
                   </TableCell>
                 </TableRow>
@@ -180,6 +194,9 @@ export default function ProductList() {
                     </TableCell>
                     <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
                       {categoryNameById.get(product.categoryId) ?? "—"}
+                    </TableCell>
+                    <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
+                      {product.brand ?? "—"}
                     </TableCell>
                     <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
                       {formatPrice(product.basePrice)}

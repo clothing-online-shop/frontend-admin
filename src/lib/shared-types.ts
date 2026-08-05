@@ -51,6 +51,8 @@ export interface ProductListItem {
   slug: string;
   thumbnail: string | null;
   basePrice: number;
+  salePrice: number | null;
+  brand: string | null;
   status: ProductStatus;
   categoryId: string;
   totalStock: number;

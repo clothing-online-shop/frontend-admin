@@ -9,6 +9,7 @@ import type {
 export interface ListProductsAdminParams {
   category?: string;
   search?: string;
+  brand?: string;
   status?: ProductStatus;
   page?: number;
   limit?: number;

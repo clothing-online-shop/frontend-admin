@@ -88,7 +88,7 @@ src/
 
 - Bundle build hiện > 500kB (`vite build` tự cảnh báo `chunkSizeWarningLimit`). Khi thêm thư viện nặng (chart, rich text editor, date picker...) hoặc route ít dùng, cân nhắc `React.lazy()` + `Suspense` thay vì import thẳng ở đầu `routes/index.tsx`.
 - Chỉ dùng `useMemo`/`useCallback` khi có phép tính lặp lại thật sự tốn (map/filter mảng lớn, callback truyền xuống nhiều child re-render) như `categoryOptions`/`categoryNameById` trong `ProductForm.tsx` — không optimize sớm khi chưa thấy vấn đề thật.
-- Input tìm kiếm submit qua nút/Enter (state `searchInput` tách khỏi `search` dùng để gọi API, xem `ProductList.tsx`), không gọi API mỗi lần gõ phím.
+- Input tìm kiếm/filter dạng text không gọi API ngay mỗi lần gõ phím — dùng `useDebounce(value, delayMs)` (`hooks/useDebounce.ts`), tách state gõ tay (`searchInput`) khỏi state debounced dùng để gọi API (`search`), xem mẫu `ProductList.tsx` (debounce 500ms). Dropdown/`Select` filter thì gọi ngay khi `onChange`, không cần debounce (không phải sự kiện gõ liên tục).
 
 
 ## Trước khi mở PR
