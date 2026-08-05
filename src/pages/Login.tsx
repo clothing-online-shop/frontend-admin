@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { login } from "@/lib/auth-api";
 import { useAuthStore } from "@/store/auth-store";
 import { isAdminPanelRole } from "@/lib/roles";
+import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import shopIllustration from "@/assets/images/shop-illustration.svg";
 
@@ -40,7 +41,7 @@ export default function Login() {
       toast.success("Đăng nhập thành công");
       navigate("/dashboard");
     },
-    onError: () => setServerError("Email hoặc mật khẩu không đúng."),
+    onError: (error) => setServerError(getErrorMessage(error)),
   });
 
   const validate = (): boolean => {
