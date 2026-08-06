@@ -233,7 +233,7 @@ export default function ProductList() {
                         <button
                           type="button"
                           onClick={() => navigate(`/products/${product.slug}/edit`)}
-                          className="text-gray-400 hover:text-brand-500"
+                          className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                           aria-label="Sửa sản phẩm"
                         >
                           <PencilIcon className="h-4 w-4" />
@@ -241,7 +241,7 @@ export default function ProductList() {
                         <button
                           type="button"
                           onClick={() => setDeleteTarget(product)}
-                          className="text-gray-400 hover:text-error-500"
+                          className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
                           aria-label="Xóa sản phẩm"
                         >
                           <TrashBinIcon className="h-4 w-4" />

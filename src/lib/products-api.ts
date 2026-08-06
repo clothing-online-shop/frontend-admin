@@ -29,17 +29,26 @@ export interface CreateProductPayload {
   name: string;
   slug?: string;
   description?: string;
+  material?: string;
+  careInstructions?: string;
   brandId?: string;
   categoryId: string;
   basePrice: number;
+  salePrice?: number;
   status?: ProductStatus;
   thumbnail?: string;
   images?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
   variants: ProductVariantPayload[];
 }
 
-export type UpdateProductPayload = Partial<Omit<CreateProductPayload, "variants">> & {
+export type UpdateProductPayload = Partial<
+  Omit<CreateProductPayload, "variants" | "brandId">
+> & {
   variants?: ProductVariantPayload[];
+  // Bỏ trống = giữ nguyên thương hiệu hiện có; gửi null = gỡ thương hiệu khỏi sản phẩm.
+  brandId?: string | null;
 };
 
 export async function getProductsAdmin(

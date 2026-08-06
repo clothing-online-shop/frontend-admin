@@ -10,6 +10,7 @@ import BrandList from "@/pages/brands/BrandList";
 import OrderList from "@/pages/orders/OrderList";
 import CustomerList from "@/pages/customers/CustomerList";
 import ContentList from "@/pages/cms-content/ContentList";
+import Settings from "@/pages/settings/Settings";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
           { path: "/orders", element: <OrderList /> },
           { path: "/customers", element: <CustomerList /> },
           { path: "/cms-content", element: <ContentList /> },
+          { path: "/settings", element: <Settings /> },
         ],
       },
     ],

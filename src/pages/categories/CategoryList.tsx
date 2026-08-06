@@ -70,6 +70,20 @@ function filterTreeByName(nodes: CategoryTreeNode[], query: string): CategoryTre
   }, []);
 }
 
+function findNodeInTree(nodes: CategoryTreeNode[], key: string): CategoryTreeNode | null {
+  for (const node of nodes) {
+    if (node.key === key) return node;
+    const found = node.children ? findNodeInTree(node.children, key) : null;
+    if (found) return found;
+  }
+  return null;
+}
+
+function containsKey(node: CategoryTreeNode, key: string): boolean {
+  if (node.key === key) return true;
+  return (node.children ?? []).some((child) => containsKey(child, key));
+}
+
 export default function CategoryList() {
   const toast = useToast();
   useBreadcrumb([{ label: "Danh mục" }]);
@@ -151,6 +165,16 @@ export default function CategoryList() {
   }
 
   async function handleDrop(dragKey: string, dropKey: string, position: "before" | "after" | "inside") {
+    // dropKey nằm trong chính cây con của dragKey (thả 1 danh mục cha vào/trước/sau
+    // con-cháu của chính nó) — nếu cho phép, bước "loop" bên dưới tìm dropKey trên cây
+    // đã bị gỡ dragObj ra nên không thấy, cả nhánh dragObj biến mất khỏi UI cho tới khi
+    // refetch. Chặn sớm thay vì để state bị hỏng tạm thời.
+    const dragNode = findNodeInTree(treeData, dragKey);
+    if (dragNode && containsKey(dragNode, dropKey)) {
+      toast.error("Không thể chuyển danh mục vào chính danh mục con của nó");
+      return;
+    }
+
     const data = cloneTree(treeData);
     let dragObj: CategoryTreeNode | undefined;
 

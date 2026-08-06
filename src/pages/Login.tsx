@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { login } from "@/lib/auth-api";
 import { useAuthStore } from "@/store/auth-store";
 import { isAdminPanelRole } from "@/lib/roles";
 import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
+import { loginSchema, type LoginFormValues } from "@/schemas/login.schema";
 import shopIllustration from "@/assets/images/shop-illustration.svg";
 
 import Button from "@/components/ui/button/Button";
@@ -14,27 +17,26 @@ import Input from "@/components/form/input/InputField";
 import Form from "@/components/form/Form";
 import Spinner from "@/components/ui/spinner/Spinner";
 
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
-
 export default function Login() {
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
   const toast = useToast();
-
-  const [form, setForm] = useState<LoginFormValues>({ email: "", password: "" });
-  const [errors, setErrors] = useState<Partial<LoginFormValues>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: yupResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
       if (!isAdminPanelRole(data.user.role)) {
-        setServerError(
-          "Tài khoản này không có quyền truy cập trang quản trị."
-        );
+        setServerError("Tài khoản này không có quyền truy cập trang quản trị.");
         return;
       }
       setSession(data.user, data.accessToken, data.refreshToken);
@@ -44,25 +46,9 @@ export default function Login() {
     onError: (error) => setServerError(getErrorMessage(error)),
   });
 
-  const validate = (): boolean => {
-    const newErrors: Partial<LoginFormValues> = {};
-    if (!form.email) {
-      newErrors.email = "Vui lòng nhập email";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = "Email không hợp lệ";
-    }
-    if (!form.password) {
-      newErrors.password = "Vui lòng nhập mật khẩu";
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
+  const onValid = (values: LoginFormValues) => {
     setServerError(null);
-    if (validate()) {
-      mutation.mutate(form);
-    }
+    mutation.mutate(values);
   };
 
   return (
@@ -93,7 +79,7 @@ export default function Login() {
             </p>
           </div>
 
-          <Form onSubmit={handleSubmit} className="space-y-5">
+          <Form onSubmit={handleSubmit(onValid)} className="space-y-5">
             {/* Email */}
             <div>
               <label
@@ -106,14 +92,9 @@ export default function Login() {
                 id="login-email"
                 type="email"
                 placeholder="admin@clothing-shop.com"
-                value={form.email}
-                onChange={(e) => {
-                  setForm((f) => ({ ...f, email: e.target.value }));
-                  if (errors.email)
-                    setErrors((er) => ({ ...er, email: undefined }));
-                }}
+                {...register("email")}
                 error={!!errors.email}
-                hint={errors.email}
+                hint={errors.email?.message}
               />
             </div>
 
@@ -129,14 +110,9 @@ export default function Login() {
                 id="login-password"
                 type="password"
                 placeholder="••••••••"
-                value={form.password}
-                onChange={(e) => {
-                  setForm((f) => ({ ...f, password: e.target.value }));
-                  if (errors.password)
-                    setErrors((er) => ({ ...er, password: undefined }));
-                }}
+                {...register("password")}
                 error={!!errors.password}
-                hint={errors.password}
+                hint={errors.password?.message}
               />
             </div>
 
@@ -151,6 +127,7 @@ export default function Login() {
 
             {/* Submit button */}
             <Button
+              type="submit"
               size="md"
               variant="primary"
               disabled={mutation.isPending}
