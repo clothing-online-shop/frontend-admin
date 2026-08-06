@@ -59,6 +59,8 @@ export interface ProductListItem {
   id: string;
   name: string;
   slug: string;
+  description: string | null;
+  material: string | null;
   thumbnail: string | null;
   basePrice: number;
   salePrice: number | null;

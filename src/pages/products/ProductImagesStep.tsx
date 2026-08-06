@@ -10,26 +10,32 @@ export function ProductImagesStep() {
   } = useFormContext<ProductFormValues>();
 
   return (
-    <ComponentCard title="Ảnh sản phẩm">
-      <div>
+    <div className="space-y-6">
+      <ComponentCard title="Ảnh đại diện">
         <Controller
           name="thumbnail"
           control={control}
           render={({ field }) => (
-            <ImageUploader value={field.value} onChange={field.onChange} max={1} label="Ảnh đại diện" />
+            <ImageUploader value={field.value} onChange={field.onChange} max={1} />
           )}
         />
         {errors.thumbnail && (
           <p className="mt-1.5 text-xs text-form-error">{errors.thumbnail.message}</p>
         )}
-      </div>
-      <Controller
-        name="images"
-        control={control}
-        render={({ field }) => (
-          <ImageUploader value={field.value ?? []} onChange={field.onChange} max={8} label="Thư viện ảnh" />
+      </ComponentCard>
+
+      <ComponentCard title="Ảnh chi tiết sản phẩm">
+        <Controller
+          name="images"
+          control={control}
+          render={({ field }) => (
+            <ImageUploader value={field.value ?? []} onChange={field.onChange} max={8} />
+          )}
+        />
+        {errors.images && (
+          <p className="mt-1.5 text-xs text-form-error">{errors.images.message}</p>
         )}
-      />
-    </ComponentCard>
+      </ComponentCard>
+    </div>
   );
 }

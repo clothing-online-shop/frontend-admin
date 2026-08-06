@@ -27,7 +27,7 @@ export interface ProductVariantPayload {
 
 export interface CreateProductPayload {
   name: string;
-  slug?: string;
+  slug: string;
   description?: string;
   material?: string;
   careInstructions?: string;

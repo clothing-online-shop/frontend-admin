@@ -21,9 +21,9 @@ const productVariantSchema = yup.object({
 
 export const productSchema = yup.object({
   name: yup.string().trim().required("Vui lòng nhập tên sản phẩm."),
-  slug: yup.string().trim().optional(),
-  description: yup.string().optional(),
-  material: yup.string().trim().optional(),
+  slug: yup.string().trim().required("Vui lòng nhập slug."),
+  description: yup.string().required("Vui lòng nhập mô tả sản phẩm."),
+  material: yup.string().trim().required("Vui lòng nhập chất liệu."),
   careInstructions: yup.string().trim().optional(),
   categoryId: yup.string().required("Chọn danh mục."),
   brandId: yup.string().optional(),
@@ -52,7 +52,11 @@ export const productSchema = yup.object({
     .of(yup.string().required())
     .min(1, "Vui lòng chọn ảnh đại diện sản phẩm.")
     .required(),
-  images: yup.array().of(yup.string().required()).default([]),
+  images: yup
+    .array()
+    .of(yup.string().required())
+    .min(1, "Vui lòng chọn ít nhất 1 ảnh chi tiết sản phẩm.")
+    .required(),
   metaTitle: yup.string().trim().optional(),
   metaDescription: yup.string().trim().optional(),
   variants: yup

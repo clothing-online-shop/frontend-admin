@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm, FormProvider, type FieldErrors } from "react-hook-form";
+import { useForm, useWatch, FormProvider, type FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ProductStatus } from "@/lib/shared-types";
 import { useCreateProduct, useProductDetail, useUpdateProduct } from "@/hooks/useProducts";
@@ -18,9 +18,21 @@ import { ProductImagesStep } from "./ProductImagesStep";
 import { ProductSeoStep } from "./ProductSeoStep";
 
 const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
-  { label: "Thông tin chung", fields: ["name", "categoryId", "basePrice", "salePrice"] },
+  {
+    label: "Thông tin chung",
+    fields: [
+      "name",
+      "slug",
+      "description",
+      "material",
+      "categoryId",
+      "basePrice",
+      "salePrice",
+      "status",
+    ],
+  },
   { label: "Biến thể", fields: ["variants"] },
-  { label: "Ảnh", fields: ["thumbnail"] },
+  { label: "Ảnh", fields: ["thumbnail", "images"] },
   { label: "SEO", fields: [] },
 ];
 
@@ -58,13 +70,32 @@ export default function ProductForm() {
   const methods = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: EMPTY_VALUES,
+    mode: "onChange",
   });
-  const { handleSubmit, trigger, reset } = methods;
+  const { handleSubmit, trigger, reset, control, formState } = methods;
+
+  const currentStepFields = STEPS[currentStep].fields;
+  // Chỉ để subscribe re-render khi giá trị các field của bước hiện tại đổi — validity
+  // thật lấy từ formState.errors (yupResolver validate toàn bộ schema mỗi lần đổi vì
+  // mode "onChange", nên errors của field bước khác cũng có sẵn, không cần validate lại).
+  useWatch({ control, name: currentStepFields });
+  const isStepValid = useMemo(
+    () => currentStepFields.every((field) => !formState.errors[field]),
+    [currentStepFields, formState.errors],
+  );
 
   const { data: product, isLoading: isLoadingProduct } = useProductDetail(editingSlug);
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
   const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  useEffect(() => {
+    // Bước 0 chưa có tương tác gì thì formState.errors rỗng dù field bắt buộc còn
+    // trống — trigger 1 lần khi đổi bước để nút "Tiếp theo" phản ánh đúng trạng thái
+    // ngay từ đầu, không cần đợi user gõ phím mới thấy disable.
+    void trigger(currentStepFields);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
 
   useEffect(() => {
     if (product) {
@@ -93,8 +124,12 @@ export default function ProductForm() {
         })),
       });
       setMaxStepReached(STEPS.length - 1);
+      // reset() xoá sạch errors cũ — trigger lại để nút "Tiếp theo" phản ánh đúng dữ
+      // liệu sản phẩm thật vừa load (vd sản phẩm cũ tạo trước khi field bắt buộc
+      // này tồn tại) thay vì mặc định coi là hợp lệ.
+      void trigger(STEPS[0].fields);
     }
-  }, [product, reset]);
+  }, [product, reset, trigger]);
 
   function goToStep(index: number) {
     if (index <= maxStepReached) setCurrentStep(index);
@@ -103,7 +138,10 @@ export default function ProductForm() {
   async function goNext() {
     const fields = STEPS[currentStep].fields;
     const valid = fields.length === 0 ? true : await trigger(fields);
-    if (!valid) return;
+    if (!valid) {
+      toast.error("Vui lòng điền đủ thông tin bắt buộc ở bước này trước khi tiếp tục");
+      return;
+    }
     const next = Math.min(currentStep + 1, STEPS.length - 1);
     setCurrentStep(next);
     setMaxStepReached((prev) => Math.max(prev, next));
@@ -116,7 +154,7 @@ export default function ProductForm() {
   async function onValid(values: ProductFormValues) {
     const payload: CreateProductPayload = {
       name: values.name,
-      slug: values.slug || undefined,
+      slug: values.slug,
       description: values.description,
       material: values.material || undefined,
       careInstructions: values.careInstructions || undefined,
@@ -217,7 +255,7 @@ export default function ProductForm() {
               </Button>
             )}
             {!isLastStep && (
-              <Button type="button" onClick={goNext}>
+              <Button type="button" onClick={goNext} disabled={!isStepValid}>
                 Tiếp theo
               </Button>
             )}

@@ -119,7 +119,7 @@ export function CategoryFormModal({
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Slug (bỏ trống để tự sinh)
+              URL
             </label>
             <Input placeholder="ao-nam" {...register("slug")} />
           </div>

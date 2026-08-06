@@ -1,20 +1,10 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "@/schemas/product.schema";
+import { slugifyPreview } from "@/lib/slug";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import { PlusIcon, TrashBinIcon } from "@/icons";
-
-function slugifyClientSide(input: string): string {
-  return input
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 export function ProductVariantsStep() {
   const {
@@ -29,9 +19,9 @@ export function ProductVariantsStep() {
   function suggestSku(index: number) {
     const variant = getValues(`variants.${index}`);
     if (!variant || variant.sku) return;
-    const baseSlug = getValues("slug") || slugifyClientSide(getValues("name") || "");
+    const baseSlug = getValues("slug") || slugifyPreview(getValues("name") || "");
     if (!baseSlug || !variant.size || !variant.color) return;
-    const sku = slugifyClientSide(`${baseSlug}-${variant.size}-${variant.color}`).toUpperCase();
+    const sku = slugifyPreview(`${baseSlug}-${variant.size}-${variant.color}`).toUpperCase();
     setValue(`variants.${index}.sku`, sku);
   }
 
@@ -49,7 +39,7 @@ export function ProductVariantsStep() {
             <div key={field.id} className="flex flex-wrap items-end gap-3">
               <div className="w-28">
                 <Input
-                  placeholder="Size (S, M, L...)"
+                  placeholder="Size"
                   {...sizeField}
                   onBlur={(e) => {
                     sizeField.onBlur(e);

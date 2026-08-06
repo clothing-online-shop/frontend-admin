@@ -33,8 +33,14 @@ interface TableCellProps {
 }
 
 // Table Component
+// Tự bọc overflow-x-auto quanh <table> — màn nào dùng Table cũng tự có scroll ngang
+// khi nhiều cột vượt khung, không cần tự thêm div bọc riêng ở từng trang.
 const Table: React.FC<TableProps> = ({ children, className }) => {
-  return <table className={`min-w-full  ${className}`}>{children}</table>;
+  return (
+    <div className="overflow-x-auto">
+      <table className={`min-w-full ${className ?? ""}`}>{children}</table>
+    </div>
+  );
 };
 
 // TableHeader Component
@@ -64,8 +70,10 @@ const TableCell: React.FC<TableCellProps> = ({
   colSpan,
 }) => {
   const CellTag = isHeader ? "th" : "td";
+  // Header luôn 1 dòng — text dài thì cột tự rộng ra theo (table-layout mặc định là
+  // auto), không wrap xuống 2 dòng làm lệch chiều cao header.
   return (
-    <CellTag className={` ${className}`} colSpan={colSpan}>
+    <CellTag className={`${isHeader ? "whitespace-nowrap" : ""} ${className ?? ""}`} colSpan={colSpan}>
       {children}
     </CellTag>
   );

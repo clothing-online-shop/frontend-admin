@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { deleteImage, uploadImage } from "@/lib/upload-api";
-import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { PlusIcon, TrashBinIcon, AngleLeftIcon, AngleRightIcon } from "@/icons";
 import { useToast } from "@/hooks/useToast";
@@ -58,45 +57,49 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
     onChange(next);
   }
 
+  const canReorder = value.length > 1;
+
   return (
     <div>
-      {label ? <div className="mb-2 font-medium text-gray-700 dark:text-gray-300">{label}</div> : null}
-      <div className="flex flex-wrap gap-4">
+      {label ? <div className="mb-3 font-medium text-gray-700 dark:text-gray-300">{label}</div> : null}
+      <div className="flex flex-wrap gap-6">
         {value.map((url, index) => (
-          <div key={url} className="flex flex-col items-center gap-1.5">
-            <div className="h-24 w-24 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-              <img src={url} alt="" className="h-full w-full object-cover" />
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
+          <div
+            key={url}
+            className="group relative h-72 w-72 shrink-0 overflow-hidden rounded-xl border border-gray-200 shadow-theme-xs dark:border-gray-700"
+          >
+            <img src={url} alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/0 opacity-0 transition-all duration-200 ease-standard group-hover:bg-black/40 group-hover:opacity-100">
+              {canReorder && (
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => moveImage(index, -1)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-theme-xs transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Di chuyển ảnh sang trái"
+                >
+                  <AngleLeftIcon className="h-5 w-5" />
+                </button>
+              )}
+              <button
                 type="button"
-                size="sm"
-                variant="outline"
-                className="!px-2 !py-1.5"
-                disabled={index === 0}
-                onClick={() => moveImage(index, -1)}
-              >
-                <AngleLeftIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="!px-2 !py-1.5 !text-error-500 hover:!bg-error-50"
                 onClick={() => handleRemove(url)}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-error-500 shadow-theme-xs transition-colors hover:bg-error-50"
+                aria-label="Xóa ảnh"
               >
-                <TrashBinIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="!px-2 !py-1.5"
-                disabled={index === value.length - 1}
-                onClick={() => moveImage(index, 1)}
-              >
-                <AngleRightIcon className="h-4 w-4" />
-              </Button>
+                <TrashBinIcon className="h-5 w-5" />
+              </button>
+              {canReorder && (
+                <button
+                  type="button"
+                  disabled={index === value.length - 1}
+                  onClick={() => moveImage(index, 1)}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-theme-xs transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Di chuyển ảnh sang phải"
+                >
+                  <AngleRightIcon className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -117,9 +120,16 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex h-24 w-24 items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 text-sm text-gray-500 transition hover:border-brand-400 hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400"
+              className="flex h-72 w-72 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 text-base text-gray-500 transition-colors duration-200 ease-standard hover:border-brand-400 hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400"
             >
-              {uploading ? <Spinner size="sm" /> : <PlusIcon className="h-5 w-5" />}
+              {uploading ? (
+                <Spinner />
+              ) : (
+                <>
+                  <PlusIcon className="h-9 w-9" />
+                  <span>Thêm ảnh</span>
+                </>
+              )}
             </button>
           </>
         ) : null}
