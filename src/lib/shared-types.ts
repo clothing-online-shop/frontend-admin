@@ -45,6 +45,16 @@ export interface CategoryNode {
   children: CategoryNode[];
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+  logo: string | null;
+  description: string | null;
+  origin: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductListItem {
   id: string;
   name: string;
@@ -52,7 +62,7 @@ export interface ProductListItem {
   thumbnail: string | null;
   basePrice: number;
   salePrice: number | null;
-  brand: string | null;
+  brandId: string | null;
   status: ProductStatus;
   categoryId: string;
   totalStock: number;
@@ -80,8 +90,13 @@ export interface ProductReview {
 
 export interface ProductDetail extends ProductListItem {
   description: string | null;
+  material: string | null;
+  careInstructions: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
   images: string[];
   category: { id: string; name: string; slug: string };
+  brand: { id: string; name: string } | null;
   variants: ProductVariant[];
   reviews: ProductReview[];
   relatedProducts: ProductListItem[];

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/lib/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
+import { useBrands } from "@/hooks/useBrands";
 import { useDeleteProduct, useProductsAdmin } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -29,9 +30,8 @@ export default function ProductList() {
   const toast = useToast();
   useBreadcrumb([{ label: "Sản phẩm" }]);
   const [searchInput, setSearchInput] = useState("");
-  const [brandInput, setBrandInput] = useState("");
   const search = useDebounce(searchInput, 500);
-  const brand = useDebounce(brandInput, 500);
+  const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
@@ -61,9 +61,20 @@ export default function ProductList() {
     return map;
   }, [categoryTree]);
 
+  const { data: brands } = useBrands();
+  const brandOptions = useMemo(
+    () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
+    [brands],
+  );
+  const brandNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const b of brands ?? []) map.set(b.id, b.name);
+    return map;
+  }, [brands]);
+
   const { data, isLoading } = useProductsAdmin({
     search: search || undefined,
-    brand: brand || undefined,
+    brandId,
     category,
     status,
     page,
@@ -73,7 +84,7 @@ export default function ProductList() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, brand]);
+  }, [search, brandId]);
 
   async function handleDelete() {
     if (!deleteTarget) return;
@@ -108,10 +119,15 @@ export default function ProductList() {
           />
         </div>
         <div className="w-48">
-          <Input
+          <Select
+            allowClear
             placeholder="Thương hiệu"
-            value={brandInput}
-            onChange={(e) => setBrandInput(e.target.value)}
+            options={brandOptions}
+            value={brandId}
+            onChange={(value) => {
+              setBrandId(value);
+              setPage(1);
+            }}
           />
         </div>
         <div className="w-50">
@@ -196,7 +212,7 @@ export default function ProductList() {
                       {categoryNameById.get(product.categoryId) ?? "—"}
                     </TableCell>
                     <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
-                      {product.brand ?? "—"}
+                      {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
                     </TableCell>
                     <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
                       {formatPrice(product.basePrice)}
