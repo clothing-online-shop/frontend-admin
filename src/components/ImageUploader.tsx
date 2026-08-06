@@ -48,8 +48,11 @@ export function ImageUploader({ value, onChange, max = 8, label, onPublicIdChang
   }
 
   function handleRemove(url: string) {
-    onChange(value.filter((v) => v !== url));
+    // Báo publicId=null TRƯỚC khi đổi value: nơi gọi (vd ProductImagesStep) cần
+    // tra cứu vị trí của url trong mảng `images` hiện tại để xóa đúng publicId
+    // tương ứng — đổi thứ tự sẽ làm mất url khỏi mảng trước khi tra được vị trí.
     onPublicIdChange?.(url, null);
+    onChange(value.filter((v) => v !== url));
     const publicId = publicIds[url];
     if (publicId) {
       deleteImage(publicId).catch(() => undefined);

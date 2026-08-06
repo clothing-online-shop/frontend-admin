@@ -61,6 +61,7 @@ export interface ProductListItem {
   name: string;
   slug: string;
   thumbnail: string | null;
+  thumbnailPublicId: string | null;
   basePrice: number;
   salePrice: number | null;
   brandId: string | null;
@@ -96,6 +97,7 @@ export interface ProductDetail extends ProductListItem {
   metaTitle: string | null;
   metaDescription: string | null;
   images: string[];
+  imagePublicIds: string[];
   category: { id: string; name: string; slug: string };
   brand: { id: string; name: string } | null;
   variants: ProductVariant[];
