@@ -11,12 +11,11 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import Badge from "@/components/ui/badge/Badge";
-import Spinner from "@/components/ui/spinner/Spinner";
 import Pagination from "@/components/ui/pagination/Pagination";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
+import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
 
 const STATUS_LABELS: Record<ProductStatus, { label: string; color: "light" | "success" | "error" }> = {
@@ -24,23 +23,6 @@ const STATUS_LABELS: Record<ProductStatus, { label: string; color: "light" | "su
   [ProductStatus.ACTIVE]: { label: "Đang bán", color: "success" },
   [ProductStatus.INACTIVE]: { label: "Ngừng bán", color: "error" },
 };
-
-// min-w riêng từng cột để bảng dãn đủ rộng cho dễ đọc — <Table> tự cuộn ngang khi
-// vượt khung (xem ui/table/index.tsx), Pagination nằm ngoài Table nên không cuộn theo.
-const COLUMNS = [
-  { label: "Ảnh", className: "min-w-40" },
-  { label: "Tên sản phẩm", className: "min-w-56" },
-  { label: "Trạng thái", className: "min-w-40" },
-  { label: "Danh mục", className: "min-w-56" },
-  { label: "Thương hiệu", className: "min-w-36" },
-  { label: "Chất liệu", className: "min-w-40" },
-  { label: "Giá", className: "min-w-36" },
-  { label: "Tồn kho", className: "min-w-32" },
-  { label: "Mô tả", className: "min-w-72" },
-  { label: "Ngày tạo", className: "min-w-28" },
-  { label: "URL", className: "min-w-90" },
-  { label: "Hành động", className: "min-w-24" },
-];
 
 // description lưu dạng HTML từ RichTextEditor — bảng danh sách chỉ cần xem nhanh
 // phần chữ, không render HTML thật (tránh vỡ layout/XSS nếu dùng dangerouslySetInnerHTML).
@@ -123,6 +105,154 @@ export default function ProductList() {
     }
   }
 
+  const columns = useMemo<DataTableColumn<ProductListItem>[]>(
+    () => [
+      {
+        key: "thumbnail",
+        header: "Ảnh",
+        className: "min-w-40",
+        render: (product) =>
+          product.thumbnail ? (
+            <img src={product.thumbnail} className="h-32 w-24 rounded-md object-cover" alt="" />
+          ) : (
+            <div className="h-32 w-24 rounded-md bg-gray-100 dark:bg-gray-800" />
+          ),
+      },
+      {
+        key: "name",
+        header: "Tên sản phẩm",
+        className: "min-w-56",
+        render: (product) => (
+          <span className="text-sm text-gray-800 dark:text-white/90">{product.name}</span>
+        ),
+      },
+      {
+        key: "status",
+        header: "Trạng thái",
+        align: "center",
+        className: "min-w-40",
+        render: (product) => (
+          <Badge color={STATUS_LABELS[product.status].color}>
+            {STATUS_LABELS[product.status].label}
+          </Badge>
+        ),
+      },
+      {
+        key: "category",
+        header: "Danh mục",
+        className: "min-w-56",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {categoryNameById.get(product.categoryId) ?? "—"}
+          </span>
+        ),
+      },
+      {
+        key: "brand",
+        header: "Thương hiệu",
+        className: "min-w-36",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
+          </span>
+        ),
+      },
+      {
+        key: "material",
+        header: "Chất liệu",
+        className: "min-w-40",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {product.material ?? "—"}
+          </span>
+        ),
+      },
+      {
+        key: "price",
+        header: "Giá",
+        align: "center",
+        className: "min-w-36",
+        render: (product) =>
+          product.salePrice != null ? (
+            <div className="flex flex-col items-center text-sm">
+              <span className="text-xs text-gray-400 line-through">
+                {formatPrice(product.basePrice)}
+              </span>
+              <span className="font-bold text-error-500">{formatPrice(product.salePrice)}</span>
+            </div>
+          ) : (
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {formatPrice(product.basePrice)}
+            </span>
+          ),
+      },
+      {
+        key: "stock",
+        header: "Tồn kho",
+        align: "center",
+        className: "min-w-32",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">{product.totalStock}</span>
+        ),
+      },
+      {
+        key: "description",
+        header: "Mô tả",
+        className: "min-w-72",
+        render: (product) => (
+          <span className="line-clamp-2 max-w-sm text-sm text-gray-700 dark:text-gray-300">
+            {product.description ? stripHtml(product.description) : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "createdAt",
+        header: "Ngày tạo",
+        align: "center",
+        className: "min-w-28",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {formatDate(product.createdAt)}
+          </span>
+        ),
+      },
+      {
+        key: "slug",
+        header: "URL",
+        className: "min-w-90",
+        render: (product) => (
+          <span className="text-sm text-gray-500 dark:text-gray-400">{product.slug}</span>
+        ),
+      },
+      {
+        key: "actions",
+        header: "Hành động",
+        className: "min-w-24",
+        render: (product) => (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(`/products/${product.slug}/edit`)}
+              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+              aria-label="Sửa sản phẩm"
+            >
+              <PencilIcon className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeleteTarget(product)}
+              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
+              aria-label="Xóa sản phẩm"
+            >
+              <TrashBinIcon className="h-4 w-4" />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [categoryNameById, brandNameById, navigate],
+  );
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -132,7 +262,7 @@ export default function ProductList() {
           startIcon={<PlusIcon className="h-4 w-4" />}
           onClick={() => navigate("/products/new")}
         >
-          Thêm sản phẩm
+          Thêm sản phẩm1
         </Button>
       </div>
 
@@ -186,117 +316,13 @@ export default function ProductList() {
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-        <Table>
-          <TableHeader className="border-b border-gray-100 dark:border-gray-800">
-            <TableRow>
-              {COLUMNS.map((column) => (
-                <TableCell
-                  key={column.label}
-                  isHeader
-                  className={`px-5 py-3 text-center text-theme-sm font-medium text-gray-500 dark:text-gray-400 ${column.className}`}
-                >
-                  {column.label}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {isLoading ? (
-              <TableRow>
-                <TableCell className="px-5 py-8 text-center" colSpan={COLUMNS.length}>
-                  <Spinner className="mx-auto" />
-                </TableCell>
-              </TableRow>
-            ) : (data?.data ?? []).length === 0 ? (
-              <TableRow>
-                <TableCell className="px-5 py-8 text-center text-sm text-gray-500 dark:text-gray-400" colSpan={COLUMNS.length}>
-                  Chưa có sản phẩm nào.
-                </TableCell>
-              </TableRow>
-            ) : (
-              (data?.data ?? []).map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell className="px-5 py-3">
-                    {product.thumbnail ? (
-                      <img
-                        src={product.thumbnail}
-                        className="h-32 w-24 rounded-md object-cover"
-                        alt=""
-                      />
-                    ) : (
-                      <div className="h-32 w-24 rounded-md bg-gray-100 dark:bg-gray-800" />
-                    )}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-sm text-gray-800 dark:text-white/90">
-                    {product.name}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-center">
-                    <Badge color={STATUS_LABELS[product.status].color}>
-                      {STATUS_LABELS[product.status].label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
-                    {categoryNameById.get(product.categoryId) ?? "—"}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
-                    {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
-                    {product.material ?? "—"}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
-                    {product.salePrice != null ? (
-                      <div className="flex flex-col items-center">
-                        <span className="text-xs text-gray-400 line-through">
-                          {formatPrice(product.basePrice)}
-                        </span>
-                        <span className="font-bold text-error-500">
-                          {formatPrice(product.salePrice)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="font-bold">{formatPrice(product.basePrice)}</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
-                    {product.totalStock}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">
-                    <span className="line-clamp-2 max-w-sm">
-                      {product.description ? stripHtml(product.description) : "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-center text-sm text-gray-700 dark:text-gray-300">
-                    {formatDate(product.createdAt)}
-                  </TableCell>
-                  <TableCell className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">
-                    {product.slug}
-                  </TableCell>
-                  <TableCell className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/products/${product.slug}/edit`)}
-                        className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-                        aria-label="Sửa sản phẩm"
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTarget(product)}
-                        className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
-                        aria-label="Xóa sản phẩm"
-                      >
-                        <TrashBinIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={columns}
+          rows={data?.data ?? []}
+          rowKey={(product) => product.id}
+          isLoading={isLoading}
+          emptyMessage="Chưa có sản phẩm nào."
+        />
         <div className="px-5">
           <Pagination page={page} pageSize={limit} total={data?.meta.total ?? 0} onChange={setPage} />
         </div>
