@@ -120,6 +120,10 @@ layer(base);
   --color-error-900: #7a271a;
   --color-error-950: #55160c;
 
+  /* Màu chữ thông báo lỗi validate form (đỏ thuần, khác thang --color-error-* dùng cho
+     badge/alert) — dùng chung qua class text-form-error, không hardcode rgb() rải rác. */
+  --color-form-error: rgb(255, 0, 0);
+
   --color-warning-25: #fffcf5;
   --color-warning-50: #fffaeb;
   --color-warning-100: #fef0c7;
@@ -851,13 +855,12 @@ html.dark,
   --ck-border-radius: 6px;
 }
 
-.ck-content-wrapper {
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.ck-content-wrapper:focus-within {
-  border-color: var(--color-brand-300);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-brand-500) 20%, transparent);
+/* CKEditor tự đổi border + thêm inset box-shadow cho vùng soạn thảo khi focus qua class
+   .ck-focused riêng của nó (không phải rule mình tự viết) — giữ nguyên border như lúc
+   chưa focus, bỏ hẳn box-shadow, theo đúng yêu cầu không thêm viền khi click vào. */
+.ck-content-wrapper .ck-editor__editable.ck-focused {
+  border-color: var(--ck-color-base-border) !important;
+  box-shadow: none !important;
 }
 
 /* Nút đầu tiên trong panel/dropdown (vd "Default", "Remove color") tự nhận focus khi mở

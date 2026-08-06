@@ -20,7 +20,7 @@ export function ProductImagesStep() {
           )}
         />
         {errors.thumbnail && (
-          <p className="mt-1.5 text-xs text-error-500">{errors.thumbnail.message}</p>
+          <p className="mt-1.5 text-xs text-form-error">{errors.thumbnail.message}</p>
         )}
       </div>
       <Controller

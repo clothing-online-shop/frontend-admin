@@ -102,12 +102,11 @@ export function ProductGeneralInfoStep() {
                 options={categoryOptions}
                 value={field.value || undefined}
                 onChange={(value) => field.onChange(value ?? "")}
+                error={!!errors.categoryId}
+                hint={errors.categoryId?.message}
               />
             )}
           />
-          {errors.categoryId && (
-            <p className="mt-1.5 text-xs text-error-500">{errors.categoryId.message}</p>
-          )}
         </div>
         <div className="flex-1">
           <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">

@@ -40,7 +40,7 @@ export function ProductVariantsStep() {
   return (
     <ComponentCard title="Biến thể (size / màu)">
       <div className="flex flex-col gap-3">
-        {variantsError && <p className="text-xs text-error-500">{variantsError}</p>}
+        {variantsError && <p className="text-xs text-form-error">{variantsError}</p>}
         {fields.map((field, index) => {
           const sizeField = register(`variants.${index}.size`);
           const colorField = register(`variants.${index}.color`);

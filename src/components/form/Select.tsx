@@ -15,6 +15,8 @@ interface SelectProps {
   allowClear?: boolean;
   disabled?: boolean;
   className?: string;
+  error?: boolean;
+  hint?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -25,6 +27,8 @@ const Select: React.FC<SelectProps> = ({
   allowClear = false,
   disabled = false,
   className = "",
+  error = false,
+  hint,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,7 +63,11 @@ const Select: React.FC<SelectProps> = ({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:outline-hidden focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-800 ${
+        className={`flex h-11 w-full items-center justify-between rounded-lg border bg-transparent px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:outline-hidden dark:bg-gray-900 ${
+          error
+            ? "border-form-error focus:border-form-error"
+            : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
+        } ${
           disabled ? "text-gray-500 opacity-40 cursor-not-allowed dark:text-gray-400" : "text-gray-800 dark:text-white/90"
         } ${!selectedOption ? "text-gray-400 dark:text-white/30" : ""} ${className}`}
       >
@@ -122,6 +130,12 @@ const Select: React.FC<SelectProps> = ({
             })
           )}
         </div>
+      )}
+
+      {hint && (
+        <p className="mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 text-form-error">
+          {hint}
+        </p>
       )}
     </div>
   );
