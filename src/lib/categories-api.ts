@@ -5,7 +5,8 @@ export interface CreateCategoryPayload {
   name: string;
   slug?: string;
   parentId?: string | null;
-  image?: string;
+  image?: string | null;
+  imagePublicId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
 }

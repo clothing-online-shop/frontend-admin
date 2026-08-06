@@ -43,6 +43,7 @@ export function CategoryFormModal({
   const [values, setValues] = useState<CategoryFormValues>(EMPTY_VALUES);
   const [nameError, setNameError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imagePublicId, setImagePublicId] = useState<string | null>(null);
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -57,6 +58,7 @@ export function CategoryFormModal({
       });
       setNameError(null);
       setImageUrls(editing?.image ? [editing.image] : []);
+      setImagePublicId(editing?.imagePublicId ?? null);
     }
   }, [open, editing]);
 
@@ -71,7 +73,8 @@ export function CategoryFormModal({
       slug: values.slug || undefined,
       parentId: values.parentId ?? null,
       isActive: values.isActive,
-      image: imageUrls[0],
+      image: imageUrls[0] ?? null,
+      imagePublicId: imageUrls[0] ? imagePublicId : null,
     };
 
     try {
@@ -151,7 +154,12 @@ export function CategoryFormModal({
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Ảnh danh mục
             </label>
-            <ImageUploader value={imageUrls} onChange={setImageUrls} max={1} />
+            <ImageUploader
+              value={imageUrls}
+              onChange={setImageUrls}
+              max={1}
+              onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
+            />
           </div>
         </div>
 

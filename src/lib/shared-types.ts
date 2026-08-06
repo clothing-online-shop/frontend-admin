@@ -37,6 +37,7 @@ export interface CategoryNode {
   name: string;
   slug: string;
   image: string | null;
+  imagePublicId: string | null;
   isActive: boolean;
   sortOrder: number;
   parentId: string | null;
