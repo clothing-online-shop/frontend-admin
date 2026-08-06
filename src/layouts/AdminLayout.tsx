@@ -73,14 +73,14 @@ export default function AdminLayout() {
                 key={item.key}
                 type="button"
                 onClick={() => navigate(item.key)}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition ${
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 ease-standard ${
                   isActive
                     ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
                     : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
                 }`}
               >
                 <Icon
-                  className={`h-5 w-5 shrink-0 ${
+                  className={`h-5 w-5 shrink-0 transition-colors duration-200 ease-standard ${
                     isActive
                       ? "text-brand-500 dark:text-brand-400"
                       : "text-gray-500 dark:text-gray-400"
@@ -98,7 +98,7 @@ export default function AdminLayout() {
           <nav className="flex items-center gap-1.5 text-sm">
             <Link
               to="/dashboard"
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              className="text-gray-500 transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               Trang chủ
             </Link>
@@ -110,7 +110,7 @@ export default function AdminLayout() {
                   {item.href && !isLast ? (
                     <Link
                       to={item.href}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                      className="text-gray-500 transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     >
                       {item.label}
                     </Link>
@@ -151,7 +151,7 @@ export default function AdminLayout() {
                 toast.success("Đã đăng xuất");
                 navigate("/login");
               }}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors duration-200 ease-standard hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -165,7 +165,7 @@ export default function AdminLayout() {
             </button>
           </div>
         </header>
-        <main className="flex flex-1 flex-col bg-gray-50 p-6 dark:bg-gray-950">
+        <main className="flex flex-1 flex-col bg-white p-6 dark:bg-gray-950">
           <Outlet />
         </main>
       </div>

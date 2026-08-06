@@ -69,6 +69,7 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
             </div>
             <div className="flex items-center gap-1">
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 className="!px-2 !py-1.5"
@@ -78,6 +79,7 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
                 <AngleLeftIcon className="h-4 w-4" />
               </Button>
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 className="!px-2 !py-1.5 !text-error-500 hover:!bg-error-50"
@@ -86,6 +88,7 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
                 <TrashBinIcon className="h-4 w-4" />
               </Button>
               <Button
+                type="button"
                 size="sm"
                 variant="outline"
                 className="!px-2 !py-1.5"
