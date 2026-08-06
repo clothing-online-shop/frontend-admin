@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import type { Brand } from "@/lib/shared-types";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useCreateBrand, useUpdateBrand } from "@/hooks/useBrands";
@@ -9,12 +11,7 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
-
-interface BrandFormValues {
-  name: string;
-  description: string;
-  origin: string;
-}
+import { brandSchema, type BrandFormValues } from "@/schemas/brand.schema";
 
 interface BrandFormModalProps {
   open: boolean;
@@ -22,40 +19,42 @@ interface BrandFormModalProps {
   editing: Brand | null;
 }
 
-const EMPTY_VALUES: BrandFormValues = { name: "", description: "", origin: "" };
+const EMPTY_VALUES: BrandFormValues = { name: "", description: "", origin: "", logo: [] };
 
 export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) {
   const toast = useToast();
-  const [values, setValues] = useState<BrandFormValues>(EMPTY_VALUES);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [logoUrls, setLogoUrls] = useState<string[]>([]);
   const createMutation = useCreateBrand();
   const updateMutation = useUpdateBrand();
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<BrandFormValues>({
+    resolver: yupResolver(brandSchema),
+    defaultValues: EMPTY_VALUES,
+  });
+
   useEffect(() => {
     if (open) {
-      setValues({
+      reset({
         name: editing?.name ?? "",
         description: editing?.description ?? "",
         origin: editing?.origin ?? "",
+        logo: editing?.logo ? [editing.logo] : [],
       });
-      setNameError(null);
-      setLogoUrls(editing?.logo ? [editing.logo] : []);
     }
-  }, [open, editing]);
+  }, [open, editing, reset]);
 
-  async function handleSubmit() {
-    if (!values.name.trim()) {
-      setNameError("Vui lòng nhập tên thương hiệu");
-      return;
-    }
-
+  async function onValid(values: BrandFormValues) {
     const payload = {
       name: values.name,
       description: values.description || undefined,
       origin: values.origin || undefined,
-      logo: logoUrls[0],
+      logo: values.logo[0],
     };
 
     try {
@@ -74,7 +73,7 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
 
   return (
     <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
-      <div className="p-6">
+      <form onSubmit={handleSubmit(onValid)} className="p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
           {editing ? "Sửa thương hiệu" : "Thêm thương hiệu"}
         </h3>
@@ -86,13 +85,9 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
             </label>
             <Input
               placeholder="Ví dụ: Uniqlo"
-              value={values.name}
-              onChange={(e) => {
-                setValues((v) => ({ ...v, name: e.target.value }));
-                if (nameError) setNameError(null);
-              }}
-              error={!!nameError}
-              hint={nameError ?? undefined}
+              {...register("name")}
+              error={!!errors.name}
+              hint={errors.name?.message}
             />
           </div>
 
@@ -100,21 +95,23 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Xuất xứ
             </label>
-            <Input
-              placeholder="Ví dụ: Nhật Bản"
-              value={values.origin}
-              onChange={(e) => setValues((v) => ({ ...v, origin: e.target.value }))}
-            />
+            <Input placeholder="Ví dụ: Nhật Bản" {...register("origin")} />
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Mô tả
             </label>
-            <TextArea
-              placeholder="Giới thiệu ngắn về thương hiệu"
-              value={values.description}
-              onChange={(value) => setValues((v) => ({ ...v, description: value }))}
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextArea
+                  placeholder="Giới thiệu ngắn về thương hiệu"
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             />
           </div>
 
@@ -122,24 +119,30 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
               Logo
             </label>
-            <ImageUploader value={logoUrls} onChange={setLogoUrls} max={1} />
+            <Controller
+              name="logo"
+              control={control}
+              render={({ field }) => (
+                <ImageUploader value={field.value} onChange={field.onChange} max={1} />
+              )}
+            />
           </div>
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
             Hủy
           </Button>
           <Button
+            type="submit"
             variant="primary"
-            onClick={handleSubmit}
             disabled={isSaving}
             startIcon={isSaving ? <Spinner size="sm" /> : undefined}
           >
             Lưu
           </Button>
         </div>
-      </div>
+      </form>
     </Modal>
   );
 }

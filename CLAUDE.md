@@ -9,7 +9,7 @@ React + Vite + TypeScript + React Router + React Query + Zustand. UI dùng bộ 
 - Không để code chết: xoá hẳn code/import/biến không dùng thay vì comment lại "phòng khi cần" — đã có `noUnusedLocals`/`noUnusedParameters` chặn ở `tsc -b`, đừng để tới lúc build mới dọn. Dùng git history nếu cần xem lại code cũ.
 - Giá trị hoặc logic lặp lại ≥ 2 nơi (mảng hằng số, chuỗi cấu hình, block xử lý...) → tách thành biến/hàm dùng chung trong `lib/` hoặc `hooks/`, import ra dùng — không copy-paste, không gõ lại literal. Sửa 1 chỗ phải đủ.
 - Không dùng `any`; nếu bắt buộc ép kiểu (`as`), viết comment 1 dòng giải thích tại sao kiểu gốc không đủ.
-- Ưu tiên early return thay vì lồng nhiều `if/else` (xem mẫu `validate()` trong `Login.tsx`, `ProductForm.tsx`).
+- Ưu tiên early return thay vì lồng nhiều `if/else` (áp dụng cho logic thường, không dùng cho validate — xem mục Form bên dưới).
 - Comment chỉ giải thích "tại sao" (constraint, workaround, edge case không hiển nhiên) — không giải thích "làm gì" khi tên biến/hàm đã đủ rõ nghĩa.
 - Xử lý lỗi nhất quán: mutation lỗi → `toast.error(getErrorMessage(error))` (xem `ProductForm.tsx`), không tự viết `alert()`/`console.error` trong page thật. Không để sót `console.log` debug trong code đang active dùng.
 - Component 1 file 1 export chính → `export default`, theo đúng đa số codebase hiện tại (`Button`, `Badge`, `Input`, `Select`, page...). Chỉ dùng named export (`export const`/`export function`) khi file export nhiều binding cùng lúc (vd `ui/table/index.tsx` export cả `Table`/`TableHeader`/`TableBody`/`TableRow`/`TableCell`, hoặc cặp Context+Provider như `ToastContext`/`ToastProvider`) — không đổi các file named export hiện có nếu không đụng tới, chỉ áp dụng cho file mới.
@@ -62,10 +62,19 @@ src/
 - Design System nền là **TailAdmin** (spacing, bo góc, màu, bố cục sidebar/header/content) nhưng implementation là component nội bộ tự viết trong `src/components/ui`, `src/components/form`, `src/components/common` (`Button`, `Input`, `Select`, `Modal`, `Table`, `Badge`, `ComponentCard`, `Spinner`, `Pagination`, `ConfirmModal`, `ToastProvider`/`useToast`...) — không thêm UI kit ngoài (đã bỏ Ant Design), không cài lại package TailAdmin. Còn thiếu component nào thì thêm mới vào đúng thư mục này theo pattern có sẵn, không tự chế inline trong page.
   - Khi component gốc TailAdmin dùng thẻ HTML không style được xuyên suốt (vd `<select>` native — dropdown list do OS/browser tự vẽ, không set màu/dark mode được), được phép viết lại thành component tự dựng (div/button + absolute panel) miễn giữ nguyên props API và bám đúng token màu/spacing hiện có (xem `form/Select.tsx` làm mẫu).
 - Icon lấy từ `src/icons` (barrel `src/icons/index.ts`, import qua `?react` nhờ `vite-plugin-svgr`).
-- `form/Form.tsx` không có engine validate — tự quản lý `values`/`errors` bằng `useState` + hàm `validate()` tay (xem mẫu `Login.tsx`, `ProductForm.tsx`), không cố gán `rules` kiểu AntD.
 - Bảng danh sách (ProductList, OrderList...) dùng `ui/table` (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`) tự render row + `ui/pagination/Pagination` cho phân trang server-side khi nối API thật (sprint 2+), không load hết dữ liệu về client rồi tự phân trang.
 - Thông báo thành công/lỗi dùng `useToast()` (`@/hooks/useToast`), không tự dựng toast/alert riêng lẻ trong từng page.
 - Không hardcode màu sắc, spacing hay border-radius bằng số tuỳ ý — dùng đúng token/class Tailwind đã có trong `index.css` (`--color-*`, `--text-*`, `dark:` variant qua `@custom-variant dark`).
+
+## Form & Validation
+
+- Mọi form dùng **React Hook Form + Yup + `yupResolver`** (`useForm({ resolver: yupResolver(schema) })`) — không validate bằng if/else viết tay, không validate trong `onSubmit`. Toàn bộ rule validate nằm trong Yup schema.
+- Schema đặt riêng theo module ở `src/schemas/<module>.schema.ts` (vd `login.schema.ts`, `category.schema.ts`, `brand.schema.ts`, `product.schema.ts`), suy ra type bằng `yup.InferType<typeof schema>` thay vì viết tay interface trùng lặp — không viết schema inline trong component.
+- Input text/số/email/password (`form/input/InputField.tsx`, đã `forwardRef`) nối trực tiếp qua `{...register("field")}`. Mọi component nhận callback giá trị thô thay vì DOM event (`TextArea`, `Select`, `MultiSelect`, `Switch`, `Checkbox`, `Radio`, `ImageUploader`, `RichTextEditor`...) phải bọc qua `<Controller name="field" control={control} render={({ field }) => ... } />` — không tự sửa API `onChange` của các component này để ép dùng `register()`.
+- Lỗi field hiển thị qua đúng prop `error`/`hint` component đã có (`error={!!errors.field} hint={errors.field?.message}`) — không tự vẽ thẻ lỗi riêng.
+- Submit qua `handleSubmit(onValid)`; `onValid` chỉ lo build payload + gọi mutation hook (`useCreateX`/`useUpdateX`), không làm validate ở đây. Lỗi từ server (mutation `onError`/`catch`) vẫn hiện qua `useToast().error(getErrorMessage(error))` như bình thường — Yup chỉ thay client-side field validation.
+- Nút không phải submit chính (Hủy, Quay lại, các nút "Tiếp theo" giữa các bước của form nhiều bước...) phải có `type="button"` tường minh — nếu form đã bọc trong thẻ `<form>`, thiếu `type="button"` sẽ vô tình trigger submit toàn bộ form khi bấm.
+- Form nhiều bước (vd `ProductForm.tsx`) dùng 1 `useForm()` duy nhất ở component cha, bọc `<FormProvider>` quanh các step con; mỗi step tự lấy `register`/`control`/`formState` qua `useFormContext()` — không truyền `values`/`onChange` qua props giữa cha-con nữa. Validate khi chuyển bước dùng `trigger([...tên field của bước đó])`. Mảng field động (vd variants sản phẩm) dùng `useFieldArray`, không tự quản `useState` mảng.
 
 ## Typography & kích thước chuẩn (token TailAdmin)
 

@@ -14,21 +14,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-react": "^11.2.0",
+    "@hookform/resolvers": "^5.7.1",
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
     "@tanstack/react-query": "^5.62.0",
-    "@tiptap/pm": "^2.10.0",
-    "@tiptap/react": "^2.10.0",
-    "@tiptap/starter-kit": "^2.10.0",
     "apexcharts": "^6.7.0",
     "axios": "^1.7.9",
+    "ckeditor5": "^48.4.0",
     "flatpickr": "^4.6.13",
     "react": "^19.2.7",
     "react-apexcharts": "^2.1.1",
     "react-dom": "^19.2.7",
     "react-dropzone": "^20.0.0",
     "react-helmet-async": "^3.0.0",
+    "react-hook-form": "^7.84.0",
     "react-router-dom": "^7.1.1",
+    "yup": "^1.7.1",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

@@ -29,12 +29,17 @@ export interface CreateProductPayload {
   name: string;
   slug?: string;
   description?: string;
+  material?: string;
+  careInstructions?: string;
   brandId?: string;
   categoryId: string;
   basePrice: number;
+  salePrice?: number;
   status?: ProductStatus;
   thumbnail?: string;
   images?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
   variants: ProductVariantPayload[];
 }
 

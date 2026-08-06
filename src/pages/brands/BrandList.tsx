@@ -116,7 +116,7 @@ export default function BrandList() {
                         <button
                           type="button"
                           onClick={() => openEdit(brand)}
-                          className="text-gray-400 hover:text-brand-500"
+                          className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                           aria-label="Sửa thương hiệu"
                         >
                           <PencilIcon className="h-4 w-4" />
@@ -124,7 +124,7 @@ export default function BrandList() {
                         <button
                           type="button"
                           onClick={() => setDeleteTarget(brand)}
-                          className="text-gray-400 hover:text-error-500"
+                          className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
                           aria-label="Xóa thương hiệu"
                         >
                           <TrashBinIcon className="h-4 w-4" />

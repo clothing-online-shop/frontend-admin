@@ -61,7 +61,7 @@ const Pagination: React.FC<PaginationProps> = ({ page, pageSize, total, onChange
           disabled={page <= 1}
           onClick={() => onChange(page - 1)}
           aria-label="Trang trước"
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
         >
           <AngleLeftIcon className="size-4" />
         </button>
@@ -80,7 +80,7 @@ const Pagination: React.FC<PaginationProps> = ({ page, pageSize, total, onChange
               type="button"
               onClick={() => onChange(item)}
               aria-current={item === page ? "page" : undefined}
-              className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition ${
+              className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition-colors duration-200 ease-standard ${
                 item === page
                   ? "bg-brand-500 text-white"
                   : "border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
@@ -96,7 +96,7 @@ const Pagination: React.FC<PaginationProps> = ({ page, pageSize, total, onChange
           disabled={page >= totalPages}
           onClick={() => onChange(page + 1)}
           aria-label="Trang sau"
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
         >
           <AngleRightIcon className="size-4" />
         </button>

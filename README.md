@@ -65,7 +65,7 @@ Mở `http://localhost:5173/login`.
 
 | Biến | Mô tả |
 |---|---|
-| `VITE_API_URL` | Base URL của `backend-cms` — mặc định `http://localhost:3002` |
+| `VITE_API_URL` | Base URL của `backend-cms` (đã gồm prefix `/api/cms`) — mặc định `http://localhost:3002/api/cms` |
 
 ## Đăng nhập
 

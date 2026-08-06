@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
+import { useMountTransition } from "@/hooks/useMountTransition";
 
 interface Option {
   value: string;
@@ -32,6 +33,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { shouldRender: shouldRenderPanel, isVisible: isPanelVisible } = useMountTransition(isOpen);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -126,7 +128,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             tabIndex={disabled ? -1 : 0}
           >
             <div
-              className={`mb-2 flex min-h-11  rounded-lg border border-gray-300 py-1.5 pl-3 pr-3 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-300 ${
+              className={`mb-2 flex min-h-11  rounded-lg border border-gray-300 py-1.5 pl-3 pr-3 shadow-theme-xs outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-300 ${
                 disabled
                   ? "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800"
                   : "cursor-pointer"
@@ -187,7 +189,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                   className="w-5 h-5 text-gray-700 outline-hidden cursor-pointer focus:outline-hidden dark:text-gray-400 disabled:cursor-not-allowed"
                 >
                   <svg
-                    className={`stroke-current transition-transform ${
+                    className={`stroke-current transition-transform duration-200 ease-standard ${
                       isOpen ? "rotate-180" : ""
                     }`}
                     width="20"
@@ -209,9 +211,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
             </div>
           </div>
 
-          {isOpen && (
+          {shouldRenderPanel && (
             <div
-              className="absolute left-0 z-40 w-full overflow-y-auto bg-white rounded-lg shadow-sm top-full max-h-select dark:bg-gray-900"
+              className={`absolute left-0 z-40 w-full origin-top overflow-y-auto bg-white rounded-lg shadow-sm top-full max-h-select transition-[opacity,transform] duration-200 ease-standard dark:bg-gray-900 ${
+                isPanelVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-1"
+              }`}
               onClick={(e) => e.stopPropagation()}
               role="listbox"
               aria-label={label}
@@ -223,7 +227,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                 return (
                   <div
                     key={option.value}
-                    className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800 ${
+                    className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 transition-colors duration-150 ease-standard dark:border-gray-800 ${
                       isFocused ? "bg-primary/5" : ""
                     } ${isSelected ? "bg-primary/10" : ""}`}
                     onClick={() => handleSelect(option.value)}

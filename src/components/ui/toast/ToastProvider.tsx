@@ -12,7 +12,7 @@ interface ToastItem {
 }
 
 const AUTO_DISMISS_MS = 3500;
-const LEAVE_DURATION_MS = 250;
+const LEAVE_DURATION_MS = 200;
 
 let nextToastId = 0;
 
@@ -40,7 +40,7 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: num
 
   return (
     <div
-      className={`pointer-events-auto relative w-full overflow-hidden rounded-xl border bg-white shadow-theme-lg transition-all duration-300 ease-out dark:bg-gray-900 ${
+      className={`pointer-events-auto relative w-full overflow-hidden rounded-xl border bg-white shadow-theme-lg transition-all duration-200 ease-standard dark:bg-gray-900 ${
         isSuccess
           ? "border-success-200 dark:border-success-500/30"
           : "border-error-200 dark:border-error-500/30"
@@ -55,7 +55,7 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: num
         type="button"
         onClick={close}
         aria-label="Đóng thông báo"
-        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+        className="absolute right-3 top-3 text-gray-400 transition-colors duration-200 ease-standard hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
       >
         <CloseIcon className="size-4" />
       </button>
