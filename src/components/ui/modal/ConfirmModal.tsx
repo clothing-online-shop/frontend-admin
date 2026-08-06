@@ -43,10 +43,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{description}</p>
         )}
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isConfirming}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isConfirming}>
             {cancelText}
           </Button>
           <Button
+            type="button"
             variant="primary"
             onClick={handleConfirm}
             disabled={isConfirming}

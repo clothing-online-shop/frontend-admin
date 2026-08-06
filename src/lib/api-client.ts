@@ -16,7 +16,7 @@ apiClient.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
-let pendingRequests: Array<() => void> = [];
+let pendingRequests: Array<{ onSuccess: () => void; onFailure: (err: unknown) => void }> = [];
 
 apiClient.interceptors.response.use(
   (response) => response,
@@ -27,13 +27,20 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    originalRequest._retry = true;
+
     if (isRefreshing) {
-      return new Promise((resolve) => {
-        pendingRequests.push(() => resolve(apiClient(originalRequest)));
+      // Nếu refresh đang chạy thất bại, request đang chờ ở đây phải bị reject —
+      // trước đây chỉ có "resolve" nên khi refresh lỗi, request này treo vĩnh viễn
+      // (không bao giờ resolve/reject), UI đứng loading mãi không rõ lý do.
+      return new Promise((resolve, reject) => {
+        pendingRequests.push({
+          onSuccess: () => resolve(apiClient(originalRequest)),
+          onFailure: (err) => reject(err),
+        });
       });
     }
 
-    originalRequest._retry = true;
     isRefreshing = true;
 
     try {
@@ -45,11 +52,13 @@ apiClient.interceptors.response.use(
       });
       useAuthStore.getState().setTokens(data.accessToken, data.refreshToken);
 
-      pendingRequests.forEach((run) => run());
+      pendingRequests.forEach((p) => p.onSuccess());
       pendingRequests = [];
 
       return apiClient(originalRequest);
     } catch (refreshError) {
+      pendingRequests.forEach((p) => p.onFailure(refreshError));
+      pendingRequests = [];
       useAuthStore.getState().logout();
       return Promise.reject(refreshError);
     } finally {
