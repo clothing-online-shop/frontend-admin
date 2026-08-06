@@ -52,7 +52,11 @@ export const productSchema = yup.object({
     .of(yup.string().required())
     .min(1, "Vui lòng chọn ảnh đại diện sản phẩm.")
     .required(),
+  // Cloudinary publicId song song với thumbnail/images — không hiển thị lên UI,
+  // chỉ để BE dọn ảnh cũ trên Cloudinary khi thay/xóa ảnh (xem ProductImagesStep).
+  thumbnailPublicId: yup.string().optional(),
   images: yup.array().of(yup.string().required()).default([]),
+  imagePublicIds: yup.array().of(yup.string().required()).default([]),
   metaTitle: yup.string().trim().optional(),
   metaDescription: yup.string().trim().optional(),
   variants: yup

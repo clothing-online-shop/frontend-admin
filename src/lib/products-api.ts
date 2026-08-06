@@ -37,7 +37,9 @@ export interface CreateProductPayload {
   salePrice?: number;
   status?: ProductStatus;
   thumbnail?: string;
+  thumbnailPublicId?: string;
   images?: string[];
+  imagePublicIds?: string[];
   metaTitle?: string;
   metaDescription?: string;
   variants: ProductVariantPayload[];
