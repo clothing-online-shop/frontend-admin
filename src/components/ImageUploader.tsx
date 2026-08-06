@@ -10,9 +10,13 @@ interface ImageUploaderProps {
   onChange: (urls: string[]) => void;
   max?: number;
   label?: string;
+  // Cho phép nơi gọi lưu lại publicId song song với url (vd. để BE dọn ảnh cũ
+  // trên Cloudinary khi thay/xóa ảnh) — optional nên không ảnh hưởng chỗ đã
+  // dùng ImageUploader mà chưa cần theo dõi publicId.
+  onPublicIdChange?: (url: string, publicId: string | null) => void;
 }
 
-export function ImageUploader({ value, onChange, max = 8, label }: ImageUploaderProps) {
+export function ImageUploader({ value, onChange, max = 8, label, onPublicIdChange }: ImageUploaderProps) {
   const [publicIds, setPublicIds] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -29,6 +33,7 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
           const result = await uploadImage(file);
           uploaded.push(result.url);
           nextPublicIds[result.url] = result.publicId;
+          onPublicIdChange?.(result.url, result.publicId);
         } catch {
           toast.error("Upload ảnh thất bại");
         }
@@ -44,6 +49,7 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
 
   function handleRemove(url: string) {
     onChange(value.filter((v) => v !== url));
+    onPublicIdChange?.(url, null);
     const publicId = publicIds[url];
     if (publicId) {
       deleteImage(publicId).catch(() => undefined);

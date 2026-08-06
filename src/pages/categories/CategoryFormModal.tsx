@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { CategoryNode } from "@/lib/shared-types";
@@ -42,6 +42,7 @@ export function CategoryFormModal({
   parentOptions,
 }: CategoryFormModalProps) {
   const toast = useToast();
+  const [imagePublicId, setImagePublicId] = useState<string | null>(null);
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -66,6 +67,7 @@ export function CategoryFormModal({
         isActive: editing?.isActive ?? true,
         image: editing?.image ? [editing.image] : [],
       });
+      setImagePublicId(editing?.imagePublicId ?? null);
     }
   }, [open, editing, reset]);
 
@@ -76,6 +78,7 @@ export function CategoryFormModal({
       parentId: values.parentId ?? null,
       isActive: values.isActive,
       image: values.image[0],
+      imagePublicId: values.image[0] ? imagePublicId : null,
     };
 
     try {
@@ -164,7 +167,12 @@ export function CategoryFormModal({
               name="image"
               control={control}
               render={({ field }) => (
-                <ImageUploader value={field.value} onChange={field.onChange} max={1} />
+                <ImageUploader
+                  value={field.value}
+                  onChange={field.onChange}
+                  max={1}
+                  onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
+                />
               )}
             />
           </div>
