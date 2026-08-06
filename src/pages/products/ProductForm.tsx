@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, type FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ProductStatus } from "@/lib/shared-types";
 import { useCreateProduct, useProductDetail, useUpdateProduct } from "@/hooks/useProducts";
@@ -141,7 +141,21 @@ export default function ProductForm() {
 
     try {
       if (isEditing && product) {
-        await updateMutation.mutateAsync({ id: product.id, payload });
+        // Bỏ trống 1 field text ở form (brand/chất liệu/bảo quản/SEO) nghĩa là user
+        // chủ động xoá — payload ở trên đã đổi rỗng thành `undefined` (để tạo mới
+        // không gửi field thừa), nên ở nhánh update phải gửi lại giá trị gốc/`null`
+        // để backend phân biệt với "không đổi" (undefined = giữ nguyên).
+        await updateMutation.mutateAsync({
+          id: product.id,
+          payload: {
+            ...payload,
+            brandId: values.brandId || null,
+            material: values.material,
+            careInstructions: values.careInstructions,
+            metaTitle: values.metaTitle,
+            metaDescription: values.metaDescription,
+          },
+        });
         toast.success("Đã cập nhật sản phẩm");
       } else {
         await createMutation.mutateAsync(payload);
@@ -151,6 +165,21 @@ export default function ProductForm() {
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
+  }
+
+  function onInvalid(errors: FieldErrors<ProductFormValues>) {
+    // Validate lỗi có thể nằm ở 1 bước không phải bước đang hiển thị (vd sửa sản
+    // phẩm cũ thiếu field mới bắt buộc) — nếu không nhảy về đúng bước, admin bấm
+    // "Lưu" sẽ không thấy toast/lỗi gì và không hiểu vì sao không lưu được.
+    const erroredFields = Object.keys(errors);
+    const stepIndex = STEPS.findIndex((step) =>
+      step.fields.some((field) => erroredFields.includes(field)),
+    );
+    if (stepIndex !== -1) {
+      setCurrentStep(stepIndex);
+      setMaxStepReached((prev) => Math.max(prev, stepIndex));
+    }
+    toast.error("Vui lòng kiểm tra lại thông tin đã nhập");
   }
 
   if (isEditing && isLoadingProduct) {
@@ -175,7 +204,7 @@ export default function ProductForm() {
           />
         </div>
 
-        <form onSubmit={handleSubmit(onValid)} className="space-y-4">
+        <form onSubmit={handleSubmit(onValid, onInvalid)} className="space-y-4">
           {currentStep === 0 && <ProductGeneralInfoStep />}
           {currentStep === 1 && <ProductVariantsStep />}
           {currentStep === 2 && <ProductImagesStep />}

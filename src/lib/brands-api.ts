@@ -8,7 +8,14 @@ export interface CreateBrandPayload {
   origin?: string;
 }
 
-export type UpdateBrandPayload = Partial<CreateBrandPayload>;
+export type UpdateBrandPayload = Partial<
+  Omit<CreateBrandPayload, "logo" | "description" | "origin">
+> & {
+  // Bỏ trống = giữ nguyên giá trị hiện có; gửi null = xoá.
+  logo?: string | null;
+  description?: string | null;
+  origin?: string | null;
+};
 
 export async function getBrands(search?: string): Promise<Brand[]> {
   const { data } = await apiClient.get<Brand[]>("/brands", {

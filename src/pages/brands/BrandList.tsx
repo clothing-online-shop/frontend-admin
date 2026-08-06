@@ -11,7 +11,7 @@ import Spinner from "@/components/ui/spinner/Spinner";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
-import { BrandFormModal } from "./BrandFormModal";
+import BrandFormModal from "./BrandFormModal";
 
 export default function BrandList() {
   const toast = useToast();

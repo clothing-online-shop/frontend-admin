@@ -80,7 +80,12 @@ export function CategoryFormModal({
 
     try {
       if (editing) {
-        await updateMutation.mutateAsync({ id: editing.id, payload });
+        // Bỏ trống ảnh ở form nghĩa là user chủ động xoá ảnh — phải gửi null
+        // (không phải bỏ field) để backend phân biệt với "không đổi".
+        await updateMutation.mutateAsync({
+          id: editing.id,
+          payload: { ...payload, image: values.image[0] ?? null },
+        });
         toast.success("Đã cập nhật danh mục");
       } else {
         await createMutation.mutateAsync(payload);

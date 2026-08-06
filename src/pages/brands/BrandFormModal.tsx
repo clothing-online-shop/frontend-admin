@@ -21,7 +21,7 @@ interface BrandFormModalProps {
 
 const EMPTY_VALUES: BrandFormValues = { name: "", description: "", origin: "", logo: [] };
 
-export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) {
+export default function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) {
   const toast = useToast();
   const createMutation = useCreateBrand();
   const updateMutation = useUpdateBrand();
@@ -59,7 +59,17 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
 
     try {
       if (editing) {
-        await updateMutation.mutateAsync({ id: editing.id, payload });
+        // Bỏ trống logo/mô tả/xuất xứ ở form nghĩa là user chủ động xoá — phải gửi
+        // null (không phải bỏ field) để backend phân biệt với "không đổi".
+        await updateMutation.mutateAsync({
+          id: editing.id,
+          payload: {
+            ...payload,
+            logo: values.logo[0] ?? null,
+            description: values.description || null,
+            origin: values.origin || null,
+          },
+        });
         toast.success("Đã cập nhật thương hiệu");
       } else {
         await createMutation.mutateAsync(payload);
@@ -80,10 +90,14 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            <label
+              htmlFor="brand-name"
+              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
               Tên thương hiệu <span className="text-error-500">*</span>
             </label>
             <Input
+              id="brand-name"
               placeholder="Ví dụ: Uniqlo"
               {...register("name")}
               error={!!errors.name}
@@ -92,14 +106,20 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            <label
+              htmlFor="brand-origin"
+              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
               Xuất xứ
             </label>
-            <Input placeholder="Ví dụ: Nhật Bản" {...register("origin")} />
+            <Input id="brand-origin" placeholder="Ví dụ: Nhật Bản" {...register("origin")} />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            <label
+              htmlFor="brand-description"
+              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+            >
               Mô tả
             </label>
             <Controller
@@ -107,6 +127,7 @@ export function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) 
               control={control}
               render={({ field }) => (
                 <TextArea
+                  id="brand-description"
                   placeholder="Giới thiệu ngắn về thương hiệu"
                   value={field.value}
                   onChange={field.onChange}

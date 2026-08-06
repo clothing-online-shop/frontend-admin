@@ -44,14 +44,16 @@ import "ckeditor5/ckeditor5.css";
 // này thì list không hiện số/chấm vì Tailwind Preflight đã reset list-style: none.
 import "ckeditor5/ckeditor5-content.css";
 import { useToast } from "@/hooks/useToast";
+import { uploadImage } from "@/lib/upload-api";
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-// Đọc ảnh trực tiếp trên trình duyệt bằng FileReader rồi nhúng base64 vào nội dung —
-// không gọi API/upload lên server. Viết tay theo đúng pattern "custom upload adapter"
-// chính thức của CKEditor vì Base64UploadAdapter có sẵn không cho chỗ chèn validate.
-class Base64FileUploadAdapter implements UploadAdapter {
+// Upload ảnh lên server qua API /upload/image sẵn có (giống ImageUploader) rồi nhúng
+// URL trả về vào nội dung — không nhúng base64 thẳng vào HTML (payload mô tả sẽ phình
+// to tới vài MB/ảnh nếu nhúng base64). Viết tay theo đúng pattern "custom upload
+// adapter" chính thức của CKEditor vì Base64UploadAdapter có sẵn không cho chỗ chèn validate.
+class ServerFileUploadAdapter implements UploadAdapter {
   private loader: FileLoader;
 
   constructor(loader: FileLoader) {
@@ -59,27 +61,20 @@ class Base64FileUploadAdapter implements UploadAdapter {
   }
 
   upload(): Promise<{ default: string }> {
-    return this.loader.file.then(
-      (file) =>
-        new Promise<{ default: string }>((resolve, reject) => {
-          if (!file) {
-            reject("Không đọc được file ảnh.");
-            return;
-          }
-          if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-            reject("Chỉ chấp nhận ảnh định dạng .jpg, .jpeg, .png, .webp");
-            return;
-          }
-          if (file.size > MAX_IMAGE_SIZE_BYTES) {
-            reject("Ảnh vượt quá dung lượng cho phép (5MB)");
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = () => resolve({ default: reader.result as string });
-          reader.onerror = () => reject("Đọc file ảnh thất bại");
-          reader.readAsDataURL(file);
-        }),
-    );
+    return this.loader.file.then((file) => {
+      if (!file) {
+        return Promise.reject("Không đọc được file ảnh.");
+      }
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return Promise.reject("Chỉ chấp nhận ảnh định dạng .jpg, .jpeg, .png, .webp");
+      }
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        return Promise.reject("Ảnh vượt quá dung lượng cho phép (5MB)");
+      }
+      return uploadImage(file)
+        .then((result) => ({ default: result.url }))
+        .catch(() => Promise.reject("Upload ảnh thất bại"));
+    });
   }
 
   abort() {}
@@ -189,7 +184,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
         }}
         onReady={(editor) => {
           editor.plugins.get(FileRepository).createUploadAdapter = (loader) =>
-            new Base64FileUploadAdapter(loader);
+            new ServerFileUploadAdapter(loader);
 
           // CKEditor mặc định fallback qua window.alert() cho warning chưa ai xử lý
           // (xem doc-comment của Notification#init trong @ckeditor/ckeditor5-ui) — evt.stop()
