@@ -57,7 +57,7 @@ const EMPTY_VALUES: ProductFormValues = {
   imagePublicIds: [],
   metaTitle: "",
   metaDescription: "",
-  variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 }],
+  variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0, imageUrl: undefined }],
 };
 
 function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductVariantPayload[] {
@@ -70,6 +70,7 @@ function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductV
       sku: v.sku || undefined,
       price: v.price,
       stockQuantity: v.stockQuantity ?? 0,
+      imageUrl: v.imageUrl || undefined,
     }));
 }
 
@@ -129,6 +130,10 @@ function buildStepUpdatePayload(stepIndex: number, values: ProductFormValues): U
         thumbnailPublicId: values.thumbnailPublicId,
         images: values.images,
         imagePublicIds: values.imagePublicIds,
+        // Khối "Ảnh theo màu sắc" nằm ở step này nhưng ghi vào variants[].imageUrl (form
+        // state dùng chung, không tách riêng) — phải gửi kèm variants thì lựa chọn ảnh
+        // theo màu mới tới được BE, nếu không chỉ nằm ở state cục bộ rồi mất khi rời trang.
+        variants: buildVariantsPayload(values.variants),
       };
     default:
       return { metaTitle: values.metaTitle, metaDescription: values.metaDescription };
@@ -206,6 +211,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
         sku: v.sku,
         price: v.price,
         stockQuantity: v.stockQuantity,
+        imageUrl: v.imageUrl ?? undefined,
       })),
     });
     setMaxStepReached(STEPS.length - 1);

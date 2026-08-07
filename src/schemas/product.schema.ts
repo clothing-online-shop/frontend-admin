@@ -17,6 +17,9 @@ const productVariantSchema = yup.object({
     .integer()
     .min(0)
     .default(0),
+  // Ảnh đại diện cho MÀU của biến thể này — lấy từ 1 ảnh đã có trong "Ảnh chi tiết sản
+  // phẩm" (không upload riêng), dùng để FE storefront focus đúng ảnh khi khách chọn màu.
+  imageUrl: yup.string().optional(),
 });
 
 export const productSchema = yup.object({
