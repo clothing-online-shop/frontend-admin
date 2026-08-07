@@ -82,7 +82,7 @@ Chỉ tài khoản `role = ADMIN` ở `backend-cms` mới đăng nhập được
 | `/login` | Đăng nhập admin |
 | `/dashboard` | Tổng quan *(khung UI)* |
 | `/products`, `/products/new`, `/products/:slug/edit` | Danh sách + tạo/sửa sản phẩm (đầy đủ CRUD, variants, tồn kho, upload ảnh) |
-| `/categories` | Cây danh mục kéo-thả để sắp xếp, tạo/sửa/xóa |
+| `/categories` | Cây danh mục kéo-thả để sắp xếp, tìm kiếm theo tên, tạo/sửa/xóa (tối đa 3 cấp, giới hạn do API) |
 | `/orders` | Danh sách đơn hàng *(khung UI, chờ nối API `orders` thật ở backend-cms)* |
 | `/customers` | Danh sách khách hàng *(khung UI)* |
 | `/cms-content` | Banner/blog *(khung UI, chờ nối API `cms` thật ở backend-cms)* |

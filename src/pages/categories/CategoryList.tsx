@@ -9,6 +9,7 @@ import { getErrorMessage } from "@/lib/error";
 import { CategoryFormModal, type CategoryOption } from "./CategoryFormModal";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
+import Input from "@/components/form/input/InputField";
 import DragTree, { type DragTreeNode } from "@/components/ui/tree/DragTree";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
@@ -51,6 +52,24 @@ function findNodeById(nodes: CategoryNode[], id: string): CategoryNode | null {
   return null;
 }
 
+// Giữ lại danh mục cha khi chỉ có danh mục con khớp tìm kiếm, để không mất
+// ngữ cảnh vị trí trong cây — khác với việc chỉ lọc phẳng danh sách khớp.
+function filterTreeByName(nodes: CategoryTreeNode[], query: string): CategoryTreeNode[] {
+  if (!query.trim()) return nodes;
+  const normalized = query.trim().toLowerCase();
+
+  return nodes.reduce<CategoryTreeNode[]>((acc, node) => {
+    const children = node.children ? filterTreeByName(node.children, query) : undefined;
+    const title = typeof node.title === "string" ? node.title : "";
+    const selfMatches = title.toLowerCase().includes(normalized);
+
+    if (selfMatches || (children && children.length > 0)) {
+      acc.push({ ...node, children: selfMatches ? node.children : children });
+    }
+    return acc;
+  }, []);
+}
+
 function findNodeInTree(nodes: CategoryTreeNode[], key: string): CategoryTreeNode | null {
   for (const node of nodes) {
     if (node.key === key) return node;
@@ -68,7 +87,7 @@ function containsKey(node: CategoryTreeNode, key: string): boolean {
 export default function CategoryList() {
   const toast = useToast();
   useBreadcrumb([{ label: "Danh mục" }]);
-  const { data, isLoading } = useCategoryTree();
+  const { data, isLoading, isError, refetch } = useCategoryTree();
   const deleteMutation = useDeleteCategory();
   const reorderMutation = useReorderCategories();
 
@@ -76,6 +95,7 @@ export default function CategoryList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (data) setTreeData(toTreeData(data));
@@ -83,6 +103,7 @@ export default function CategoryList() {
 
   const editingNode = data && editingId ? findNodeById(data, editingId) : null;
   const parentOptions = data ? flattenForOptions(data) : [];
+  const filteredTreeData = filterTreeByName(treeData, search);
 
   function handleAdd() {
     setEditingId(null);
@@ -217,19 +238,30 @@ export default function CategoryList() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Danh mục</h3>
-        <Button variant="primary" onClick={handleAdd} startIcon={<PlusIcon className="h-4 w-4" />}>
-          Thêm danh mục
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="w-65">
+            <Input
+              placeholder="Tìm theo tên danh mục"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Button variant="primary" onClick={handleAdd} startIcon={<PlusIcon className="h-4 w-4" />}>
+            Thêm danh mục
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
         <Spinner className="text-brand-500" />
       ) : treeData.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có danh mục nào.</p>
+      ) : filteredTreeData.length === 0 ? (
+        <p className="text-sm text-gray-500 dark:text-gray-400">Không tìm thấy danh mục phù hợp.</p>
       ) : (
-        <DragTree treeData={withRenderedTitles(treeData)} onDrop={handleDrop} />
+        <DragTree treeData={withRenderedTitles(filteredTreeData)} onDrop={handleDrop} />
       )}
 
       <CategoryFormModal

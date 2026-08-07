@@ -38,6 +38,7 @@ export interface CategoryNode {
   name: string;
   slug: string;
   image: string | null;
+  imagePublicId: string | null;
   isActive: boolean;
   sortOrder: number;
   parentId: string | null;
@@ -63,6 +64,7 @@ export interface ProductListItem {
   description: string | null;
   material: string | null;
   thumbnail: string | null;
+  thumbnailPublicId: string | null;
   basePrice: number;
   salePrice: number | null;
   brandId: string | null;
@@ -98,6 +100,7 @@ export interface ProductDetail extends ProductListItem {
   metaTitle: string | null;
   metaDescription: string | null;
   images: string[];
+  imagePublicIds: string[];
   category: { id: string; name: string; slug: string };
   brand: { id: string; name: string } | null;
   variants: ProductVariant[];
