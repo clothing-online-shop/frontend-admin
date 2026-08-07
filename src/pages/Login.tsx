@@ -82,14 +82,10 @@ export default function Login() {
           <Form onSubmit={handleSubmit(onValid)} className="space-y-5">
             {/* Email */}
             <div>
-              <label
-                htmlFor="login-email"
-                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-              >
-                Email <span className="text-error-500">*</span>
-              </label>
               <Input
                 id="login-email"
+                label="Email"
+                required
                 type="email"
                 placeholder="admin@clothing-shop.com"
                 {...register("email")}
@@ -100,14 +96,10 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="login-password"
-                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-              >
-                Mật khẩu <span className="text-error-500">*</span>
-              </label>
               <Input
                 id="login-password"
+                label="Mật khẩu"
+                required
                 type="password"
                 placeholder="••••••••"
                 {...register("password")}

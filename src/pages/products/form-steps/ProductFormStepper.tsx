@@ -17,11 +17,16 @@ export function ProductFormStepper({
   maxStepReached,
   onStepClick,
 }: ProductFormStepperProps) {
+  // Đã duyệt qua hết các bước (edit/view sản phẩm có sẵn) — highlight toàn bộ chấm tròn
+  // như đã hoàn thành, hiển thị số bước thay vì icon tích (tích chỉ dành cho tiến trình
+  // đi tới của luồng tạo mới).
+  const allVisited = maxStepReached === steps.length - 1;
+
   return (
     <div className="flex items-center">
       {steps.map((step, index) => {
-        const isCompleted = index < currentStep;
-        const isActive = index === currentStep;
+        const isCompleted = allVisited || index < currentStep;
+        const isActive = !allVisited && index === currentStep;
         const isReachable = index <= maxStepReached;
 
         return (
@@ -41,11 +46,11 @@ export function ProductFormStepper({
                       : "border border-gray-300 text-gray-400 dark:border-gray-700 dark:text-gray-500"
                 }`}
               >
-                {isCompleted ? <CheckLineIcon className="h-4 w-4" /> : index + 1}
+                {isCompleted && !allVisited ? <CheckLineIcon className="h-4 w-4" /> : index + 1}
               </span>
               <span
                 className={`text-sm font-medium ${
-                  isActive
+                  index === currentStep
                     ? "text-gray-800 dark:text-white/90"
                     : isReachable
                       ? "text-gray-600 dark:text-gray-400"

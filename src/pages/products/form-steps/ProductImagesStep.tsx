@@ -15,7 +15,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
 
   return (
     <div className="space-y-6">
-      <ComponentCard title="Ảnh đại diện">
+      <ComponentCard title="Ảnh đại diện" required>
         <Controller
           name="thumbnail"
           control={control}
@@ -28,7 +28,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
         )}
       </ComponentCard>
 
-      <ComponentCard title="Ảnh chi tiết sản phẩm">
+      <ComponentCard title="Ảnh chi tiết sản phẩm" required>
         <Controller
           name="images"
           control={control}

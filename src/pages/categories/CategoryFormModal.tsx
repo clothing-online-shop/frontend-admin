@@ -10,6 +10,7 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import Switch from "@/components/form/switch/Switch";
+import FieldLabel from "@/components/form/FieldLabel";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
 import { categorySchema, type CategoryFormValues } from "@/schemas/category.schema";
@@ -106,10 +107,9 @@ export function CategoryFormModal({
 
         <div className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Tên danh mục <span className="text-error-500">*</span>
-            </label>
             <Input
+              label="Tên danh mục"
+              required
               placeholder="Ví dụ: Áo nam"
               {...register("name")}
               error={!!errors.name}
@@ -118,21 +118,16 @@ export function CategoryFormModal({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              URL
-            </label>
-            <Input placeholder="ao-nam" {...register("slug")} />
+            <Input label="URL" placeholder="ao-nam" {...register("slug")} />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Danh mục cha
-            </label>
             <Controller
               name="parentId"
               control={control}
               render={({ field }) => (
                 <Select
+                  label="Danh mục cha"
                   allowClear
                   placeholder="Không có (danh mục gốc)"
                   value={field.value}
@@ -157,9 +152,7 @@ export function CategoryFormModal({
           />
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Ảnh danh mục
-            </label>
+            <FieldLabel label="Ảnh danh mục" />
             <Controller
               name="image"
               control={control}

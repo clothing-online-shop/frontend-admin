@@ -1,8 +1,6 @@
-import { useRef, useState } from "react";
-import { deleteImage, uploadImage } from "@/lib/api/upload-api";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { PlusIcon, TrashBinIcon, AngleLeftIcon, AngleRightIcon } from "@/icons";
-import { useToast } from "@/hooks/useToast";
+import { useImageUploader } from "@/hooks/useImageUploader";
 
 interface ImageUploaderProps {
   value: string[];
@@ -15,50 +13,11 @@ interface ImageUploaderProps {
 }
 
 export function ImageUploader({ value, onChange, max = 8, label, readOnly = false }: ImageUploaderProps) {
-  const [publicIds, setPublicIds] = useState<Record<string, string>>({});
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const toast = useToast();
-
-  async function handleFilesSelected(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setUploading(true);
-    try {
-      const uploaded: string[] = [];
-      const nextPublicIds: Record<string, string> = {};
-      for (const file of Array.from(files).slice(0, max - value.length)) {
-        try {
-          const result = await uploadImage(file);
-          uploaded.push(result.url);
-          nextPublicIds[result.url] = result.publicId;
-        } catch {
-          toast.error("Upload ảnh thất bại");
-        }
-      }
-      if (uploaded.length > 0) {
-        setPublicIds((prev) => ({ ...prev, ...nextPublicIds }));
-        onChange([...value, ...uploaded]);
-      }
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  function handleRemove(url: string) {
-    onChange(value.filter((v) => v !== url));
-    const publicId = publicIds[url];
-    if (publicId) {
-      deleteImage(publicId).catch(() => undefined);
-    }
-  }
-
-  function moveImage(index: number, direction: -1 | 1) {
-    const target = index + direction;
-    if (target < 0 || target >= value.length) return;
-    const next = [...value];
-    [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
-  }
+  const { uploading, fileInputRef, handleFilesSelected, handleRemove, moveImage } = useImageUploader({
+    value,
+    onChange,
+    max,
+  });
 
   const canReorder = value.length > 1;
 
@@ -117,7 +76,7 @@ export function ImageUploader({ value, onChange, max = 8, label, readOnly = fals
               multiple={max - value.length > 1}
               className="hidden"
               onChange={(e) => {
-                void handleFilesSelected(e.target.files);
+                handleFilesSelected(e.target.files);
                 e.target.value = "";
               }}
             />

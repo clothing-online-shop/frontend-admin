@@ -9,6 +9,7 @@ import { RichTextEditor } from "@/components/common/RichTextEditor";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
+import FieldLabel from "@/components/form/FieldLabel";
 
 interface ProductGeneralInfoStepProps {
   viewOnly?: boolean;
@@ -50,13 +51,18 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
     [brands],
   );
 
+  const listStatus = [
+    { value: String(ProductStatus.DRAFT), label: "Nháp" },
+    { value: String(ProductStatus.ACTIVE), label: "Đang bán" },
+    { value: String(ProductStatus.INACTIVE), label: "Ngừng bán" },
+  ];
+
   return (
     <ComponentCard title="Thông tin chung">
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-          Tên sản phẩm <span className="text-error-500">*</span>
-        </label>
         <Input
+          label="Tên sản phẩm"
+          required
           placeholder="Ví dụ: Áo sơ mi nam trắng"
           {...nameField}
           onChange={(e) => {
@@ -71,9 +77,7 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-          Mô tả sản phẩm <span className="text-error-500">*</span>
-        </label>
+        <FieldLabel label="Mô tả sản phẩm" required />
         <Controller
           name="description"
           control={control}
@@ -88,10 +92,9 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Chất liệu <span className="text-error-500">*</span>
-          </label>
           <Input
+            label="Chất liệu"
+            required
             placeholder="Ví dụ: Cotton 100%"
             {...register("material")}
             error={!!errors.material}
@@ -99,10 +102,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
           />
         </div>
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Hướng dẫn bảo quản
-          </label>
           <Input
+            label="Hướng dẫn bảo quản"
             placeholder="Ví dụ: Giặt tay, không dùng thuốc tẩy"
             {...register("careInstructions")}
           />
@@ -111,14 +112,13 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Danh mục <span className="text-error-500">*</span>
-          </label>
           <Controller
             name="categoryId"
             control={control}
             render={({ field }) => (
               <Select
+                label="Danh mục"
+                required
                 placeholder="Chọn danh mục"
                 options={categoryOptions}
                 value={field.value || undefined}
@@ -131,14 +131,12 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
           />
         </div>
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Thương hiệu
-          </label>
           <Controller
             name="brandId"
             control={control}
             render={({ field }) => (
               <Select
+                label="Thương hiệu"
                 allowClear
                 placeholder="Chọn thương hiệu"
                 options={brandOptions}
@@ -153,10 +151,9 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Giá gốc <span className="text-error-500">*</span>
-          </label>
           <Input
+            label="Giá gốc"
+            required
             type="number"
             min="1000"
             step={1000}
@@ -167,10 +164,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
           />
         </div>
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Giá khuyến mãi
-          </label>
           <Input
+            label="Giá khuyến mãi"
             type="number"
             min="0"
             step={1000}
@@ -181,14 +176,13 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
           />
         </div>
         <div className="flex-1">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Trạng thái <span className="text-error-500">*</span>
-          </label>
           <Controller
             name="status"
             control={control}
             render={({ field }) => (
               <Select
+                label="Trạng thái"
+                required
                 // Select dùng chung chỉ nhận option.value dạng string — status thật trong
                 // form state vẫn là number, ép qua lại đúng ở ranh giới UI này (giống pattern
                 // Select "Số dòng/trang" ở Pagination.tsx).
@@ -196,11 +190,7 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
                 onChange={(value) =>
                   field.onChange(value !== undefined ? Number(value) : ProductStatus.DRAFT)
                 }
-                options={[
-                  { value: String(ProductStatus.DRAFT), label: "Nháp" },
-                  { value: String(ProductStatus.ACTIVE), label: "Đang bán" },
-                  { value: String(ProductStatus.INACTIVE), label: "Ngừng bán" },
-                ]}
+                options={listStatus}
                 error={!!errors.status}
                 hint={errors.status?.message}
                 disabled={viewOnly}
@@ -211,10 +201,9 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-          URL <span className="text-error-500">*</span>
-        </label>
         <Input
+          label="URL"
+          required
           placeholder="ao-so-mi-nam-trang"
           {...slugField}
           onChange={(e) => {

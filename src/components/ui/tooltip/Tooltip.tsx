@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useHoverVisible } from "@/hooks/useHoverVisible";
 
 interface TooltipProps {
   content: string;
@@ -10,15 +11,15 @@ interface TooltipProps {
 // blur. Đặt mặc định phía trên trigger vì hay dùng cho icon trong hàng bảng — hiện phía
 // dưới dễ bị hàng kế tiếp che.
 export default function Tooltip({ content, children }: TooltipProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const { isVisible, show, hide } = useHoverVisible();
 
   return (
     <span
       className="relative inline-flex"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onFocus={() => setIsVisible(true)}
-      onBlur={() => setIsVisible(false)}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
     >
       {children}
       {isVisible && (

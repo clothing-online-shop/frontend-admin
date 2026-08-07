@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
+import FieldLabel from "@/components/form/FieldLabel";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
 import { brandSchema, type BrandFormValues } from "@/schemas/brand.schema";
@@ -90,14 +91,10 @@ export default function BrandFormModal({ open, onClose, editing }: BrandFormModa
 
         <div className="space-y-4">
           <div>
-            <label
-              htmlFor="brand-name"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Tên thương hiệu <span className="text-error-500">*</span>
-            </label>
             <Input
               id="brand-name"
+              label="Tên thương hiệu"
+              required
               placeholder="Ví dụ: Uniqlo"
               {...register("name")}
               error={!!errors.name}
@@ -106,22 +103,16 @@ export default function BrandFormModal({ open, onClose, editing }: BrandFormModa
           </div>
 
           <div>
-            <label
-              htmlFor="brand-origin"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Xuất xứ
-            </label>
-            <Input id="brand-origin" placeholder="Ví dụ: Nhật Bản" {...register("origin")} />
+            <Input
+              id="brand-origin"
+              label="Xuất xứ"
+              placeholder="Ví dụ: Nhật Bản"
+              {...register("origin")}
+            />
           </div>
 
           <div>
-            <label
-              htmlFor="brand-description"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Mô tả
-            </label>
+            <FieldLabel label="Mô tả" htmlFor="brand-description" />
             <Controller
               name="description"
               control={control}
@@ -137,9 +128,7 @@ export default function BrandFormModal({ open, onClose, editing }: BrandFormModa
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Logo
-            </label>
+            <FieldLabel label="Logo" />
             <Controller
               name="logo"
               control={control}

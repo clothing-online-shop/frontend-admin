@@ -144,17 +144,7 @@ export default function ProductList() {
           <span className="text-sm text-gray-800 dark:text-white/90">{product.name}</span>
         ),
       },
-      {
-        key: "status",
-        header: "Trạng thái",
-        align: "center",
-        className: "min-w-40",
-        render: (product) => (
-          <Badge color={STATUS_LABELS[product.status].color}>
-            {STATUS_LABELS[product.status].label}
-          </Badge>
-        ),
-      },
+      
       {
         key: "category",
         header: "Danh mục",
@@ -185,25 +175,7 @@ export default function ProductList() {
           </span>
         ),
       },
-      {
-        key: "price",
-        header: "Giá",
-        align: "center",
-        className: "min-w-36",
-        render: (product) =>
-          product.salePrice != null ? (
-            <div className="flex flex-col items-center text-sm">
-              <span className="text-xs text-gray-400 line-through">
-                {formatPrice(product.basePrice)}
-              </span>
-              <span className="font-bold text-error-500">{formatPrice(product.salePrice)}</span>
-            </div>
-          ) : (
-            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-              {formatPrice(product.basePrice)}
-            </span>
-          ),
-      },
+      
       {
         key: "stock",
         header: "Tồn kho",
@@ -240,6 +212,36 @@ export default function ProductList() {
         className: "min-w-90",
         render: (product) => (
           <span className="text-sm text-gray-500 dark:text-gray-400">{product.slug}</span>
+        ),
+      },
+      {
+        key: "price",
+        header: "Giá",
+        align: "center",
+        className: "min-w-36",
+        render: (product) =>
+          product.salePrice != null ? (
+            <div className="flex flex-col items-center text-sm">
+              <span className="text-xs text-gray-400 line-through">
+                {formatPrice(product.basePrice)}
+              </span>
+              <span className="font-bold text-error-500">{formatPrice(product.salePrice)}</span>
+            </div>
+          ) : (
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {formatPrice(product.basePrice)}
+            </span>
+          ),
+      },
+      {
+        key: "status",
+        header: "Trạng thái",
+        align: "center",
+        className: "min-w-40",
+        render: (product) => (
+          <Badge color={STATUS_LABELS[product.status].color}>
+            {STATUS_LABELS[product.status].label}
+          </Badge>
         ),
       },
       {

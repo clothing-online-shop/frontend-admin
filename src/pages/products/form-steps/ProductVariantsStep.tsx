@@ -32,7 +32,7 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
   const variantsError = errors.variants?.message ?? errors.variants?.root?.message;
 
   return (
-    <ComponentCard title="Biến thể (size / màu)">
+    <ComponentCard title="Biến thể (size / màu)" required={true}>
       <div className="flex flex-col gap-3">
         {variantsError && <p className="text-xs text-form-error">{variantsError}</p>}
         {fields.map((field, index) => {

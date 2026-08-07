@@ -3,6 +3,7 @@ import type { ProductFormValues } from "@/schemas/product.schema";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
+import FieldLabel from "@/components/form/FieldLabel";
 
 export function ProductSeoStep() {
   const { register, control } = useFormContext<ProductFormValues>();
@@ -13,15 +14,14 @@ export function ProductSeoStep() {
       desc="Thông tin hiển thị trên kết quả tìm kiếm và khi chia sẻ link sản phẩm"
     >
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-          Meta title
-        </label>
-        <Input placeholder="Bỏ trống để dùng tên sản phẩm" {...register("metaTitle")} />
+        <Input
+          label="Meta title"
+          placeholder="Bỏ trống để dùng tên sản phẩm"
+          {...register("metaTitle")}
+        />
       </div>
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-          Meta description
-        </label>
+        <FieldLabel label="Meta description" />
         <Controller
           name="metaDescription"
           control={control}
