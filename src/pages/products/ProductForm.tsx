@@ -108,7 +108,9 @@ function buildGeneralPayload(values: ProductFormValues): UpdateProductPayload {
     // Bỏ trống = user chủ động gỡ thương hiệu → gửi null để backend phân biệt với "không đổi".
     brandId: values.brandId || null,
     basePrice: values.basePrice,
-    salePrice: values.salePrice,
+    // Bỏ trống = user chủ động xoá giá khuyến mãi → gửi null để backend phân biệt với
+    // "không đổi" (undefined bị JSON.stringify loại khỏi payload, PATCH sẽ giữ nguyên giá cũ).
+    salePrice: values.salePrice ?? null,
     status: values.status,
   };
 }

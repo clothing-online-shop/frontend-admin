@@ -13,6 +13,8 @@ interface ImageUploaderProps {
   // Cho phép nơi gọi lưu lại publicId song song với url (vd. để BE dọn ảnh cũ trên
   // Cloudinary khi thay/xóa ảnh) — optional nên không ảnh hưởng chỗ chưa cần theo dõi.
   onPublicIdChange?: (url: string, publicId: string | null) => void;
+  // Báo khi đổi thứ tự 2 ảnh — xem giải thích ở useImageUploader.ts.
+  onReorder?: (fromIndex: number, toIndex: number) => void;
 }
 
 export function ImageUploader({
@@ -22,12 +24,14 @@ export function ImageUploader({
   label,
   readOnly = false,
   onPublicIdChange,
+  onReorder,
 }: ImageUploaderProps) {
   const { uploading, fileInputRef, handleFilesSelected, handleRemove, moveImage } = useImageUploader({
     value,
     onChange,
     max,
     onPublicIdChange,
+    onReorder,
   });
 
   const canReorder = value.length > 1;

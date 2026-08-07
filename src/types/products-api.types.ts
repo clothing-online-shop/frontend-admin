@@ -42,9 +42,11 @@ export interface CreateProductPayload {
 }
 
 export type UpdateProductPayload = Partial<
-  Omit<CreateProductPayload, "variants" | "brandId">
+  Omit<CreateProductPayload, "variants" | "brandId" | "salePrice">
 > & {
   variants?: ProductVariantPayload[];
   // Bỏ trống = giữ nguyên thương hiệu hiện có; gửi null = gỡ thương hiệu khỏi sản phẩm.
   brandId?: string | null;
+  // Bỏ trống = giữ nguyên giá khuyến mãi hiện có; gửi null = xóa giá khuyến mãi.
+  salePrice?: number | null;
 };

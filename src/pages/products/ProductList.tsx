@@ -109,6 +109,7 @@ export default function ProductList() {
 
   const handleToggleLock = useCallback(
     async (product: ProductListItem) => {
+      if (product.status === ProductStatus.DRAFT) return;
       const nextStatus =
         product.status === ProductStatus.ACTIVE ? ProductStatus.INACTIVE : ProductStatus.ACTIVE;
       try {
@@ -250,8 +251,12 @@ export default function ProductList() {
         className: "min-w-24",
         stickyRight: true,
         render: (product) => {
-          const lockLabel =
-            product.status === ProductStatus.ACTIVE ? "Khóa" : "Mở khóa";
+          const isDraft = product.status === ProductStatus.DRAFT;
+          const lockLabel = isDraft
+            ? "Sửa sản phẩm để xuất bản"
+            : product.status === ProductStatus.ACTIVE
+              ? "Khóa"
+              : "Mở khóa";
           return (
             <div className="flex items-center justify-center gap-3">
               <Tooltip content="Xem">
@@ -278,7 +283,8 @@ export default function ProductList() {
                 <button
                   type="button"
                   onClick={() => handleToggleLock(product)}
-                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                  disabled={isDraft || updateMutation.isPending}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400"
                   aria-label={lockLabel}
                 >
                   {product.status === ProductStatus.ACTIVE ? (
@@ -303,7 +309,7 @@ export default function ProductList() {
         },
       },
     ],
-    [categoryNameById, brandNameById, navigate, handleToggleLock],
+    [categoryNameById, brandNameById, navigate, handleToggleLock, updateMutation.isPending],
   );
 
   return (

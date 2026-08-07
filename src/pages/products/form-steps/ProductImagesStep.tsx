@@ -51,12 +51,9 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
               onPublicIdChange={(url, publicId) => {
                 const currentPublicIds = getValues("imagePublicIds") ?? [];
                 if (publicId) {
-                  // Ảnh mới upload: onChange sắp nối url vào CUỐI mảng images, nên nối
-                  // publicId vào cuối imagePublicIds để giữ đúng thứ tự khớp vị trí.
                   setValue("imagePublicIds", [...currentPublicIds, publicId]);
                   return;
                 }
-                // Ảnh bị xóa: ImageUploader báo trước khi đổi images, nên field.value ở
                 // đây vẫn còn chứa url — tìm đúng vị trí để xóa publicId tương ứng.
                 const currentImages = getValues("images") ?? [];
                 const index = currentImages.indexOf(url);
@@ -65,6 +62,12 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
                   "imagePublicIds",
                   currentPublicIds.filter((_, i) => i !== index),
                 );
+              }}
+              onReorder={(fromIndex, toIndex) => {
+                const currentPublicIds = getValues("imagePublicIds") ?? [];
+                const next = [...currentPublicIds];
+                [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+                setValue("imagePublicIds", next);
               }}
             />
           )}
