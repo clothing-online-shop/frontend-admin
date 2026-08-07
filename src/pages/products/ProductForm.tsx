@@ -1,26 +1,42 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm, FormProvider, type FieldErrors } from "react-hook-form";
+import { useForm, useWatch, FormProvider, type FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ProductStatus } from "@/lib/shared-types";
+import { ProductStatus } from "@/types/shared-types";
 import { useCreateProduct, useProductDetail, useUpdateProduct } from "@/hooks/useProducts";
-import type { CreateProductPayload } from "@/lib/products-api";
+import type {
+  CreateProductPayload,
+  ProductVariantPayload,
+  UpdateProductPayload,
+} from "@/types/products-api.types";
 import { getErrorMessage } from "@/lib/error";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { productSchema, type ProductFormValues } from "@/schemas/product.schema";
-import { ProductFormStepper } from "./ProductFormStepper";
-import { ProductGeneralInfoStep } from "./ProductGeneralInfoStep";
-import { ProductVariantsStep } from "./ProductVariantsStep";
-import { ProductImagesStep } from "./ProductImagesStep";
-import { ProductSeoStep } from "./ProductSeoStep";
+import { ProductFormStepper } from "./form-steps/ProductFormStepper";
+import { ProductGeneralInfoStep } from "./form-steps/ProductGeneralInfoStep";
+import { ProductVariantsStep } from "./form-steps/ProductVariantsStep";
+import { ProductImagesStep } from "./form-steps/ProductImagesStep";
+import { ProductSeoStep } from "./form-steps/ProductSeoStep";
 
 const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
-  { label: "Thông tin chung", fields: ["name", "categoryId", "basePrice", "salePrice"] },
+  {
+    label: "Thông tin chung",
+    fields: [
+      "name",
+      "slug",
+      "description",
+      "material",
+      "categoryId",
+      "basePrice",
+      "salePrice",
+      "status",
+    ],
+  },
   { label: "Biến thể", fields: ["variants"] },
-  { label: "Ảnh", fields: ["thumbnail"] },
+  { label: "Ảnh", fields: ["thumbnail", "images"] },
   { label: "SEO", fields: [] },
 ];
 
@@ -44,15 +60,90 @@ const EMPTY_VALUES: ProductFormValues = {
   variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 }],
 };
 
-export default function ProductForm() {
+function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductVariantPayload[] {
+  return variants
+    .filter((v) => v.size?.trim() && v.color?.trim())
+    .map((v) => ({
+      id: v.id,
+      size: v.size,
+      color: v.color,
+      sku: v.sku || undefined,
+      price: v.price,
+      stockQuantity: v.stockQuantity ?? 0,
+    }));
+}
+
+// Dùng khi tạo mới sản phẩm — chỉ gọi được từ nút "Lưu" ở step cuối (SEO), sau khi
+// handleSubmit đã validate toàn bộ 4 step nên mọi field ở đây chắc chắn đã hợp lệ.
+function buildCreatePayload(values: ProductFormValues): CreateProductPayload {
+  return {
+    name: values.name,
+    slug: values.slug,
+    description: values.description,
+    material: values.material || undefined,
+    careInstructions: values.careInstructions || undefined,
+    categoryId: values.categoryId,
+    brandId: values.brandId || undefined,
+    basePrice: values.basePrice,
+    salePrice: values.salePrice,
+    status: values.status,
+    thumbnail: values.thumbnail[0],
+    thumbnailPublicId: values.thumbnailPublicId,
+    images: values.images,
+    imagePublicIds: values.imagePublicIds,
+    metaTitle: values.metaTitle || undefined,
+    metaDescription: values.metaDescription || undefined,
+    variants: buildVariantsPayload(values.variants),
+  };
+}
+
+function buildGeneralPayload(values: ProductFormValues): UpdateProductPayload {
+  return {
+    name: values.name,
+    slug: values.slug,
+    description: values.description,
+    material: values.material,
+    careInstructions: values.careInstructions,
+    categoryId: values.categoryId,
+    // Bỏ trống = user chủ động gỡ thương hiệu → gửi null để backend phân biệt với "không đổi".
+    brandId: values.brandId || null,
+    basePrice: values.basePrice,
+    salePrice: values.salePrice,
+    status: values.status,
+  };
+}
+
+// Dùng khi sửa sản phẩm có sẵn — mỗi step tự PATCH đúng phần dữ liệu của step đó, không
+// đụng tới field ở step khác (API update đã là PATCH, field không gửi lên = giữ nguyên).
+function buildStepUpdatePayload(stepIndex: number, values: ProductFormValues): UpdateProductPayload {
+  switch (stepIndex) {
+    case 0:
+      return buildGeneralPayload(values);
+    case 1:
+      return { variants: buildVariantsPayload(values.variants) };
+    case 2:
+      return {
+        thumbnail: values.thumbnail[0],
+        thumbnailPublicId: values.thumbnailPublicId,
+        images: values.images,
+        imagePublicIds: values.imagePublicIds,
+      };
+    default:
+      return { metaTitle: values.metaTitle, metaDescription: values.metaDescription };
+  }
+}
+
+interface ProductFormProps {
+  viewOnly?: boolean;
+}
+
+export default function ProductForm({ viewOnly = false }: ProductFormProps) {
   const navigate = useNavigate();
   const toast = useToast();
   const { slug: editingSlug } = useParams<{ slug: string }>();
   const isEditing = Boolean(editingSlug);
-  useBreadcrumb([
-    { label: "Sản phẩm", href: "/products" },
-    { label: isEditing ? "Sửa sản phẩm" : "Thêm sản phẩm" },
-  ]);
+  const pageTitle = viewOnly ? "Xem sản phẩm" : isEditing ? "Sửa sản phẩm" : "Thêm sản phẩm";
+  useBreadcrumb([{ label: "Sản phẩm", href: "/products" }, { label: pageTitle }]);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [maxStepReached, setMaxStepReached] = useState(0);
@@ -60,8 +151,19 @@ export default function ProductForm() {
   const methods = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: EMPTY_VALUES,
+    mode: "onChange",
   });
-  const { handleSubmit, trigger, reset } = methods;
+  const { handleSubmit, trigger, reset, getValues, control, formState } = methods;
+
+  const currentStepFields = STEPS[currentStep].fields;
+  // Chỉ để subscribe re-render khi giá trị các field của bước hiện tại đổi — validity
+  // thật lấy từ formState.errors (yupResolver validate toàn bộ schema mỗi lần đổi vì
+  // mode "onChange", nên errors của field bước khác cũng có sẵn, không cần validate lại).
+  useWatch({ control, name: currentStepFields });
+  const isStepValid = useMemo(
+    () => currentStepFields.every((field) => !formState.errors[field]),
+    [currentStepFields, formState.errors],
+  );
 
   const { data: product, isLoading: isLoadingProduct } = useProductDetail(editingSlug);
   const createMutation = useCreateProduct();
@@ -69,45 +171,69 @@ export default function ProductForm() {
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   useEffect(() => {
-    if (product) {
-      reset({
-        name: product.name,
-        slug: product.slug,
-        description: product.description ?? "",
-        material: product.material ?? "",
-        careInstructions: product.careInstructions ?? "",
-        categoryId: product.categoryId,
-        brandId: product.brand?.id ?? "",
-        basePrice: product.basePrice,
-        salePrice: product.salePrice ?? undefined,
-        status: product.status,
-        thumbnail: product.thumbnail ? [product.thumbnail] : [],
-        thumbnailPublicId: product.thumbnailPublicId ?? undefined,
-        images: product.images ?? [],
-        imagePublicIds: product.imagePublicIds ?? [],
-        metaTitle: product.metaTitle ?? "",
-        metaDescription: product.metaDescription ?? "",
-        variants: product.variants.map((v) => ({
-          id: v.id,
-          size: v.size,
-          color: v.color,
-          sku: v.sku,
-          price: v.price,
-          stockQuantity: v.stockQuantity,
-        })),
-      });
-      setMaxStepReached(STEPS.length - 1);
-    }
-  }, [product, reset]);
+    // Bước 0 chưa có tương tác gì thì formState.errors rỗng dù field bắt buộc còn
+    // trống — trigger 1 lần khi đổi bước để nút "Tiếp theo"/"Lưu" phản ánh đúng trạng
+    // thái ngay từ đầu, không cần đợi user gõ phím mới thấy disable.
+    void trigger(currentStepFields);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (!product) return;
+    reset({
+      name: product.name,
+      slug: product.slug,
+      description: product.description ?? "",
+      material: product.material ?? "",
+      careInstructions: product.careInstructions ?? "",
+      categoryId: product.categoryId,
+      brandId: product.brand?.id ?? "",
+      basePrice: product.basePrice,
+      salePrice: product.salePrice ?? undefined,
+      status: product.status,
+      thumbnail: product.thumbnail ? [product.thumbnail] : [],
+      thumbnailPublicId: product.thumbnailPublicId ?? undefined,
+      images: product.images ?? [],
+      imagePublicIds: product.imagePublicIds ?? [],
+      metaTitle: product.metaTitle ?? "",
+      metaDescription: product.metaDescription ?? "",
+      variants: product.variants.map((v) => ({
+        id: v.id,
+        size: v.size,
+        color: v.color,
+        sku: v.sku,
+        price: v.price,
+        stockQuantity: v.stockQuantity,
+      })),
+    });
+    setMaxStepReached(STEPS.length - 1);
+    // reset() xoá sạch errors cũ — trigger lại để nút "Tiếp theo"/"Lưu" phản ánh đúng dữ
+    // liệu sản phẩm thật vừa load (vd sản phẩm cũ tạo trước khi field bắt buộc này tồn
+    // tại) thay vì mặc định coi là hợp lệ.
+    void trigger(STEPS[0].fields);
+    // Chỉ hydrate lại khi ĐỔI sản phẩm (id đổi) — không phải mỗi lần refetch nội dung.
+    // Mọi mutation đều invalidateQueries, PATCH 1 step xong sẽ làm `product` đổi
+    // reference dù cùng id; nếu effect chạy lại theo reference, reset() sẽ ghi đè mất
+    // dữ liệu đang gõ dở ở step khác chưa lưu.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id, reset, trigger]);
 
   function goToStep(index: number) {
     if (index <= maxStepReached) setCurrentStep(index);
   }
 
   async function goNext() {
-    const fields = STEPS[currentStep].fields;
-    const valid = fields.length === 0 ? true : await trigger(fields);
-    if (!valid) return;
+    // Màn xem (viewOnly) không nhập liệu gì — không validate, chỉ điều hướng, tránh
+    // trường hợp sản phẩm cũ không còn khớp schema hiện tại (vd thiếu ảnh) làm kẹt
+    // luôn cả việc xem, không liên quan gì tới "Tiếp theo" ở màn tạo/sửa thật.
+    if (!viewOnly) {
+      const fields = STEPS[currentStep].fields;
+      const valid = fields.length === 0 ? true : await trigger(fields);
+      if (!valid) {
+        toast.error("Vui lòng điền đủ thông tin bắt buộc ở bước này trước khi tiếp tục");
+        return;
+      }
+    }
     const next = Math.min(currentStep + 1, STEPS.length - 1);
     setCurrentStep(next);
     setMaxStepReached((prev) => Math.max(prev, next));
@@ -117,56 +243,11 @@ export default function ProductForm() {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   }
 
+  // Tạo mới sản phẩm — chỉ dùng ở step cuối, validate toàn bộ form (handleSubmit lo).
   async function onValid(values: ProductFormValues) {
-    const payload: CreateProductPayload = {
-      name: values.name,
-      slug: values.slug || undefined,
-      description: values.description,
-      material: values.material || undefined,
-      careInstructions: values.careInstructions || undefined,
-      categoryId: values.categoryId,
-      brandId: values.brandId || undefined,
-      basePrice: values.basePrice,
-      salePrice: values.salePrice,
-      status: values.status,
-      thumbnail: values.thumbnail[0],
-      thumbnailPublicId: values.thumbnailPublicId,
-      images: values.images,
-      imagePublicIds: values.imagePublicIds,
-      metaTitle: values.metaTitle || undefined,
-      metaDescription: values.metaDescription || undefined,
-      variants: values.variants.map((v) => ({
-        id: v.id,
-        size: v.size,
-        color: v.color,
-        sku: v.sku || undefined,
-        price: v.price,
-        stockQuantity: v.stockQuantity ?? 0,
-      })),
-    };
-
     try {
-      if (isEditing && product) {
-        // Bỏ trống 1 field text ở form (brand/chất liệu/bảo quản/SEO) nghĩa là user
-        // chủ động xoá — payload ở trên đã đổi rỗng thành `undefined` (để tạo mới
-        // không gửi field thừa), nên ở nhánh update phải gửi lại giá trị gốc/`null`
-        // để backend phân biệt với "không đổi" (undefined = giữ nguyên).
-        await updateMutation.mutateAsync({
-          id: product.id,
-          payload: {
-            ...payload,
-            brandId: values.brandId || null,
-            material: values.material,
-            careInstructions: values.careInstructions,
-            metaTitle: values.metaTitle,
-            metaDescription: values.metaDescription,
-          },
-        });
-        toast.success("Đã cập nhật sản phẩm");
-      } else {
-        await createMutation.mutateAsync(payload);
-        toast.success("Đã tạo sản phẩm");
-      }
+      await createMutation.mutateAsync(buildCreatePayload(values));
+      toast.success("Đã tạo sản phẩm");
       navigate("/products");
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -174,9 +255,8 @@ export default function ProductForm() {
   }
 
   function onInvalid(errors: FieldErrors<ProductFormValues>) {
-    // Validate lỗi có thể nằm ở 1 bước không phải bước đang hiển thị (vd sửa sản
-    // phẩm cũ thiếu field mới bắt buộc) — nếu không nhảy về đúng bước, admin bấm
-    // "Lưu" sẽ không thấy toast/lỗi gì và không hiểu vì sao không lưu được.
+    // Lỗi có thể nằm ở step không phải step đang hiển thị — nhảy về đúng step đầu tiên
+    // có lỗi để admin thấy ngay, không chỉ hiện toast chung chung.
     const erroredFields = Object.keys(errors);
     const stepIndex = STEPS.findIndex((step) =>
       step.fields.some((field) => erroredFields.includes(field)),
@@ -188,8 +268,31 @@ export default function ProductForm() {
     toast.error("Vui lòng kiểm tra lại thông tin đã nhập");
   }
 
+  // Lưu riêng 1 step khi đang sửa sản phẩm có sẵn — PATCH đúng phần dữ liệu step đó.
+  async function handleSaveStep() {
+    if (!product) return;
+    const fields = STEPS[currentStep].fields;
+    const valid = fields.length === 0 ? true : await trigger(fields);
+    if (!valid) return;
+
+    // getValues() trả nguyên giá trị input thô (vd basePrice là string "199000") — chỉ
+    // schema.cast() mới áp transform/coerce kiểu của Yup (vd ép sang number thật) giống hệt
+    // dữ liệu handleSubmit() vẫn hay trả về, assert: false vì field ở step khác có thể chưa
+    // hợp lệ tại thời điểm này (không cần chặn, chỉ cần đúng field của step đang lưu).
+    const values = productSchema.cast(getValues(), { assert: false }) as ProductFormValues;
+    try {
+      await updateMutation.mutateAsync({
+        id: product.id,
+        payload: buildStepUpdatePayload(currentStep, values),
+      });
+      toast.success(`Đã lưu ${STEPS[currentStep].label}`);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  }
+
   if (isEditing && isLoadingProduct) {
-    return <Spinner />;
+    return <Spinner className="text-brand-500" />;
   }
 
   const isLastStep = currentStep === STEPS.length - 1;
@@ -198,7 +301,7 @@ export default function ProductForm() {
     <FormProvider {...methods}>
       <div>
         <h3 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-          {isEditing ? "Sửa sản phẩm" : "Thêm sản phẩm"}
+          {pageTitle}
         </h3>
 
         <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
@@ -210,38 +313,66 @@ export default function ProductForm() {
           />
         </div>
 
-        <form onSubmit={handleSubmit(onValid, onInvalid)} className="space-y-4">
-          {currentStep === 0 && <ProductGeneralInfoStep />}
-          {currentStep === 1 && <ProductVariantsStep />}
-          {currentStep === 2 && <ProductImagesStep />}
-          {currentStep === 3 && <ProductSeoStep />}
+        <div className="space-y-4">
+          {/* fieldset disabled tự vô hiệu hoá mọi input/select/button form-native bên trong
+              (kể cả Select tự dựng vì trigger vẫn là <button> thật) mà không cần sửa từng
+              step component — chỉ CKEditor (contenteditable, không phải form control chuẩn)
+              cần tự truyền prop disabled riêng, xem ProductGeneralInfoStep. */}
+          <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
+            {currentStep === 0 && <ProductGeneralInfoStep viewOnly={viewOnly} />}
+            {currentStep === 1 && <ProductVariantsStep viewOnly={viewOnly} />}
+            {currentStep === 2 && <ProductImagesStep viewOnly={viewOnly} />}
+            {currentStep === 3 && <ProductSeoStep />}
+          </fieldset>
 
-          <div className="flex gap-3">
-            {currentStep > 0 && (
-              <Button type="button" variant="outline" onClick={goBack}>
-                Quay lại
+          <div className="flex items-center justify-between gap-3 mt-3">
+            <div>
+              {!viewOnly && currentStep > 0 && (
+                <Button type="button" variant="outline" onClick={goBack}>
+                  Quay lại
+                </Button>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={() => navigate("/products")}>
+                Hủy
               </Button>
-            )}
-            {!isLastStep && (
-              <Button type="button" onClick={goNext}>
-                Tiếp theo
-              </Button>
-            )}
-            {isLastStep && (
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isSaving}
-                startIcon={isSaving ? <Spinner size="sm" /> : undefined}
-              >
-                Lưu
-              </Button>
-            )}
-            <Button type="button" variant="outline" onClick={() => navigate("/products")}>
-              Hủy
-            </Button>
+              {!isLastStep && (
+                <Button type="button" onClick={goNext} disabled={!viewOnly && !isStepValid}>
+                  Tiếp theo
+                </Button>
+              )}
+              {!viewOnly &&
+                (isEditing ? (
+                  // Sửa sản phẩm: mỗi step tự "Lưu" riêng, chỉ PATCH đúng dữ liệu step đó.
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={handleSaveStep}
+                    disabled={!isStepValid || isSaving}
+                    startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+                  >
+                    Lưu
+                  </Button>
+                ) : (
+                  // Tạo mới: chỉ 1 nút "Lưu" ở step cuối, bắt buộc nhập đủ thông tin từ step
+                  // đầu (tên, danh mục...) tới biến thể/ảnh mới tạo được sản phẩm.
+                  isLastStep && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={() => handleSubmit(onValid, onInvalid)()}
+                      disabled={isSaving}
+                      startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+                    >
+                      Lưu
+                    </Button>
+                  )
+                ))}
+            </div>
           </div>
-        </form>
+        </div>
       </div>
     </FormProvider>
   );

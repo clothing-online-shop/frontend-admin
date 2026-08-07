@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { CategoryNode } from "@/lib/shared-types";
+import type { CategoryNode } from "@/types/shared-types";
 import {
   useCategoryTree,
   useDeleteCategory,
@@ -255,7 +255,7 @@ export default function CategoryList() {
       </div>
 
       {isLoading ? (
-        <Spinner />
+        <Spinner className="text-brand-500" />
       ) : isError ? (
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <p className="text-sm text-error-500">Không tải được danh mục. Vui lòng thử lại.</p>

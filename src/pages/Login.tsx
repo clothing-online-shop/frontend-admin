@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { login } from "@/lib/auth-api";
+import { login } from "@/lib/api/auth-api";
 import { useAuthStore } from "@/store/auth-store";
 import { isAdminPanelRole } from "@/lib/roles";
 import { getErrorMessage } from "@/lib/error";
@@ -82,14 +82,10 @@ export default function Login() {
           <Form onSubmit={handleSubmit(onValid)} className="space-y-5">
             {/* Email */}
             <div>
-              <label
-                htmlFor="login-email"
-                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-              >
-                Email <span className="text-error-500">*</span>
-              </label>
               <Input
                 id="login-email"
+                label="Email"
+                required
                 type="email"
                 placeholder="admin@clothing-shop.com"
                 {...register("email")}
@@ -100,14 +96,10 @@ export default function Login() {
 
             {/* Password */}
             <div>
-              <label
-                htmlFor="login-password"
-                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-              >
-                Mật khẩu <span className="text-error-500">*</span>
-              </label>
               <Input
                 id="login-password"
+                label="Mật khẩu"
+                required
                 type="password"
                 placeholder="••••••••"
                 {...register("password")}

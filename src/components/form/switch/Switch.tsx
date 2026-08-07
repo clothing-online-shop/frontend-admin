@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useControllableState } from "@/hooks/useControllableState";
 
 interface SwitchProps {
   label: string;
@@ -17,19 +17,11 @@ const Switch: React.FC<SwitchProps> = ({
   onChange,
   color = "blue", // Default to blue color
 }) => {
-  const [internalChecked, setInternalChecked] = useState(defaultChecked);
-  const isControlled = checked !== undefined;
-  const isChecked = isControlled ? checked : internalChecked;
+  const [isChecked, setIsChecked] = useControllableState(checked, defaultChecked, onChange);
 
   const handleToggle = () => {
     if (disabled) return;
-    const newCheckedState = !isChecked;
-    if (!isControlled) {
-      setInternalChecked(newCheckedState);
-    }
-    if (onChange) {
-      onChange(newCheckedState);
-    }
+    setIsChecked(!isChecked);
   };
 
   const switchColors =
