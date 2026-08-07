@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { CategoryNode } from "@/lib/shared-types";
+import type { CategoryNode } from "@/types/shared-types";
 import {
   useCategoryTree,
   useDeleteCategory,

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Brand } from "@/lib/shared-types";
+import type { Brand } from "@/types/shared-types";
 import { useBrands, useDeleteBrand } from "@/hooks/useBrands";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getErrorMessage } from "@/lib/error";

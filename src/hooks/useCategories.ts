@@ -5,10 +5,12 @@ import {
   getCategoryTree,
   reorderCategories,
   updateCategory,
-  type CreateCategoryPayload,
-  type ReorderCategoryItem,
-  type UpdateCategoryPayload,
-} from "@/lib/categories-api";
+} from "@/lib/api/categories-api";
+import type {
+  CreateCategoryPayload,
+  ReorderCategoryItem,
+  UpdateCategoryPayload,
+} from "@/types/categories-api.types";
 
 const CATEGORIES_KEY = ["categories", "tree"];
 

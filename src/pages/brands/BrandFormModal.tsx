@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import type { Brand } from "@/lib/shared-types";
-import { ImageUploader } from "@/components/ImageUploader";
+import type { Brand } from "@/types/shared-types";
+import { ImageUploader } from "@/components/common/ImageUploader";
 import { useCreateBrand, useUpdateBrand } from "@/hooks/useBrands";
 import { getErrorMessage } from "@/lib/error";
 import { Modal } from "@/components/ui/modal";

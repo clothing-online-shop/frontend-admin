@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useWatch, FormProvider, type FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ProductStatus } from "@/lib/shared-types";
+import { ProductStatus } from "@/types/shared-types";
 import { useCreateProduct, useProductDetail, useUpdateProduct } from "@/hooks/useProducts";
 import type {
   CreateProductPayload,
   ProductVariantPayload,
   UpdateProductPayload,
-} from "@/lib/products-api";
+} from "@/types/products-api.types";
 import { getErrorMessage } from "@/lib/error";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";

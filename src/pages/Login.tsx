@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { login } from "@/lib/auth-api";
+import { login } from "@/lib/api/auth-api";
 import { useAuthStore } from "@/store/auth-store";
 import { isAdminPanelRole } from "@/lib/roles";
 import { getErrorMessage } from "@/lib/error";

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import type { CategoryNode } from "@/lib/shared-types";
-import { ImageUploader } from "@/components/ImageUploader";
+import type { CategoryNode } from "@/types/shared-types";
+import { ImageUploader } from "@/components/common/ImageUploader";
 import { useCreateCategory, useUpdateCategory } from "@/hooks/useCategories";
 import { getErrorMessage } from "@/lib/error";
 import { Modal } from "@/components/ui/modal";

@@ -1,7 +1,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import ComponentCard from "@/components/common/ComponentCard";
-import { ImageUploader } from "@/components/ImageUploader";
+import { ImageUploader } from "@/components/common/ImageUploader";
 
 interface ProductImagesStepProps {
   viewOnly?: boolean;

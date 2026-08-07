@@ -1,11 +1,11 @@
 import { useMemo, useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
-import { ProductStatus } from "@/lib/shared-types";
+import { ProductStatus } from "@/types/shared-types";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { slugifyPreview } from "@/lib/slug";
 import { useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
-import { RichTextEditor } from "@/components/RichTextEditor";
+import { RichTextEditor } from "@/components/common/RichTextEditor";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
@@ -189,14 +189,17 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
             control={control}
             render={({ field }) => (
               <Select
-                value={field.value}
+                // Select dùng chung chỉ nhận option.value dạng string — status thật trong
+                // form state vẫn là number, ép qua lại đúng ở ranh giới UI này (giống pattern
+                // Select "Số dòng/trang" ở Pagination.tsx).
+                value={String(field.value)}
                 onChange={(value) =>
-                  field.onChange((value as ProductStatus) ?? ProductStatus.DRAFT)
+                  field.onChange(value !== undefined ? Number(value) : ProductStatus.DRAFT)
                 }
                 options={[
-                  { value: ProductStatus.DRAFT, label: "Nháp" },
-                  { value: ProductStatus.ACTIVE, label: "Đang bán" },
-                  { value: ProductStatus.INACTIVE, label: "Ngừng bán" },
+                  { value: String(ProductStatus.DRAFT), label: "Nháp" },
+                  { value: String(ProductStatus.ACTIVE), label: "Đang bán" },
+                  { value: String(ProductStatus.INACTIVE), label: "Ngừng bán" },
                 ]}
                 error={!!errors.status}
                 hint={errors.status?.message}

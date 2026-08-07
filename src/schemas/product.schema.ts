@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { ProductStatus } from "@/lib/shared-types";
+import { ProductStatus } from "@/types/shared-types";
 
 const productVariantSchema = yup.object({
   id: yup.string().optional(),

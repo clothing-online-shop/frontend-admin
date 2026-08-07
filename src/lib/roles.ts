@@ -1,4 +1,4 @@
-import type { AuthUser } from "@/lib/shared-types";
+import type { AuthUser } from "@/types/shared-types";
 
 // Mock tạm — backend hiện chỉ trả role "CUSTOMER" | "ADMIN" (xem shared-types.ts).
 // WAREHOUSE_STAFF/MARKETING là 2 role mock để FE sẵn sàng hiển thị sidebar theo quyền

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ProductStatus, type ProductListItem } from "@/lib/shared-types";
+import { ProductStatus, type ProductListItem } from "@/types/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
 import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
@@ -249,7 +249,7 @@ export default function ProductList() {
         stickyRight: true,
         render: (product) => {
           const lockLabel =
-            product.status === ProductStatus.ACTIVE ? "Khóa sản phẩm" : "Mở khóa sản phẩm";
+            product.status === ProductStatus.ACTIVE ? "Khóa" : "Mở khóa";
           return (
             <div className="flex items-center justify-center gap-3">
               <Tooltip content="Xem">
@@ -353,13 +353,15 @@ export default function ProductList() {
           <Select
             allowClear
             placeholder="Trạng thái"
-            value={status}
+            // Select dùng chung chỉ nhận option.value dạng string — status thật (state +
+            // query param) vẫn là number, ép qua lại đúng ở ranh giới UI này.
+            value={status !== undefined ? String(status) : undefined}
             onChange={(value) => {
-              setStatus(value as ProductStatus | undefined);
+              setStatus(value !== undefined ? (Number(value) as ProductStatus) : undefined);
               setPage(1);
             }}
             options={Object.values(ProductStatus).map((value) => ({
-              value,
+              value: String(value),
               label: STATUS_LABELS[value].label,
             }))}
           />
