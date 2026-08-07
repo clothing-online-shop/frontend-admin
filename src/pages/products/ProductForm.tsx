@@ -52,7 +52,9 @@ const EMPTY_VALUES: ProductFormValues = {
   salePrice: undefined,
   status: ProductStatus.DRAFT,
   thumbnail: [],
+  thumbnailPublicId: undefined,
   images: [],
+  imagePublicIds: [],
   metaTitle: "",
   metaDescription: "",
   variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 }],
@@ -86,7 +88,9 @@ function buildCreatePayload(values: ProductFormValues): CreateProductPayload {
     salePrice: values.salePrice,
     status: values.status,
     thumbnail: values.thumbnail[0],
+    thumbnailPublicId: values.thumbnailPublicId,
     images: values.images,
+    imagePublicIds: values.imagePublicIds,
     metaTitle: values.metaTitle || undefined,
     metaDescription: values.metaDescription || undefined,
     variants: buildVariantsPayload(values.variants),
@@ -118,7 +122,12 @@ function buildStepUpdatePayload(stepIndex: number, values: ProductFormValues): U
     case 1:
       return { variants: buildVariantsPayload(values.variants) };
     case 2:
-      return { thumbnail: values.thumbnail[0], images: values.images };
+      return {
+        thumbnail: values.thumbnail[0],
+        thumbnailPublicId: values.thumbnailPublicId,
+        images: values.images,
+        imagePublicIds: values.imagePublicIds,
+      };
     default:
       return { metaTitle: values.metaTitle, metaDescription: values.metaDescription };
   }
@@ -162,34 +171,52 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   useEffect(() => {
-    if (product) {
-      reset({
-        name: product.name,
-        slug: product.slug,
-        description: product.description ?? "",
-        material: product.material ?? "",
-        careInstructions: product.careInstructions ?? "",
-        categoryId: product.categoryId,
-        brandId: product.brand?.id ?? "",
-        basePrice: product.basePrice,
-        salePrice: product.salePrice ?? undefined,
-        status: product.status,
-        thumbnail: product.thumbnail ? [product.thumbnail] : [],
-        images: product.images ?? [],
-        metaTitle: product.metaTitle ?? "",
-        metaDescription: product.metaDescription ?? "",
-        variants: product.variants.map((v) => ({
-          id: v.id,
-          size: v.size,
-          color: v.color,
-          sku: v.sku,
-          price: v.price,
-          stockQuantity: v.stockQuantity,
-        })),
-      });
-      setMaxStepReached(STEPS.length - 1);
-    }
-  }, [product, reset]);
+    // Bước 0 chưa có tương tác gì thì formState.errors rỗng dù field bắt buộc còn
+    // trống — trigger 1 lần khi đổi bước để nút "Tiếp theo"/"Lưu" phản ánh đúng trạng
+    // thái ngay từ đầu, không cần đợi user gõ phím mới thấy disable.
+    void trigger(currentStepFields);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (!product) return;
+    reset({
+      name: product.name,
+      slug: product.slug,
+      description: product.description ?? "",
+      material: product.material ?? "",
+      careInstructions: product.careInstructions ?? "",
+      categoryId: product.categoryId,
+      brandId: product.brand?.id ?? "",
+      basePrice: product.basePrice,
+      salePrice: product.salePrice ?? undefined,
+      status: product.status,
+      thumbnail: product.thumbnail ? [product.thumbnail] : [],
+      thumbnailPublicId: product.thumbnailPublicId ?? undefined,
+      images: product.images ?? [],
+      imagePublicIds: product.imagePublicIds ?? [],
+      metaTitle: product.metaTitle ?? "",
+      metaDescription: product.metaDescription ?? "",
+      variants: product.variants.map((v) => ({
+        id: v.id,
+        size: v.size,
+        color: v.color,
+        sku: v.sku,
+        price: v.price,
+        stockQuantity: v.stockQuantity,
+      })),
+    });
+    setMaxStepReached(STEPS.length - 1);
+    // reset() xoá sạch errors cũ — trigger lại để nút "Tiếp theo"/"Lưu" phản ánh đúng dữ
+    // liệu sản phẩm thật vừa load (vd sản phẩm cũ tạo trước khi field bắt buộc này tồn
+    // tại) thay vì mặc định coi là hợp lệ.
+    void trigger(STEPS[0].fields);
+    // Chỉ hydrate lại khi ĐỔI sản phẩm (id đổi) — không phải mỗi lần refetch nội dung.
+    // Mọi mutation đều invalidateQueries, PATCH 1 step xong sẽ làm `product` đổi
+    // reference dù cùng id; nếu effect chạy lại theo reference, reset() sẽ ghi đè mất
+    // dữ liệu đang gõ dở ở step khác chưa lưu.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id, reset, trigger]);
 
   function goToStep(index: number) {
     if (index <= maxStepReached) setCurrentStep(index);

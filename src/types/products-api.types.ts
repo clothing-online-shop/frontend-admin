@@ -31,7 +31,11 @@ export interface CreateProductPayload {
   salePrice?: number;
   status?: ProductStatus;
   thumbnail?: string;
+  // Cloudinary publicId song song với thumbnail/images — không hiển thị lên UI, chỉ để
+  // BE dọn ảnh cũ trên Cloudinary khi thay/xóa ảnh.
+  thumbnailPublicId?: string;
   images?: string[];
+  imagePublicIds?: string[];
   metaTitle?: string;
   metaDescription?: string;
   variants: ProductVariantPayload[];

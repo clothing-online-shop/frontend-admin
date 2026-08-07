@@ -256,6 +256,13 @@ export default function CategoryList() {
 
       {isLoading ? (
         <Spinner className="text-brand-500" />
+      ) : isError ? (
+        <div className="flex flex-col items-center gap-3 py-8 text-center">
+          <p className="text-sm text-error-500">Không tải được danh mục. Vui lòng thử lại.</p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Thử lại
+          </Button>
+        </div>
       ) : treeData.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có danh mục nào.</p>
       ) : filteredTreeData.length === 0 ? (

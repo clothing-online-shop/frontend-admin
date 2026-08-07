@@ -10,13 +10,24 @@ interface ImageUploaderProps {
   // Màn xem (view-only): ẩn hẳn nút thêm/xóa/đổi thứ tự ảnh, không chỉ disable — các nút
   // này vô nghĩa khi không có thao tác lưu nào theo sau.
   readOnly?: boolean;
+  // Cho phép nơi gọi lưu lại publicId song song với url (vd. để BE dọn ảnh cũ trên
+  // Cloudinary khi thay/xóa ảnh) — optional nên không ảnh hưởng chỗ chưa cần theo dõi.
+  onPublicIdChange?: (url: string, publicId: string | null) => void;
 }
 
-export function ImageUploader({ value, onChange, max = 8, label, readOnly = false }: ImageUploaderProps) {
+export function ImageUploader({
+  value,
+  onChange,
+  max = 8,
+  label,
+  readOnly = false,
+  onPublicIdChange,
+}: ImageUploaderProps) {
   const { uploading, fileInputRef, handleFilesSelected, handleRemove, moveImage } = useImageUploader({
     value,
     onChange,
     max,
+    onPublicIdChange,
   });
 
   const canReorder = value.length > 1;

@@ -6,6 +6,9 @@ interface UseImageUploaderOptions {
   value: string[];
   onChange: (urls: string[]) => void;
   max: number;
+  // Cho phép nơi gọi lưu lại publicId song song với url (vd. để BE dọn ảnh cũ trên
+  // Cloudinary khi thay/xóa ảnh) — optional nên không ảnh hưởng chỗ chưa cần theo dõi.
+  onPublicIdChange?: (url: string, publicId: string | null) => void;
 }
 
 interface UseImageUploaderResult {
@@ -22,7 +25,12 @@ interface UseImageUploaderResult {
  * ảnh trên storage khi bị gỡ khỏi form. Không biết gì về màn hình gọi nó (sản phẩm,
  * danh mục, thương hiệu...) — chỉ nhận value/onChange/max như 1 field bất kỳ.
  */
-export function useImageUploader({ value, onChange, max }: UseImageUploaderOptions): UseImageUploaderResult {
+export function useImageUploader({
+  value,
+  onChange,
+  max,
+  onPublicIdChange,
+}: UseImageUploaderOptions): UseImageUploaderResult {
   const [publicIds, setPublicIds] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +47,7 @@ export function useImageUploader({ value, onChange, max }: UseImageUploaderOptio
           const result = await uploadImage(file);
           uploaded.push(result.url);
           nextPublicIds[result.url] = result.publicId;
+          onPublicIdChange?.(result.url, result.publicId);
         } catch {
           toast.error("Upload ảnh thất bại");
         }
@@ -53,6 +62,10 @@ export function useImageUploader({ value, onChange, max }: UseImageUploaderOptio
   }
 
   function handleRemove(url: string) {
+    // Báo publicId=null TRƯỚC khi đổi value: nơi gọi (vd ProductImagesStep) cần tra
+    // cứu vị trí của url trong mảng hiện tại để xóa đúng publicId tương ứng — đổi thứ
+    // tự sẽ làm mất url khỏi mảng trước khi tra được vị trí.
+    onPublicIdChange?.(url, null);
     onChange(value.filter((v) => v !== url));
     const publicId = publicIds[url];
     if (publicId) {

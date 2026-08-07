@@ -3,6 +3,9 @@ export interface CreateCategoryPayload {
   slug?: string;
   parentId?: string | null;
   image?: string;
+  // Cloudinary publicId song song với image — không hiển thị lên UI, chỉ để BE dọn ảnh
+  // cũ trên Cloudinary khi thay/xóa ảnh.
+  imagePublicId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
 }

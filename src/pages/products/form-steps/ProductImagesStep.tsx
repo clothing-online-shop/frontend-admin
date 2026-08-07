@@ -10,6 +10,8 @@ interface ProductImagesStepProps {
 export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) {
   const {
     control,
+    getValues,
+    setValue,
     formState: { errors },
   } = useFormContext<ProductFormValues>();
 
@@ -20,7 +22,15 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
           name="thumbnail"
           control={control}
           render={({ field }) => (
-            <ImageUploader value={field.value} onChange={field.onChange} max={1} readOnly={viewOnly} />
+            <ImageUploader
+              value={field.value}
+              onChange={field.onChange}
+              max={1}
+              readOnly={viewOnly}
+              onPublicIdChange={(_url, publicId) =>
+                setValue("thumbnailPublicId", publicId ?? undefined)
+              }
+            />
           )}
         />
         {errors.thumbnail && (
@@ -38,6 +48,24 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
               onChange={field.onChange}
               max={8}
               readOnly={viewOnly}
+              onPublicIdChange={(url, publicId) => {
+                const currentPublicIds = getValues("imagePublicIds") ?? [];
+                if (publicId) {
+                  // Ảnh mới upload: onChange sắp nối url vào CUỐI mảng images, nên nối
+                  // publicId vào cuối imagePublicIds để giữ đúng thứ tự khớp vị trí.
+                  setValue("imagePublicIds", [...currentPublicIds, publicId]);
+                  return;
+                }
+                // Ảnh bị xóa: ImageUploader báo trước khi đổi images, nên field.value ở
+                // đây vẫn còn chứa url — tìm đúng vị trí để xóa publicId tương ứng.
+                const currentImages = getValues("images") ?? [];
+                const index = currentImages.indexOf(url);
+                if (index === -1) return;
+                setValue(
+                  "imagePublicIds",
+                  currentPublicIds.filter((_, i) => i !== index),
+                );
+              }}
             />
           )}
         />
