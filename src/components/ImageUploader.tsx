@@ -9,9 +9,12 @@ interface ImageUploaderProps {
   onChange: (urls: string[]) => void;
   max?: number;
   label?: string;
+  // Màn xem (view-only): ẩn hẳn nút thêm/xóa/đổi thứ tự ảnh, không chỉ disable — các nút
+  // này vô nghĩa khi không có thao tác lưu nào theo sau.
+  readOnly?: boolean;
 }
 
-export function ImageUploader({ value, onChange, max = 8, label }: ImageUploaderProps) {
+export function ImageUploader({ value, onChange, max = 8, label, readOnly = false }: ImageUploaderProps) {
   const [publicIds, setPublicIds] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,9 +69,10 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
         {value.map((url, index) => (
           <div
             key={url}
-            className="group relative h-72 w-72 shrink-0 overflow-hidden rounded-xl border border-gray-200 shadow-theme-xs dark:border-gray-700"
+            className="group relative h-52 w-52 shrink-0 overflow-hidden rounded-xl border border-gray-200 shadow-theme-xs dark:border-gray-700"
           >
             <img src={url} alt="" className="h-full w-full object-cover" />
+            {!readOnly && (
             <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/0 opacity-0 transition-all duration-200 ease-standard group-hover:bg-black/40 group-hover:opacity-100">
               {canReorder && (
                 <button
@@ -101,9 +105,10 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
                 </button>
               )}
             </div>
+            )}
           </div>
         ))}
-        {value.length < max ? (
+        {!readOnly && value.length < max ? (
           <>
             <input
               ref={fileInputRef}
@@ -120,10 +125,10 @@ export function ImageUploader({ value, onChange, max = 8, label }: ImageUploader
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex h-72 w-72 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 text-base text-gray-500 transition-colors duration-200 ease-standard hover:border-brand-400 hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400"
+              className="flex h-52 w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 text-base text-gray-500 transition-colors duration-200 ease-standard hover:border-brand-400 hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:text-gray-400"
             >
               {uploading ? (
-                <Spinner />
+                <Spinner className="text-brand-500" />
               ) : (
                 <>
                   <PlusIcon className="h-9 w-9" />

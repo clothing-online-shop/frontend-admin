@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 // Props for Table
 interface TableProps {
@@ -35,10 +35,47 @@ interface TableCellProps {
 // Table Component
 // Tự bọc overflow-x-auto quanh <table> — màn nào dùng Table cũng tự có scroll ngang
 // khi nhiều cột vượt khung, không cần tự thêm div bọc riêng ở từng trang.
+// Đồng thời tự toggle class "is-scroll-end" trên wrapper khi cuộn ngang đến hết —
+// cột đánh dấu `sticky-col-right` (xem DataTable.tsx) dựa vào class này để ẩn/hiện
+// box-shadow phân biệt (xem index.css), không cần page nào tự quản lý việc này.
 const Table: React.FC<TableProps> = ({ children, className }) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const table = tableRef.current;
+    if (!wrapper || !table) return;
+
+    // TS không giữ narrowing của `wrapper`/`table` (đã check non-null ở trên) xuyên qua
+    // function con — ép kiểu non-null vì effect return sớm nếu 1 trong 2 là null.
+    const wrapperEl = wrapper as HTMLDivElement;
+
+    function updateScrollEnd() {
+      // Trừ 2px cho sai số làm tròn subpixel khi zoom trình duyệt khác 100%.
+      const atEnd = wrapperEl.scrollLeft + wrapperEl.clientWidth >= wrapperEl.scrollWidth - 2;
+      wrapperEl.classList.toggle("is-scroll-end", atEnd);
+    }
+
+    updateScrollEnd();
+    wrapper.addEventListener("scroll", updateScrollEnd, { passive: true });
+    // Quan sát cả wrapper (đổi kích thước khung nhìn) lẫn table (đổi số cột/độ rộng nội
+    // dung sau khi rows load xong) — 1 trong 2 đổi đều có thể đổi trạng thái "đã cuộn hết".
+    const observer = new ResizeObserver(updateScrollEnd);
+    observer.observe(wrapper);
+    observer.observe(table);
+
+    return () => {
+      wrapper.removeEventListener("scroll", updateScrollEnd);
+      observer.disconnect();
+    };
+  }, []);
+
   return (
-    <div className="overflow-x-auto">
-      <table className={`min-w-full ${className ?? ""}`}>{children}</table>
+    <div ref={wrapperRef} className="table-scroll-wrapper overflow-x-auto border rounded-xl">
+      <table ref={tableRef} className={`min-w-full ${className ?? ""}`}>
+        {children}
+      </table>
     </div>
   );
 };
@@ -56,7 +93,7 @@ const TableBody: React.FC<TableBodyProps> = ({ children, className }) => {
 // TableRow Component
 const TableRow: React.FC<TableRowProps> = ({ children, className }) => {
   return (
-    <tr className={`transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5 ${className ?? ""}`}>
+    <tr className={`group transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5 ${className ?? ""}`}>
       {children}
     </tr>
   );

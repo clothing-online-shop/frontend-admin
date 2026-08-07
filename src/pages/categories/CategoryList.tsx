@@ -225,7 +225,7 @@ export default function CategoryList() {
       </div>
 
       {isLoading ? (
-        <Spinner />
+        <Spinner className="text-brand-500" />
       ) : treeData.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Chưa có danh mục nào.</p>
       ) : (

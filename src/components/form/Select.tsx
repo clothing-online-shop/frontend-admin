@@ -17,6 +17,9 @@ interface SelectProps {
   className?: string;
   error?: boolean;
   hint?: string;
+  // "top": panel bung lên trên trigger — dùng cho Select nằm gần cuối vùng scroll (vd bộ
+  // chọn số dòng/trang ở Pagination) để tránh bung xuống làm đẩy/giật scroll trang.
+  dropdownPlacement?: "bottom" | "top";
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -29,6 +32,7 @@ const Select: React.FC<SelectProps> = ({
   className = "",
   error = false,
   hint,
+  dropdownPlacement = "bottom",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,8 +105,14 @@ const Select: React.FC<SelectProps> = ({
 
       {shouldRenderPanel && !disabled && (
         <div
-          className={`absolute z-20 mt-1 max-h-60 w-full origin-top overflow-y-auto rounded-xl border border-gray-200 bg-white py-1.5 shadow-theme-lg transition-[opacity,transform] duration-200 ease-standard dark:border-gray-800 dark:bg-gray-dark ${
-            isPanelVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-1"
+          className={`absolute z-20 max-h-60 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white py-1.5 shadow-theme-lg transition-[opacity,transform] duration-200 ease-standard dark:border-gray-800 dark:bg-gray-dark ${
+            dropdownPlacement === "top" ? "bottom-full mb-1 origin-bottom" : "top-full mt-1 origin-top"
+          } ${
+            isPanelVisible
+              ? "opacity-100 scale-100 translate-y-0"
+              : dropdownPlacement === "top"
+                ? "opacity-0 scale-95 translate-y-1"
+                : "opacity-0 scale-95 -translate-y-1"
           }`}
         >
           {options.length === 0 ? (

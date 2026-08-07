@@ -10,7 +10,11 @@ import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 
-export function ProductGeneralInfoStep() {
+interface ProductGeneralInfoStepProps {
+  viewOnly?: boolean;
+}
+
+export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoStepProps) {
   const {
     register,
     control,
@@ -74,7 +78,7 @@ export function ProductGeneralInfoStep() {
           name="description"
           control={control}
           render={({ field }) => (
-            <RichTextEditor value={field.value ?? ""} onChange={field.onChange} />
+            <RichTextEditor value={field.value ?? ""} onChange={field.onChange} disabled={viewOnly} />
           )}
         />
         {errors.description && (
@@ -121,6 +125,7 @@ export function ProductGeneralInfoStep() {
                 onChange={(value) => field.onChange(value ?? "")}
                 error={!!errors.categoryId}
                 hint={errors.categoryId?.message}
+                disabled={viewOnly}
               />
             )}
           />
@@ -139,6 +144,7 @@ export function ProductGeneralInfoStep() {
                 options={brandOptions}
                 value={field.value || undefined}
                 onChange={(value) => field.onChange(value ?? "")}
+                disabled={viewOnly}
               />
             )}
           />
@@ -194,6 +200,7 @@ export function ProductGeneralInfoStep() {
                 ]}
                 error={!!errors.status}
                 hint={errors.status?.message}
+                disabled={viewOnly}
               />
             )}
           />

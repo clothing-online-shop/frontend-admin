@@ -288,6 +288,70 @@ layer(base);
   background-color: #344054;
 }
 
+/* ===== Scrollbar dùng chung toàn app: trang + mọi vùng overflow-y auto/scroll ===== */
+/* Chrome/Edge bản mới cũng đã hỗ trợ `scrollbar-color`/`scrollbar-width` chuẩn (không còn
+   riêng Firefox) — nếu khai cùng lúc với `::-webkit-scrollbar-*` trên cùng gốc kế thừa, trình
+   duyệt ưu tiên property chuẩn (chỉ 2 màu tĩnh, không có state) và BỎ QUA hẳn pseudo-element,
+   khiến hover/kéo không đổi màu được dù CSS đúng. Tách bằng @supports selector(::-webkit-
+   scrollbar) để mỗi engine chỉ nhận đúng 1 bộ, tránh xung đột này. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  /* Firefox: chỉ chỉnh được màu track/thumb tĩnh, không có state hover/kéo riêng — giới hạn
+     của spec, không phải thiếu sót khi implement. */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-300) var(--color-gray-100);
+  }
+  html.dark {
+    scrollbar-color: var(--color-gray-700) var(--color-gray-800);
+  }
+}
+
+@supports selector(::-webkit-scrollbar) {
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background-color: var(--color-gray-100);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-300);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+  }
+  *::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-brand-500);
+  }
+  html.dark *::-webkit-scrollbar-track {
+    background-color: var(--color-gray-800);
+  }
+  html.dark *::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-700);
+  }
+}
+
+/* ===== Cột sticky-right trong bảng (vd "Thao tác") — xem Table.tsx/DataTable.tsx ===== */
+/* Table.tsx tự toggle class "is-scroll-end" trên wrapper (dựa vào scrollLeft/scrollWidth/
+   clientWidth) — không có scroll ngang HOẶC đã cuộn hết thì is-scroll-end luôn có mặt (2
+   trường hợp cùng cho ra 1 kết quả: không cần phân cách), nên border-left + box-shadow của
+   cột ghim dùng chung đúng 1 điều kiện ẩn/hiện này, không cần thêm biến hasHorizontalScroll
+   riêng. Còn nội dung bị che (có scroll ngang + chưa tới cuối) mới hiện cả hai để phân cách
+   rõ với dữ liệu phía sau; tới cuối thì ẩn hẳn, không để lại viền/bóng thừa. */
+.table-scroll-wrapper:not(.is-scroll-end) .sticky-col-right {
+  border-left-color: var(--color-gray-400);
+  box-shadow: -6px 0 6px -6px rgba(16, 24, 40, 0.15);
+}
+html.dark .table-scroll-wrapper:not(.is-scroll-end) .sticky-col-right {
+  border-left-color: var(--color-gray-500);
+  box-shadow: -6px 0 6px -6px rgba(0, 0, 0, 0.5);
+}
+
 @layer utilities {
   /* For Remove Date Icon */
   input[type="date"]::-webkit-inner-spin-button,
@@ -853,6 +917,12 @@ html.dark,
   --ck-color-button-on-color: var(--color-brand-500);
   --ck-color-button-on-hover-background: var(--color-brand-100);
   --ck-border-radius: 6px;
+}
+
+/* Vùng soạn thảo mặc định cao theo nội dung (rất thấp lúc mới gõ vài chữ) — set sẵn
+   min-height để có đủ không gian gõ mô tả dài mà không phải cuộn ngay từ đầu. */
+.ck-content-wrapper .ck-editor__editable {
+  min-height: 300px;
 }
 
 /* CKEditor tự đổi border + thêm inset box-shadow cho vùng soạn thảo khi focus qua class

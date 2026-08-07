@@ -6,7 +6,11 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import { PlusIcon, TrashBinIcon } from "@/icons";
 
-export function ProductVariantsStep() {
+interface ProductVariantsStepProps {
+  viewOnly?: boolean;
+}
+
+export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepProps) {
   const {
     register,
     control,
@@ -77,26 +81,30 @@ export function ProductVariantsStep() {
                   {...register(`variants.${index}.stockQuantity`)}
                 />
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="!px-2.5 !py-2.5 !text-error-500 hover:!bg-error-50"
-                onClick={() => remove(index)}
-              >
-                <TrashBinIcon className="h-4 w-4" />
-              </Button>
+              {!viewOnly && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="!px-2.5 !py-2.5 !text-error-500 hover:!bg-error-50"
+                  onClick={() => remove(index)}
+                >
+                  <TrashBinIcon className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           );
         })}
-        <Button
-          type="button"
-          variant="outline"
-          startIcon={<PlusIcon className="h-4 w-4" />}
-          onClick={() => append({ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 })}
-          className="self-start"
-        >
-          Thêm biến thể
-        </Button>
+        {!viewOnly && (
+          <Button
+            type="button"
+            variant="outline"
+            startIcon={<PlusIcon className="h-4 w-4" />}
+            onClick={() => append({ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 })}
+            className="self-start"
+          >
+            Thêm biến thể
+          </Button>
+        )}
       </div>
     </ComponentCard>
   );

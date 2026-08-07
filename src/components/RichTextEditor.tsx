@@ -83,9 +83,10 @@ class ServerFileUploadAdapter implements UploadAdapter {
 interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
+  disabled?: boolean;
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, disabled = false }: RichTextEditorProps) {
   const toast = useToast();
 
   return (
@@ -209,6 +210,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           );
         }}
         onChange={(_event, editor) => onChange(editor.getData())}
+        disabled={disabled}
       />
     </div>
   );

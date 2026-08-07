@@ -3,7 +3,11 @@ import type { ProductFormValues } from "@/schemas/product.schema";
 import ComponentCard from "@/components/common/ComponentCard";
 import { ImageUploader } from "@/components/ImageUploader";
 
-export function ProductImagesStep() {
+interface ProductImagesStepProps {
+  viewOnly?: boolean;
+}
+
+export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) {
   const {
     control,
     formState: { errors },
@@ -16,7 +20,7 @@ export function ProductImagesStep() {
           name="thumbnail"
           control={control}
           render={({ field }) => (
-            <ImageUploader value={field.value} onChange={field.onChange} max={1} />
+            <ImageUploader value={field.value} onChange={field.onChange} max={1} readOnly={viewOnly} />
           )}
         />
         {errors.thumbnail && (
@@ -29,7 +33,12 @@ export function ProductImagesStep() {
           name="images"
           control={control}
           render={({ field }) => (
-            <ImageUploader value={field.value ?? []} onChange={field.onChange} max={8} />
+            <ImageUploader
+              value={field.value ?? []}
+              onChange={field.onChange}
+              max={8}
+              readOnly={viewOnly}
+            />
           )}
         />
         {errors.images && (

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/lib/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
-import { useDeleteProduct, useProductsAdmin } from "@/hooks/useProducts";
+import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
@@ -13,10 +13,11 @@ import Select from "@/components/form/Select";
 import Badge from "@/components/ui/badge/Badge";
 import Pagination from "@/components/ui/pagination/Pagination";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
 
 const STATUS_LABELS: Record<ProductStatus, { label: string; color: "light" | "success" | "error" }> = {
   [ProductStatus.DRAFT]: { label: "Nháp", color: "light" },
@@ -43,8 +44,8 @@ export default function ProductList() {
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
-  const limit = 10;
 
   const { data: categoryTree } = useCategoryTree();
   const categoryOptions = useMemo(() => {
@@ -89,6 +90,7 @@ export default function ProductList() {
     limit,
   });
   const deleteMutation = useDeleteProduct();
+  const updateMutation = useUpdateProduct();
 
   useEffect(() => {
     setPage(1);
@@ -98,12 +100,28 @@ export default function ProductList() {
     if (!deleteTarget) return;
     try {
       await deleteMutation.mutateAsync(deleteTarget.id);
-      toast.success("Đã chuyển sản phẩm sang trạng thái ngừng bán");
+      toast.success("Đã xóa sản phẩm");
       setDeleteTarget(null);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
   }
+
+  const handleToggleLock = useCallback(
+    async (product: ProductListItem) => {
+      const nextStatus =
+        product.status === ProductStatus.ACTIVE ? ProductStatus.INACTIVE : ProductStatus.ACTIVE;
+      try {
+        await updateMutation.mutateAsync({ id: product.id, payload: { status: nextStatus } });
+        toast.success(
+          nextStatus === ProductStatus.INACTIVE ? "Đã khóa sản phẩm" : "Đã mở khóa sản phẩm",
+        );
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+      }
+    },
+    [updateMutation, toast],
+  );
 
   const columns = useMemo<DataTableColumn<ProductListItem>[]>(
     () => [
@@ -226,31 +244,64 @@ export default function ProductList() {
       },
       {
         key: "actions",
-        header: "Hành động",
+        header: "Thao tác",
         className: "min-w-24",
-        render: (product) => (
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(`/products/${product.slug}/edit`)}
-              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-              aria-label="Sửa sản phẩm"
-            >
-              <PencilIcon className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteTarget(product)}
-              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
-              aria-label="Xóa sản phẩm"
-            >
-              <TrashBinIcon className="h-4 w-4" />
-            </button>
-          </div>
-        ),
+        stickyRight: true,
+        render: (product) => {
+          const lockLabel =
+            product.status === ProductStatus.ACTIVE ? "Khóa sản phẩm" : "Mở khóa sản phẩm";
+          return (
+            <div className="flex items-center justify-center gap-3">
+              <Tooltip content="Xem">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/products/${product.slug}/view`)}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                  aria-label="Xem sản phẩm"
+                >
+                  <EyeIcon className="h-4 w-4" />
+                </button>
+              </Tooltip>
+              <Tooltip content="Chỉnh sửa">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/products/${product.slug}/edit`)}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                  aria-label="Sửa sản phẩm"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+              </Tooltip>
+              <Tooltip content={lockLabel}>
+                <button
+                  type="button"
+                  onClick={() => handleToggleLock(product)}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                  aria-label={lockLabel}
+                >
+                  {product.status === ProductStatus.ACTIVE ? (
+                    <LockOpenIcon className="h-4 w-4" />
+                  ) : (
+                    <LockIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </Tooltip>
+              <Tooltip content="Xóa">
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(product)}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
+                  aria-label="Xóa sản phẩm"
+                >
+                  <TrashBinIcon className="h-4 w-4" />
+                </button>
+              </Tooltip>
+            </div>
+          );
+        },
       },
     ],
-    [categoryNameById, brandNameById, navigate],
+    [categoryNameById, brandNameById, navigate, handleToggleLock],
   );
 
   return (
@@ -262,7 +313,7 @@ export default function ProductList() {
           startIcon={<PlusIcon className="h-4 w-4" />}
           onClick={() => navigate("/products/new")}
         >
-          Thêm sản phẩm1
+          Thêm sản phẩm
         </Button>
       </div>
 
@@ -315,7 +366,7 @@ export default function ProductList() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="rounded-2xl bg-white">
         <DataTable
           columns={columns}
           rows={data?.data ?? []}
@@ -324,7 +375,16 @@ export default function ProductList() {
           emptyMessage="Chưa có sản phẩm nào."
         />
         <div className="px-5">
-          <Pagination page={page} pageSize={limit} total={data?.meta.total ?? 0} onChange={setPage} />
+          <Pagination
+            page={page}
+            pageSize={limit}
+            total={data?.meta.total ?? 0}
+            onChange={setPage}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
+          />
         </div>
       </div>
 
@@ -332,7 +392,9 @@ export default function ProductList() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Ngừng bán sản phẩm này?"
+        title="Xóa vĩnh viễn sản phẩm này?"
+        description="Sản phẩm sẽ bị xóa hẳn khỏi hệ thống, không thể khôi phục. Nếu chỉ muốn ngừng bán tạm thời, dùng icon khóa thay vì xóa."
+        confirmText="Xóa vĩnh viễn"
         danger
       />
     </div>

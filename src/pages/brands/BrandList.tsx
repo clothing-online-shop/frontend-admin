@@ -82,9 +82,11 @@ export default function BrandList() {
       },
       {
         key: "actions",
-        header: "",
+        header: "Thao tác",
+        className: "min-w-24",
+        stickyRight: true,
         render: (brand) => (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3">
             <button
               type="button"
               onClick={() => openEdit(brand)}
@@ -125,7 +127,7 @@ export default function BrandList() {
         />
       </div>
 
-      <div className="flex flex-1 flex-col rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="flex flex-1 flex-col rounded-2xl bg-white">
         <DataTable
           columns={columns}
           rows={data ?? []}
