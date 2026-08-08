@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { ProductStatus } from "@/lib/shared-types";
+import { ProductStatus } from "@/types/shared-types";
 
 const productVariantSchema = yup.object({
   id: yup.string().optional(),
@@ -17,13 +17,16 @@ const productVariantSchema = yup.object({
     .integer()
     .min(0)
     .default(0),
+  // Ảnh đại diện cho MÀU của biến thể này — lấy từ 1 ảnh đã có trong "Ảnh chi tiết sản
+  // phẩm" (không upload riêng), dùng để FE storefront focus đúng ảnh khi khách chọn màu.
+  imageUrl: yup.string().optional(),
 });
 
 export const productSchema = yup.object({
   name: yup.string().trim().required("Vui lòng nhập tên sản phẩm."),
-  slug: yup.string().trim().optional(),
-  description: yup.string().optional(),
-  material: yup.string().trim().optional(),
+  slug: yup.string().trim().required("Vui lòng nhập slug."),
+  description: yup.string().required("Vui lòng nhập mô tả sản phẩm."),
+  material: yup.string().trim().required("Vui lòng nhập chất liệu."),
   careInstructions: yup.string().trim().optional(),
   categoryId: yup.string().required("Chọn danh mục."),
   brandId: yup.string().optional(),
@@ -52,10 +55,14 @@ export const productSchema = yup.object({
     .of(yup.string().required())
     .min(1, "Vui lòng chọn ảnh đại diện sản phẩm.")
     .required(),
-  // Cloudinary publicId song song với thumbnail/images — không hiển thị lên UI,
-  // chỉ để BE dọn ảnh cũ trên Cloudinary khi thay/xóa ảnh (xem ProductImagesStep).
+  // Cloudinary publicId song song với thumbnail/images — không hiển thị lên UI, chỉ để
+  // BE dọn ảnh cũ trên Cloudinary khi thay/xóa ảnh (xem ProductImagesStep).
   thumbnailPublicId: yup.string().optional(),
-  images: yup.array().of(yup.string().required()).default([]),
+  images: yup
+    .array()
+    .of(yup.string().required())
+    .min(1, "Vui lòng chọn ít nhất 1 ảnh chi tiết sản phẩm.")
+    .required(),
   imagePublicIds: yup.array().of(yup.string().required()).default([]),
   metaTitle: yup.string().trim().optional(),
   metaDescription: yup.string().trim().optional(),

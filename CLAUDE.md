@@ -19,17 +19,23 @@ React + Vite + TypeScript + React Router + React Query + Zustand. UI dùng bộ 
 
 ```
 src/
-├── pages/<feature>/       # 1 thư mục/domain: products/, orders/, categories/...
+├── pages/<feature>/       # 1 thư mục/domain: products/, orders/, categories/... — form nhiều
+│                          #   bước tách step con vào subfolder form-steps/ (xem products/)
 ├── layouts/               # AdminLayout (sidebar + header)
 ├── routes/                # index.tsx (khai báo route), PrivateRoute.tsx
 ├── components/            # component dùng chung nhiều page
-├── lib/                   # api-client.ts, <feature>-api.ts
+├── types/                 # MỌI type/interface dùng chung — shared-types.ts (response shape
+│                          #   từ backend) + <feature>-api.types.ts (payload/param request)
+├── lib/
+│   ├── api/               # api-client.ts + <feature>-api.ts — chỉ hàm gọi backend, không
+│   │                      #   khai type ở đây (xem types/ ở trên)
+│   ├── error.ts, format.ts, slug.ts, roles.ts, permissions.ts
 └── store/                 # zustand store (auth-store.ts...)
 ```
 
 - Thêm page mới → tạo file trong `pages/<feature>/`, khai báo route trong `routes/index.tsx`, không tự tạo router riêng lẻ trong component.
 - Mọi trang quản trị (trừ `/login`) phải nằm trong nhánh con của `PrivateRoute` + `AdminLayout` trong `routes/index.tsx` — không bypass.
-- `src/components/charts`, `ecommerce`, `UserProfile`, `auth`, `header`, `tables`, `form/form-elements` là code demo gốc từ template TailAdmin, **không được app thật import ở đâu cả** — giữ lại có chủ đích (đã sửa sạch lỗi type-check) làm tài liệu tham khảo pattern, không phải tính năng đang chạy. Không tự ý xoá, nhưng cũng không coi đây là ví dụ "đang dùng trong app" khi tìm chỗ tham chiếu code thật.
+- `src/components/_templates/` gom toàn bộ code demo gốc từ template TailAdmin (`charts`, `ecommerce`, `UserProfile`, `auth`, `header`, `tables/BasicTables`, `form/form-elements`, `form/group-input`, cùng các file lẻ trước đây nằm rải trong `common/`/`form/`: `ChartTab`, `GridShape`, `PageBreadCrumb`, `PageMeta`, `ScrollToTop`, `ThemeToggleButton`, `ThemeTogglerTwo`, `form/Label`, `form/MultiSelect`, `form/date-picker`) — **không được app thật import ở đâu cả**, giữ lại có chủ đích (đã sửa sạch lỗi type-check) làm tài liệu tham khảo pattern, không phải tính năng đang chạy. Không tự ý xoá, nhưng cũng không coi đây là ví dụ "đang dùng trong app" khi tìm chỗ tham chiếu code thật. Ngược lại, `components/common/` và `components/form/` (ngoài `_templates/`) chỉ chứa file thật đang được app dùng.
 
 ## Import path
 
@@ -38,8 +44,9 @@ src/
 
 ## Gọi API
 
-- Không gọi `axios`/`fetch` trực tiếp trong component. Tạo hàm trong `lib/<feature>-api.ts` (xem mẫu `lib/auth-api.ts`), dùng `apiClient` từ `lib/api-client.ts` (đã có interceptor tự gắn Bearer token + tự refresh khi 401).
+- Không gọi `axios`/`fetch` trực tiếp trong component. Tạo hàm trong `lib/api/<feature>-api.ts` (xem mẫu `lib/api/auth-api.ts`), dùng `apiClient` từ `lib/api/api-client.ts` (đã có interceptor tự gắn Bearer token + tự refresh khi 401).
 - Gọi dữ liệu trong component qua `@tanstack/react-query` (`useQuery`/`useMutation`), không tự quản lý `useState` + `useEffect` để fetch data.
+- Type request (payload tạo/sửa, tham số filter...) tách riêng file `types/<feature>-api.types.ts`, không khai inline chung với hàm gọi API trong `lib/api/<feature>-api.ts` (xem mẫu `lib/api/products-api.ts` + `types/products-api.types.ts`) — file hàm chỉ import type, không tự định nghĩa. Type response (shape trả về từ backend) nằm ở `types/shared-types.ts`, không tách theo feature — mọi type/interface trong app đều quy về thư mục `types/`, không định nghĩa rải rác trong `lib/`.
 
 ## State
 
@@ -62,7 +69,7 @@ src/
 - Design System nền là **TailAdmin** (spacing, bo góc, màu, bố cục sidebar/header/content) nhưng implementation là component nội bộ tự viết trong `src/components/ui`, `src/components/form`, `src/components/common` (`Button`, `Input`, `Select`, `Modal`, `Table`, `Badge`, `ComponentCard`, `Spinner`, `Pagination`, `ConfirmModal`, `ToastProvider`/`useToast`...) — không thêm UI kit ngoài (đã bỏ Ant Design), không cài lại package TailAdmin. Còn thiếu component nào thì thêm mới vào đúng thư mục này theo pattern có sẵn, không tự chế inline trong page.
   - Khi component gốc TailAdmin dùng thẻ HTML không style được xuyên suốt (vd `<select>` native — dropdown list do OS/browser tự vẽ, không set màu/dark mode được), được phép viết lại thành component tự dựng (div/button + absolute panel) miễn giữ nguyên props API và bám đúng token màu/spacing hiện có (xem `form/Select.tsx` làm mẫu).
 - Icon lấy từ `src/icons` (barrel `src/icons/index.ts`, import qua `?react` nhờ `vite-plugin-svgr`).
-- Bảng danh sách (ProductList, OrderList...) dùng `ui/table` (`Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`) tự render row + `ui/pagination/Pagination` cho phân trang server-side khi nối API thật (sprint 2+), không load hết dữ liệu về client rồi tự phân trang.
+- Bảng danh sách (ProductList, BrandList...) dùng `ui/table/DataTable` (`DataTable<T>`, khai báo qua 2 prop `columns: DataTableColumn<T>[]` + `rows: T[]`, mỗi cột tự định nghĩa `render(row)` — xem `ProductList.tsx`/`BrandList.tsx` làm mẫu) thay vì tự viết tay `TableHeader`/`TableBody`/`TableRow`/`TableCell` + state loading/rỗng ở từng page — `DataTable` đã lo phần đó, kể cả scroll ngang khi nhiều cột (qua `Table` bên dưới). Chỉ dùng thẳng các primitive `Table`/`TableHeader`/... (`ui/table/index.tsx`) khi bố cục bảng không theo mô hình cột+dòng đơn giản (ô gộp, layout đặc thù). Kết hợp `ui/pagination/Pagination` cho phân trang server-side khi nối API thật, không load hết dữ liệu về client rồi tự phân trang.
 - Thông báo thành công/lỗi dùng `useToast()` (`@/hooks/useToast`), không tự dựng toast/alert riêng lẻ trong từng page.
 - Không hardcode màu sắc, spacing hay border-radius bằng số tuỳ ý — dùng đúng token/class Tailwind đã có trong `index.css` (`--color-*`, `--text-*`, `dark:` variant qua `@custom-variant dark`).
 

@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import type React from "react";
+import FieldLabel from "@/components/form/FieldLabel";
 
 interface InputProps {
   type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
@@ -17,6 +18,9 @@ interface InputProps {
   success?: boolean;
   error?: boolean;
   hint?: string;
+  // Nhãn đi liền với input — thay cho việc mỗi nơi gọi tự viết <label> riêng.
+  label?: string;
+  required?: boolean;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -37,6 +41,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       success = false,
       error = false,
       hint,
+      label,
+      required = false,
     },
     ref,
   ) => {
@@ -53,36 +59,39 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div className="relative">
-        <input
-          ref={ref}
-          type={type}
-          id={id}
-          name={name}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          min={min}
-          max={max}
-          step={step}
-          disabled={disabled}
-          className={inputClasses}
-        />
+      <div>
+        {label && <FieldLabel label={label} required={required} htmlFor={id} />}
+        <div className="relative">
+          <input
+            ref={ref}
+            type={type}
+            id={id}
+            name={name}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            onBlur={onBlur}
+            min={min}
+            max={max}
+            step={step}
+            disabled={disabled}
+            className={inputClasses}
+          />
 
-        {hint && (
-          <p
-            className={`mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 ${
-              error
-                ? "text-form-error"
-                : success
-                ? "text-success-500"
-                : "text-gray-500"
-            }`}
-          >
-            {hint}
-          </p>
-        )}
+          {hint && (
+            <p
+              className={`mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 ${
+                error
+                  ? "text-form-error"
+                  : success
+                  ? "text-success-500"
+                  : "text-gray-500"
+              }`}
+            >
+              {hint}
+            </p>
+          )}
+        </div>
       </div>
     );
   },

@@ -1,10 +1,16 @@
 import { AngleLeftIcon, AngleRightIcon } from "@/icons";
+import Select from "@/components/form/Select";
+import { PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 interface PaginationProps {
   page: number;
   pageSize: number;
   total: number;
   onChange: (page: number) => void;
+  // Không truyền thì ẩn hẳn bộ chọn số dòng/trang (giữ nguyên layout cũ cho trang nào
+  // chưa cần đổi pageSize được).
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: number[];
 }
 
 type PageItem = number | "ellipsis";
@@ -44,7 +50,14 @@ function getPageItems(current: number, totalPages: number): PageItem[] {
   return items;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ page, pageSize, total, onChange }) => {
+const Pagination: React.FC<PaginationProps> = ({
+  page,
+  pageSize,
+  total,
+  onChange,
+  onPageSizeChange,
+  pageSizeOptions = PAGE_SIZE_OPTIONS,
+}) => {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   if (total === 0) return null;
@@ -102,7 +115,23 @@ const Pagination: React.FC<PaginationProps> = ({ page, pageSize, total, onChange
         </button>
       </nav>
 
-      <div aria-hidden />
+      {onPageSizeChange ? (
+        <div className="flex items-center justify-end gap-2">
+          <span className="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+            Số dòng/trang
+          </span>
+          <div className="w-20">
+            <Select
+              value={String(pageSize)}
+              onChange={(value) => value && onPageSizeChange(Number(value))}
+              options={pageSizeOptions.map((size) => ({ value: String(size), label: String(size) }))}
+              dropdownPlacement="top"
+            />
+          </div>
+        </div>
+      ) : (
+        <div aria-hidden />
+      )}
     </div>
   );
 };

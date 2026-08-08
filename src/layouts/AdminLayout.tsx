@@ -95,7 +95,7 @@ export default function AdminLayout() {
         </nav>
       </aside>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
           <nav className="flex items-center gap-1.5 text-sm">
             <Link
@@ -167,7 +167,7 @@ export default function AdminLayout() {
             </button>
           </div>
         </header>
-        <main className="flex flex-1 flex-col bg-white p-6 dark:bg-gray-950">
+        <main className="flex min-w-0 flex-1 flex-col bg-white p-6 dark:bg-gray-950">
           <Outlet />
         </main>
       </div>

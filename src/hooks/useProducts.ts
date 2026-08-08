@@ -6,10 +6,12 @@ import {
   getProductsAdmin,
   updateProduct,
   updateVariantStock,
-  type CreateProductPayload,
-  type ListProductsAdminParams,
-  type UpdateProductPayload,
-} from "@/lib/products-api";
+} from "@/lib/api/products-api";
+import type {
+  CreateProductPayload,
+  ListProductsAdminParams,
+  UpdateProductPayload,
+} from "@/types/products-api.types";
 
 const PRODUCTS_KEY = "products";
 

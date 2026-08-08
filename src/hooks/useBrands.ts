@@ -1,12 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  createBrand,
-  deleteBrand,
-  getBrands,
-  updateBrand,
-  type CreateBrandPayload,
-  type UpdateBrandPayload,
-} from "@/lib/brands-api";
+import { createBrand, deleteBrand, getBrands, updateBrand } from "@/lib/api/brands-api";
+import type { CreateBrandPayload, UpdateBrandPayload } from "@/types/brands-api.types";
 
 const BRANDS_KEY = ["brands"];
 
