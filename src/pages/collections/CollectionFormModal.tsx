@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import type { Collection } from "@/lib/shared-types";
-import { ImageUploader } from "@/components/ImageUploader";
+import type { Collection } from "@/types/shared-types";
+import { ImageUploader } from "@/components/common/ImageUploader";
 import { useCreateCollection, useUpdateCollection } from "@/hooks/useCollections";
 import { getErrorMessage } from "@/lib/error";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
-import DatePicker from "@/components/form/date-picker";
+import DatePicker from "@/components/form/DatePicker";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
 import { collectionSchema, type CollectionFormValues } from "@/schemas/collection.schema";

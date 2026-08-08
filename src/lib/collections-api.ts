@@ -1,5 +1,5 @@
-import { apiClient } from "@/lib/api-client";
-import type { Collection } from "@/lib/shared-types";
+import { apiClient } from "@/lib/api/api-client";
+import type { Collection } from "@/types/shared-types";
 
 export interface CreateCollectionPayload {
   name: string;

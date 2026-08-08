@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Collection, CollectionStatus } from "@/lib/shared-types";
+import type { Collection, CollectionStatus } from "@/types/shared-types";
 import { useCollections, useDeleteCollection } from "@/hooks/useCollections";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getErrorMessage } from "@/lib/error";
