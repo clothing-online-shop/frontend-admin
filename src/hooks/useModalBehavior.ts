@@ -1,5 +1,9 @@
 import { useEffect } from "react";
 
+// Đếm số Modal đang mở cùng lúc — dùng module-level vì scroll lock tác động lên
+// document.body dùng chung cho cả app, không riêng 1 instance Modal nào.
+let openModalCount = 0;
+
 /**
  * Hành vi dùng chung cho mọi modal/dialog: đóng khi nhấn Escape, khóa scroll của body
  * trong lúc mở (tránh cuộn nền phía sau lớp phủ). Tách riêng khỏi UI để component Modal
@@ -21,9 +25,17 @@ export function useModalBehavior(isOpen: boolean, onClose: () => void): void {
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "unset";
+    if (!isOpen) return;
+    // Chỉ mở lại scroll khi Modal CUỐI CÙNG đóng — nếu unlock ngay lúc còn Modal khác
+    // đang mở (vd Modal xác nhận mở chồng lên Modal form), nền phía sau sẽ cuộn được
+    // trong khi vẫn còn 1 lớp phủ khác che màn hình.
+    openModalCount += 1;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "unset";
+      openModalCount -= 1;
+      if (openModalCount === 0) {
+        document.body.style.overflow = "unset";
+      }
     };
   }, [isOpen]);
 }

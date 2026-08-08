@@ -50,16 +50,18 @@ export default function BrandList() {
       {
         key: "logo",
         header: "Logo",
+        align: "center",
         render: (brand) =>
           brand.logo ? (
-            <img src={brand.logo} className="h-10 w-10 rounded-md object-cover" alt="" />
+            <img src={brand.logo} className="mx-auto h-10 w-10 rounded-md object-cover" alt="" />
           ) : (
-            <div className="h-10 w-10 rounded-md bg-gray-100 dark:bg-gray-800" />
+            <div className="mx-auto h-10 w-10 rounded-md bg-gray-100 dark:bg-gray-800" />
           ),
       },
       {
         key: "name",
         header: "Tên",
+        align: "center",
         render: (brand) => (
           <span className="text-sm text-gray-800 dark:text-white/90">{brand.name}</span>
         ),
@@ -67,6 +69,7 @@ export default function BrandList() {
       {
         key: "origin",
         header: "Xuất xứ",
+        align: "center",
         render: (brand) => (
           <span className="text-sm text-gray-700 dark:text-gray-300">{brand.origin ?? "—"}</span>
         ),

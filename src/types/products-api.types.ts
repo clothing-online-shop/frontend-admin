@@ -16,7 +16,8 @@ export interface ProductVariantPayload {
   sku?: string;
   price?: number;
   stockQuantity?: number;
-  imageUrl?: string;
+  // Bỏ trống field này = giữ nguyên ảnh hiện có; gửi null = gỡ ảnh khỏi biến thể.
+  imageUrl?: string | null;
 }
 
 export interface CreateProductPayload {
@@ -42,9 +43,11 @@ export interface CreateProductPayload {
 }
 
 export type UpdateProductPayload = Partial<
-  Omit<CreateProductPayload, "variants" | "brandId">
+  Omit<CreateProductPayload, "variants" | "brandId" | "salePrice">
 > & {
   variants?: ProductVariantPayload[];
   // Bỏ trống = giữ nguyên thương hiệu hiện có; gửi null = gỡ thương hiệu khỏi sản phẩm.
   brandId?: string | null;
+  // Bỏ trống = giữ nguyên giá khuyến mãi hiện có; gửi null = xóa giá khuyến mãi.
+  salePrice?: number | null;
 };

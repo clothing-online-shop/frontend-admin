@@ -64,7 +64,7 @@ export function DataTable<T>({
               <TableCell
                 key={column.key}
                 isHeader
-                className={`px-5 py-3 ${ALIGN_CLASS[column.headerAlign ?? "center"]} text-theme-sm font-medium text-gray-500 dark:text-gray-400 ${column.className ?? ""} ${column.stickyRight ? STICKY_RIGHT_HEADER_CLASS : ""}`}
+                className={`px-5 py-3 ${ALIGN_CLASS[column.headerAlign ?? "center"]} text-theme-sm font-bold text-gray-700 dark:text-gray-400 ${column.className ?? ""} ${column.stickyRight ? STICKY_RIGHT_HEADER_CLASS : ""}`}
               >
                 {column.header}
               </TableCell>

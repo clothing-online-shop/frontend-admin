@@ -57,7 +57,7 @@ const EMPTY_VALUES: ProductFormValues = {
   imagePublicIds: [],
   metaTitle: "",
   metaDescription: "",
-  variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 }],
+  variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0, imageUrl: undefined }],
 };
 
 function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductVariantPayload[] {
@@ -70,6 +70,9 @@ function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductV
       sku: v.sku || undefined,
       price: v.price,
       stockQuantity: v.stockQuantity ?? 0,
+      // null (không phải undefined) khi trống — undefined bị JSON.stringify loại khỏi
+      // payload, PATCH sẽ hiểu nhầm thành "giữ nguyên ảnh cũ" thay vì "đã gỡ ảnh".
+      imageUrl: v.imageUrl || null,
     }));
 }
 
@@ -108,7 +111,9 @@ function buildGeneralPayload(values: ProductFormValues): UpdateProductPayload {
     // Bỏ trống = user chủ động gỡ thương hiệu → gửi null để backend phân biệt với "không đổi".
     brandId: values.brandId || null,
     basePrice: values.basePrice,
-    salePrice: values.salePrice,
+    // Bỏ trống = user chủ động xoá giá khuyến mãi → gửi null để backend phân biệt với
+    // "không đổi" (undefined bị JSON.stringify loại khỏi payload, PATCH sẽ giữ nguyên giá cũ).
+    salePrice: values.salePrice ?? null,
     status: values.status,
   };
 }
@@ -127,6 +132,10 @@ function buildStepUpdatePayload(stepIndex: number, values: ProductFormValues): U
         thumbnailPublicId: values.thumbnailPublicId,
         images: values.images,
         imagePublicIds: values.imagePublicIds,
+        // Khối "Ảnh theo màu sắc" nằm ở step này nhưng ghi vào variants[].imageUrl (form
+        // state dùng chung, không tách riêng) — phải gửi kèm variants thì lựa chọn ảnh
+        // theo màu mới tới được BE, nếu không chỉ nằm ở state cục bộ rồi mất khi rời trang.
+        variants: buildVariantsPayload(values.variants),
       };
     default:
       return { metaTitle: values.metaTitle, metaDescription: values.metaDescription };
@@ -204,6 +213,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
         sku: v.sku,
         price: v.price,
         stockQuantity: v.stockQuantity,
+        imageUrl: v.imageUrl ?? undefined,
       })),
     });
     setMaxStepReached(STEPS.length - 1);

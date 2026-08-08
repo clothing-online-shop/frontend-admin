@@ -9,6 +9,10 @@ interface UseImageUploaderOptions {
   // Cho phép nơi gọi lưu lại publicId song song với url (vd. để BE dọn ảnh cũ trên
   // Cloudinary khi thay/xóa ảnh) — optional nên không ảnh hưởng chỗ chưa cần theo dõi.
   onPublicIdChange?: (url: string, publicId: string | null) => void;
+  // Báo khi đổi thứ tự 2 ảnh (nút trái/phải) — nơi gọi cần swap đúng vị trí này trong
+  // mảng publicId song song của họ, nếu không imagePublicIds[i] sẽ lệch khỏi images[i]
+  // sau khi sắp xếp lại (moveImage chỉ tự đổi thứ tự `value`, không biết gì về mảng đó).
+  onReorder?: (fromIndex: number, toIndex: number) => void;
 }
 
 interface UseImageUploaderResult {
@@ -30,11 +34,19 @@ export function useImageUploader({
   onChange,
   max,
   onPublicIdChange,
+  onReorder,
 }: UseImageUploaderOptions): UseImageUploaderResult {
   const [publicIds, setPublicIds] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
+
+  // Luôn đọc `value` mới nhất tại thời điểm upload xong, không phải giá trị lúc bắt
+  // đầu upload — nếu người dùng xóa 1 ảnh khác trong lúc đang chờ upload, closure của
+  // handleFilesSelected vẫn giữ `value` cũ (thiếu lần xóa đó), ghi đè `onChange` phía
+  // dưới sẽ vô tình thêm lại ảnh vừa bị xóa.
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   async function handleFilesSelected(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -54,7 +66,7 @@ export function useImageUploader({
       }
       if (uploaded.length > 0) {
         setPublicIds((prev) => ({ ...prev, ...nextPublicIds }));
-        onChange([...value, ...uploaded]);
+        onChange([...valueRef.current, ...uploaded]);
       }
     } finally {
       setUploading(false);
@@ -79,6 +91,7 @@ export function useImageUploader({
     const next = [...value];
     [next[index], next[target]] = [next[target], next[index]];
     onChange(next);
+    onReorder?.(index, target);
   }
 
   return {
