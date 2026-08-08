@@ -57,6 +57,26 @@ export interface Brand {
   updatedAt: string;
 }
 
+export const CollectionStatus = {
+  UPCOMING: "UPCOMING",
+  RUNNING: "RUNNING",
+  ENDED: "ENDED",
+} as const;
+export type CollectionStatus = (typeof CollectionStatus)[keyof typeof CollectionStatus];
+
+export interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  banner: string | null;
+  description: string | null;
+  startDate: string;
+  endDate: string;
+  status: CollectionStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductListItem {
   id: string;
   name: string;
