@@ -329,7 +329,7 @@ export default function ProductList() {
       <div className="mb-4 flex flex-wrap gap-3">
         <div className="w-65">
           <Input
-            placeholder="Tìm theo tên sản phẩm"
+            placeholder="Tìm theo tên/SKU sản phẩm"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
