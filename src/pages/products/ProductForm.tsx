@@ -70,7 +70,9 @@ function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductV
       sku: v.sku || undefined,
       price: v.price,
       stockQuantity: v.stockQuantity ?? 0,
-      imageUrl: v.imageUrl || undefined,
+      // null (không phải undefined) khi trống — undefined bị JSON.stringify loại khỏi
+      // payload, PATCH sẽ hiểu nhầm thành "giữ nguyên ảnh cũ" thay vì "đã gỡ ảnh".
+      imageUrl: v.imageUrl || null,
     }));
 }
 

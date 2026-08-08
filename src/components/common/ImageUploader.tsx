@@ -43,9 +43,12 @@ export function ImageUploader({
         {value.map((url, index) => (
           <div
             key={url}
-            className="group relative h-52 w-52 shrink-0 overflow-hidden rounded-xl border border-gray-200 shadow-theme-xs dark:border-gray-700"
+            className="group relative h-52 shrink-0 overflow-hidden rounded-xl border border-gray-200 shadow-theme-xs dark:border-gray-700"
           >
-            <img src={url} alt="" className="h-full w-full object-cover" />
+            {/* Chỉ cố định chiều cao, chiều rộng để auto theo tỉ lệ ảnh thật (không phải
+                object-contain trong khung vuông) — viền ôm sát khít ảnh, không còn khoảng
+                trống 2 bên với ảnh dọc/hẹp hơn khung. */}
+            <img src={url} alt="" className="h-full w-auto" />
             {!readOnly && (
             <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/0 opacity-0 transition-all duration-200 ease-standard group-hover:bg-black/40 group-hover:opacity-100">
               {canReorder && (

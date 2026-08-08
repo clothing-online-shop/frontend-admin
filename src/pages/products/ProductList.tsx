@@ -12,6 +12,7 @@ import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import Badge from "@/components/ui/badge/Badge";
 import Pagination from "@/components/ui/pagination/Pagination";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { useToast } from "@/hooks/useToast";
@@ -44,7 +45,7 @@ export default function ProductList() {
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
 
   const { data: categoryTree } = useCategoryTree();
@@ -328,7 +329,7 @@ export default function ProductList() {
       <div className="mb-4 flex flex-wrap gap-3">
         <div className="w-65">
           <Input
-            placeholder="Tìm theo tên/SKU sản phẩm"
+            placeholder="Tìm theo tên sản phẩm"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />

@@ -10,6 +10,8 @@ interface ButtonProps {
   onClick?: () => void; // Click handler
   disabled?: boolean; // Disabled state
   className?: string; // Disabled state
+  // Bắt buộc khi children chỉ là icon (không có text) — xem quy tắc icon-only button.
+  "aria-label"?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -22,6 +24,7 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   className = "",
   disabled = false,
+  "aria-label": ariaLabel,
 }) => {
   // Size Classes
   const sizeClasses = {
@@ -47,6 +50,7 @@ const Button: React.FC<ButtonProps> = ({
       }`}
       onClick={onClick}
       disabled={disabled}
+      aria-label={ariaLabel}
     >
       {startIcon && (
         <span className="flex items-center opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0">

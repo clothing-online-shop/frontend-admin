@@ -16,7 +16,8 @@ export interface ProductVariantPayload {
   sku?: string;
   price?: number;
   stockQuantity?: number;
-  imageUrl?: string;
+  // Bỏ trống field này = giữ nguyên ảnh hiện có; gửi null = gỡ ảnh khỏi biến thể.
+  imageUrl?: string | null;
 }
 
 export interface CreateProductPayload {

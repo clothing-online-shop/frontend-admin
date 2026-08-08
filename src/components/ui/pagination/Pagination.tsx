@@ -1,7 +1,6 @@
 import { AngleLeftIcon, AngleRightIcon } from "@/icons";
 import Select from "@/components/form/Select";
-
-const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50];
+import { PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 interface PaginationProps {
   page: number;
@@ -57,7 +56,7 @@ const Pagination: React.FC<PaginationProps> = ({
   total,
   onChange,
   onPageSizeChange,
-  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  pageSizeOptions = PAGE_SIZE_OPTIONS,
 }) => {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
