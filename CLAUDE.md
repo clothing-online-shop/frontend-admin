@@ -107,6 +107,11 @@ src/
 - Input tìm kiếm/filter dạng text không gọi API ngay mỗi lần gõ phím — dùng `useDebounce(value, delayMs)` (`hooks/useDebounce.ts`), tách state gõ tay (`searchInput`) khỏi state debounced dùng để gọi API (`search`), xem mẫu `ProductList.tsx` (debounce 500ms). Dropdown/`Select` filter thì gọi ngay khi `onChange`, không cần debounce (không phải sự kiện gõ liên tục).
 
 
+## Bắt đầu tính năng mới
+
+- Trước khi code: `git checkout develop && git pull` để lấy code mới nhất, sau đó tạo branch mới từ `develop` với tên phù hợp tính năng đang làm (`feature/<mo-ta-ngan>`, `fix/<mo-ta-ngan>`) — không code thẳng trên `develop`.
+- Sau khi code xong, trước khi báo hoàn thành/mở PR: chủ động tự review lại toàn bộ diff theo đúng quy ước trong `CLAUDE.md` này và `README.md` của repo — không chỉ dựa vào lint/build pass.
+
 ## Trước khi mở PR
 
 1. `pnpm --filter @clothing-shop/cms lint` (oxlint) — 0 lỗi.
