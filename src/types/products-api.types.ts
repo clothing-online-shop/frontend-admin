@@ -4,6 +4,8 @@ export interface ListProductsAdminParams {
   category?: string;
   search?: string;
   brandId?: string;
+  // Có thể truyền nhiều id cách nhau bởi dấu phẩy — khớp convention size/color ở BE.
+  collectionIds?: string;
   status?: ProductStatus;
   page?: number;
   limit?: number;

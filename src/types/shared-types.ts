@@ -42,6 +42,8 @@ export interface CategoryNode {
   isActive: boolean;
   sortOrder: number;
   parentId: string | null;
+  // Số sản phẩm gán trực tiếp vào danh mục này — không cộng dồn từ danh mục con.
+  productCount: number;
   createdAt: string;
   updatedAt: string;
   children: CategoryNode[];
