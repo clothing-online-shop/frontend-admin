@@ -85,6 +85,8 @@ export const productSchema = yup.object({
       }
       return true;
     }),
+  // Không bắt buộc — sản phẩm không cần thuộc bộ sưu tập nào cũng hợp lệ.
+  collectionIds: yup.array().of(yup.string().required()).default([]),
 });
 
 export type ProductFormValues = yup.InferType<typeof productSchema>;

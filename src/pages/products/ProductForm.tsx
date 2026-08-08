@@ -3,7 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useWatch, FormProvider, type FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ProductStatus } from "@/types/shared-types";
-import { useCreateProduct, useProductDetail, useUpdateProduct } from "@/hooks/useProducts";
+import {
+  useAssignProductCollections,
+  useCreateProduct,
+  useProductDetail,
+  useUpdateProduct,
+} from "@/hooks/useProducts";
 import type {
   CreateProductPayload,
   ProductVariantPayload,
@@ -19,6 +24,7 @@ import { ProductFormStepper } from "./form-steps/ProductFormStepper";
 import { ProductGeneralInfoStep } from "./form-steps/ProductGeneralInfoStep";
 import { ProductVariantsStep } from "./form-steps/ProductVariantsStep";
 import { ProductImagesStep } from "./form-steps/ProductImagesStep";
+import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
 import { ProductSeoStep } from "./form-steps/ProductSeoStep";
 
 const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
@@ -37,8 +43,13 @@ const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
   },
   { label: "Biến thể", fields: ["variants"] },
   { label: "Ảnh", fields: ["thumbnail", "images"] },
+  { label: "Bộ sưu tập", fields: [] },
   { label: "SEO", fields: [] },
 ];
+
+// Bộ sưu tập gán qua PUT /products/:id/collections riêng (xem AssignCollectionsDto ở BE),
+// không PATCH gộp như các step khác — handleSaveStep rẽ nhánh theo index này.
+const COLLECTIONS_STEP_INDEX = STEPS.findIndex((step) => step.label === "Bộ sưu tập");
 
 const EMPTY_VALUES: ProductFormValues = {
   name: "",
@@ -58,6 +69,7 @@ const EMPTY_VALUES: ProductFormValues = {
   metaTitle: "",
   metaDescription: "",
   variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0, imageUrl: undefined }],
+  collectionIds: [],
 };
 
 function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductVariantPayload[] {
@@ -97,6 +109,7 @@ function buildCreatePayload(values: ProductFormValues): CreateProductPayload {
     metaTitle: values.metaTitle || undefined,
     metaDescription: values.metaDescription || undefined,
     variants: buildVariantsPayload(values.variants),
+    collectionIds: values.collectionIds,
   };
 }
 
@@ -137,6 +150,8 @@ function buildStepUpdatePayload(stepIndex: number, values: ProductFormValues): U
         // theo màu mới tới được BE, nếu không chỉ nằm ở state cục bộ rồi mất khi rời trang.
         variants: buildVariantsPayload(values.variants),
       };
+    // Bước "Bộ sưu tập" (COLLECTIONS_STEP_INDEX) không bao giờ tới đây — handleSaveStep
+    // rẽ nhánh gọi assignCollectionsMutation riêng trước khi gọi hàm này.
     default:
       return { metaTitle: values.metaTitle, metaDescription: values.metaDescription };
   }
@@ -177,7 +192,9 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
   const { data: product, isLoading: isLoadingProduct } = useProductDetail(editingSlug);
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const assignCollectionsMutation = useAssignProductCollections();
+  const isSaving =
+    createMutation.isPending || updateMutation.isPending || assignCollectionsMutation.isPending;
 
   useEffect(() => {
     // Bước 0 chưa có tương tác gì thì formState.errors rỗng dù field bắt buộc còn
@@ -215,6 +232,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
         stockQuantity: v.stockQuantity,
         imageUrl: v.imageUrl ?? undefined,
       })),
+      collectionIds: product.collections.map((c) => c.id),
     });
     setMaxStepReached(STEPS.length - 1);
     // reset() xoá sạch errors cũ — trigger lại để nút "Tiếp theo"/"Lưu" phản ánh đúng dữ
@@ -291,10 +309,17 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     // hợp lệ tại thời điểm này (không cần chặn, chỉ cần đúng field của step đang lưu).
     const values = productSchema.cast(getValues(), { assert: false }) as ProductFormValues;
     try {
-      await updateMutation.mutateAsync({
-        id: product.id,
-        payload: buildStepUpdatePayload(currentStep, values),
-      });
+      if (currentStep === COLLECTIONS_STEP_INDEX) {
+        await assignCollectionsMutation.mutateAsync({
+          productId: product.id,
+          payload: { collectionIds: values.collectionIds ?? [] },
+        });
+      } else {
+        await updateMutation.mutateAsync({
+          id: product.id,
+          payload: buildStepUpdatePayload(currentStep, values),
+        });
+      }
       toast.success(`Đã lưu ${STEPS[currentStep].label}`);
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -332,7 +357,10 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
             {currentStep === 0 && <ProductGeneralInfoStep viewOnly={viewOnly} />}
             {currentStep === 1 && <ProductVariantsStep viewOnly={viewOnly} />}
             {currentStep === 2 && <ProductImagesStep viewOnly={viewOnly} />}
-            {currentStep === 3 && <ProductSeoStep />}
+            {currentStep === COLLECTIONS_STEP_INDEX && (
+              <ProductCollectionsStep viewOnly={viewOnly} />
+            )}
+            {currentStep === STEPS.length - 1 && <ProductSeoStep />}
           </fieldset>
 
           <div className="flex items-center justify-between gap-3 mt-3">

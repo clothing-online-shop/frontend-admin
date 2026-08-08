@@ -10,6 +10,7 @@ import { CategoryFormModal, type CategoryOption } from "./CategoryFormModal";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
 import Input from "@/components/form/input/InputField";
+import Badge from "@/components/ui/badge/Badge";
 import DragTree, { type DragTreeNode } from "@/components/ui/tree/DragTree";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
@@ -18,6 +19,7 @@ import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
 
 interface CategoryTreeNode extends DragTreeNode {
   key: string;
+  productCount: number;
   children?: CategoryTreeNode[];
 }
 
@@ -25,6 +27,7 @@ function toTreeData(nodes: CategoryNode[]): CategoryTreeNode[] {
   return nodes.map((node) => ({
     key: node.id,
     title: node.name,
+    productCount: node.productCount,
     children: node.children.length > 0 ? toTreeData(node.children) : undefined,
   }));
 }
@@ -128,30 +131,41 @@ export default function CategoryList() {
 
   function renderTitle(node: CategoryTreeNode): ReactNode {
     return (
-      <div className="flex items-center gap-3">
-        <span>{node.title as string}</span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleEdit(node.key);
-          }}
-          className="text-gray-400 hover:text-brand-500"
-          aria-label="Sửa danh mục"
-        >
-          <PencilIcon className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setDeleteTarget(node.key);
-          }}
-          className="text-gray-400 hover:text-error-500"
-          aria-label="Xóa danh mục"
-        >
-          <TrashBinIcon className="h-4 w-4" />
-        </button>
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="truncate text-gray-800 dark:text-white/90">
+            {node.title as string}
+          </span>
+          <Badge color="light" size="sm">
+            {node.productCount} sản phẩm
+          </Badge>
+        </div>
+        {/* Ẩn mặc định, chỉ hiện khi hover vào row (group ở DragTree bọc ngoài) — đỡ rối
+            mắt khi chỉ đang xem cây, không phải đang thao tác. */}
+        <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 ease-standard group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit(node.key);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 ease-standard hover:bg-brand-50 hover:text-brand-500 dark:hover:bg-brand-500/15 dark:hover:text-brand-400"
+            aria-label="Sửa danh mục"
+          >
+            <PencilIcon className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteTarget(node.key);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 ease-standard hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/15"
+            aria-label="Xóa danh mục"
+          >
+            <TrashBinIcon className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     );
   }

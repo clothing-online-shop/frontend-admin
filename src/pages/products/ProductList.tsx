@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/types/shared-types";
 import { useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
+import { useCollections } from "@/hooks/useCollections";
 import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -19,6 +20,7 @@ import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
+import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
 
 const STATUS_LABELS: Record<ProductStatus, { label: string; color: "light" | "success" | "error" }> = {
   [ProductStatus.DRAFT]: { label: "Nháp", color: "light" },
@@ -44,16 +46,22 @@ export default function ProductList() {
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
 
   const { data: categoryTree } = useCategoryTree();
   const categoryOptions = useMemo(() => {
-    function flatten(nodes: typeof categoryTree = []): { value: string; label: string }[] {
+    // "— " lặp theo depth để thể hiện phân cấp cha/con trong dropdown phẳng — cùng
+    // convention với parentOptions ở CategoryFormModal.tsx.
+    function flatten(
+      nodes: typeof categoryTree = [],
+      depth = 0,
+    ): { value: string; label: string }[] {
       return (nodes ?? []).flatMap((node) => [
-        { value: node.slug, label: node.name },
-        ...flatten(node.children),
+        { value: node.slug, label: `${"— ".repeat(depth)}${node.name}` },
+        ...flatten(node.children, depth + 1),
       ]);
     }
     return flatten(categoryTree);
@@ -82,11 +90,18 @@ export default function ProductList() {
     return map;
   }, [brands]);
 
+  const { data: collections, isLoading: isLoadingCollections } = useCollections();
+  const collectionOptions = useMemo(
+    () => (collections ?? []).map((c) => ({ value: c.id, label: c.name })),
+    [collections],
+  );
+
   const { data, isLoading } = useProductsAdmin({
     search: search || undefined,
     brandId,
     category,
     status,
+    collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
     page,
     limit,
   });
@@ -139,6 +154,17 @@ export default function ProductList() {
           ),
       },
       {
+        key: "status",
+        header: "Trạng thái",
+        align: "center",
+        className: "min-w-40",
+        render: (product) => (
+          <Badge color={STATUS_LABELS[product.status].color}>
+            {STATUS_LABELS[product.status].label}
+          </Badge>
+        ),
+      },
+      {
         key: "name",
         header: "Tên sản phẩm",
         className: "min-w-56",
@@ -146,7 +172,6 @@ export default function ProductList() {
           <span className="text-sm text-gray-800 dark:text-white/90">{product.name}</span>
         ),
       },
-      
       {
         key: "category",
         header: "Danh mục",
@@ -168,53 +193,21 @@ export default function ProductList() {
         ),
       },
       {
-        key: "material",
-        header: "Chất liệu",
-        className: "min-w-40",
-        render: (product) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            {product.material ?? "—"}
-          </span>
-        ),
-      },
-      
-      {
-        key: "stock",
-        header: "Tồn kho",
-        align: "center",
-        className: "min-w-32",
-        render: (product) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">{product.totalStock}</span>
-        ),
-      },
-      {
-        key: "description",
-        header: "Mô tả",
-        className: "min-w-72",
-        render: (product) => (
-          <span className="line-clamp-2 max-w-sm text-sm text-gray-700 dark:text-gray-300">
-            {product.description ? stripHtml(product.description) : "—"}
-          </span>
-        ),
-      },
-      {
-        key: "createdAt",
-        header: "Ngày tạo",
-        align: "center",
-        className: "min-w-28",
-        render: (product) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            {formatDate(product.createdAt)}
-          </span>
-        ),
-      },
-      {
-        key: "slug",
-        header: "URL",
+        key: "collections",
+        header: "Bộ sưu tập",
         className: "min-w-90",
-        render: (product) => (
-          <span className="text-sm text-gray-500 dark:text-gray-400">{product.slug}</span>
-        ),
+        render: (product) =>
+          product.collections.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {product.collections.map((collection) => (
+                <Badge key={collection.id} color="light">
+                  {collection.name}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+          ),
       },
       {
         key: "price",
@@ -236,14 +229,51 @@ export default function ProductList() {
           ),
       },
       {
-        key: "status",
-        header: "Trạng thái",
+        key: "stock",
+        header: "Tồn kho",
         align: "center",
+        className: "min-w-32",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">{product.totalStock}</span>
+        ),
+      },
+      {
+        key: "material",
+        header: "Chất liệu",
         className: "min-w-40",
         render: (product) => (
-          <Badge color={STATUS_LABELS[product.status].color}>
-            {STATUS_LABELS[product.status].label}
-          </Badge>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {product.material ?? "—"}
+          </span>
+        ),
+      },
+      {
+        key: "description",
+        header: "Mô tả",
+        className: "min-w-72",
+        render: (product) => (
+          <span className="line-clamp-2 max-w-sm text-sm text-gray-700 dark:text-gray-300">
+            {product.description ? stripHtml(product.description) : "—"}
+          </span>
+        ),
+      },
+      {
+        key: "slug",
+        header: "URL",
+        className: "min-w-90",
+        render: (product) => (
+          <span className="text-sm text-gray-500 dark:text-gray-400">{product.slug}</span>
+        ),
+      },
+      {
+        key: "createdAt",
+        header: "Ngày tạo",
+        align: "center",
+        className: "min-w-28",
+        render: (product) => (
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            {formatDate(product.createdAt)}
+          </span>
         ),
       },
       {
@@ -373,6 +403,19 @@ export default function ProductList() {
               value: String(value),
               label: STATUS_LABELS[value].label,
             }))}
+          />
+        </div>
+        <div className="w-48">
+          <MultiSelectFilterDropdown
+            label="Bộ sưu tập"
+            options={collectionOptions}
+            isLoading={isLoadingCollections}
+            emptyMessage="Chưa có bộ sưu tập nào."
+            value={collectionIds}
+            onApply={(ids) => {
+              setCollectionIds(ids);
+              setPage(1);
+            }}
           />
         </div>
       </div>
