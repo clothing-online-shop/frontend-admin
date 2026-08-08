@@ -40,3 +40,15 @@ export async function updateCollection(
 export async function deleteCollection(id: string): Promise<void> {
   await apiClient.delete(`/collections/${id}`);
 }
+
+// Thay thế TOÀN BỘ danh sách sản phẩm của bộ sưu tập — dùng cho PUT /collections/:id/products.
+export interface AssignProductsPayload {
+  productIds: string[];
+}
+
+export async function assignCollectionProducts(
+  collectionId: string,
+  payload: AssignProductsPayload,
+): Promise<void> {
+  await apiClient.put(`/collections/${collectionId}/products`, payload);
+}

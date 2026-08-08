@@ -11,9 +11,11 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Badge from "@/components/ui/badge/Badge";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { PlusIcon, PencilIcon, TrashBinIcon, BoxCubeIcon } from "@/icons";
 import CollectionFormModal from "./CollectionFormModal";
+import AssignProductsModal from "./AssignProductsModal";
 
 export default function CollectionList() {
   const toast = useToast();
@@ -23,6 +25,7 @@ export default function CollectionList() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Collection | null>(null);
+  const [assigningCollection, setAssigningCollection] = useState<Collection | null>(null);
 
   const { data, isLoading } = useCollections(search || undefined);
   const deleteMutation = useDeleteCollection();
@@ -101,6 +104,16 @@ export default function CollectionList() {
         stickyRight: true,
         render: (collection) => (
           <div className="flex items-center justify-center gap-3">
+            <Tooltip content="Gán sản phẩm">
+              <button
+                type="button"
+                onClick={() => setAssigningCollection(collection)}
+                className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                aria-label="Gán sản phẩm vào bộ sưu tập"
+              >
+                <BoxCubeIcon className="h-4 w-4" />
+              </button>
+            </Tooltip>
             <button
               type="button"
               onClick={() => openEdit(collection)}
@@ -152,6 +165,12 @@ export default function CollectionList() {
       </div>
 
       <CollectionFormModal open={modalOpen} onClose={() => setModalOpen(false)} editing={editing} />
+
+      <AssignProductsModal
+        open={assigningCollection !== null}
+        onClose={() => setAssigningCollection(null)}
+        collection={assigningCollection}
+      />
 
       <ConfirmModal
         open={deleteTarget !== null}

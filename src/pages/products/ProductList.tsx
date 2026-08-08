@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/types/shared-types";
-import { useCategoryTree } from "@/hooks/useCategories";
-import { useBrands } from "@/hooks/useBrands";
+import { useCategoryNameMap } from "@/hooks/useCategories";
+import { useBrandNameMap } from "@/hooks/useBrands";
 import { useCollections } from "@/hooks/useCollections";
 import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getErrorMessage } from "@/lib/error";
 import Button from "@/components/ui/button/Button";
-import Input from "@/components/form/input/InputField";
-import Select from "@/components/form/Select";
 import Badge from "@/components/ui/badge/Badge";
 import Pagination from "@/components/ui/pagination/Pagination";
 import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
@@ -21,12 +19,8 @@ import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
 import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
-
-const STATUS_LABELS: Record<ProductStatus, { label: string; color: "light" | "success" | "error" }> = {
-  [ProductStatus.DRAFT]: { label: "Nháp", color: "light" },
-  [ProductStatus.ACTIVE]: { label: "Đang bán", color: "success" },
-  [ProductStatus.INACTIVE]: { label: "Ngừng bán", color: "error" },
-};
+import ProductFilterBar from "@/components/common/ProductFilterBar";
+import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 
 // description lưu dạng HTML từ RichTextEditor — bảng danh sách chỉ cần xem nhanh
 // phần chữ, không render HTML thật (tránh vỡ layout/XSS nếu dùng dangerouslySetInnerHTML).
@@ -51,44 +45,11 @@ export default function ProductList() {
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
 
-  const { data: categoryTree } = useCategoryTree();
-  const categoryOptions = useMemo(() => {
-    // "— " lặp theo depth để thể hiện phân cấp cha/con trong dropdown phẳng — cùng
-    // convention với parentOptions ở CategoryFormModal.tsx.
-    function flatten(
-      nodes: typeof categoryTree = [],
-      depth = 0,
-    ): { value: string; label: string }[] {
-      return (nodes ?? []).flatMap((node) => [
-        { value: node.slug, label: `${"— ".repeat(depth)}${node.name}` },
-        ...flatten(node.children, depth + 1),
-      ]);
-    }
-    return flatten(categoryTree);
-  }, [categoryTree]);
-
-  const categoryNameById = useMemo(() => {
-    const map = new Map<string, string>();
-    function walk(nodes: typeof categoryTree = []) {
-      for (const node of nodes ?? []) {
-        map.set(node.id, node.name);
-        walk(node.children);
-      }
-    }
-    walk(categoryTree);
-    return map;
-  }, [categoryTree]);
-
-  const { data: brands } = useBrands();
-  const brandOptions = useMemo(
-    () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
-    [brands],
-  );
-  const brandNameById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const b of brands ?? []) map.set(b.id, b.name);
-    return map;
-  }, [brands]);
+  // Options cho dropdown lọc đã chuyển vào ProductFilterBar (tự fetch category/brand
+  // riêng, react-query cache chung nên không tốn thêm request) — ở đây chỉ cần map tên
+  // theo id để hiển thị trong cột bảng.
+  const categoryNameById = useCategoryNameMap();
+  const brandNameById = useBrandNameMap();
 
   const { data: collections, isLoading: isLoadingCollections } = useCollections();
   const collectionOptions = useMemo(
@@ -159,8 +120,8 @@ export default function ProductList() {
         align: "center",
         className: "min-w-40",
         render: (product) => (
-          <Badge color={STATUS_LABELS[product.status].color}>
-            {STATUS_LABELS[product.status].label}
+          <Badge color={PRODUCT_STATUS_LABEL[product.status].color}>
+            {PRODUCT_STATUS_LABEL[product.status].label}
           </Badge>
         ),
       },
@@ -356,55 +317,26 @@ export default function ProductList() {
         </Button>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <div className="w-65">
-          <Input
-            placeholder="Tìm theo tên/SKU sản phẩm"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </div>
-        <div className="w-48">
-          <Select
-            allowClear
-            placeholder="Thương hiệu"
-            options={brandOptions}
-            value={brandId}
-            onChange={(value) => {
-              setBrandId(value);
-              setPage(1);
-            }}
-          />
-        </div>
-        <div className="w-50">
-          <Select
-            allowClear
-            placeholder="Danh mục"
-            options={categoryOptions}
-            value={category}
-            onChange={(value) => {
-              setCategory(value);
-              setPage(1);
-            }}
-          />
-        </div>
-        <div className="w-40">
-          <Select
-            allowClear
-            placeholder="Trạng thái"
-            // Select dùng chung chỉ nhận option.value dạng string — status thật (state +
-            // query param) vẫn là number, ép qua lại đúng ở ranh giới UI này.
-            value={status !== undefined ? String(status) : undefined}
-            onChange={(value) => {
-              setStatus(value !== undefined ? (Number(value) as ProductStatus) : undefined);
-              setPage(1);
-            }}
-            options={Object.values(ProductStatus).map((value) => ({
-              value: String(value),
-              label: STATUS_LABELS[value].label,
-            }))}
-          />
-        </div>
+      <div className="mb-4 flex flex-wrap items-start gap-3">
+        <ProductFilterBar
+          searchInput={searchInput}
+          onSearchInputChange={setSearchInput}
+          brandId={brandId}
+          onBrandIdChange={(value) => {
+            setBrandId(value);
+            setPage(1);
+          }}
+          category={category}
+          onCategoryChange={(value) => {
+            setCategory(value);
+            setPage(1);
+          }}
+          status={status}
+          onStatusChange={(value) => {
+            setStatus(value);
+            setPage(1);
+          }}
+        />
         <div className="w-48">
           <MultiSelectFilterDropdown
             label="Bộ sưu tập"
