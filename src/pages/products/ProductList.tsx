@@ -168,6 +168,23 @@ export default function ProductList() {
         ),
       },
       {
+        key: "collections",
+        header: "Bộ sưu tập",
+        className: "min-w-90",
+        render: (product) =>
+          product.collections.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {product.collections.map((collection) => (
+                <Badge key={collection.id} color="light">
+                  {collection.name}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+          ),
+      },
+      {
         key: "material",
         header: "Chất liệu",
         className: "min-w-40",
@@ -177,7 +194,7 @@ export default function ProductList() {
           </span>
         ),
       },
-      
+
       {
         key: "stock",
         header: "Tồn kho",

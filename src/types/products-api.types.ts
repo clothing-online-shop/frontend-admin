@@ -40,10 +40,13 @@ export interface CreateProductPayload {
   metaTitle?: string;
   metaDescription?: string;
   variants: ProductVariantPayload[];
+  // Gán ngay lúc tạo — sửa sản phẩm thì đi qua AssignCollectionsPayload/API riêng
+  // (xem UpdateProductPayload bên dưới omit field này).
+  collectionIds?: string[];
 }
 
 export type UpdateProductPayload = Partial<
-  Omit<CreateProductPayload, "variants" | "brandId" | "salePrice">
+  Omit<CreateProductPayload, "variants" | "brandId" | "salePrice" | "collectionIds">
 > & {
   variants?: ProductVariantPayload[];
   // Bỏ trống = giữ nguyên thương hiệu hiện có; gửi null = gỡ thương hiệu khỏi sản phẩm.
@@ -51,3 +54,8 @@ export type UpdateProductPayload = Partial<
   // Bỏ trống = giữ nguyên giá khuyến mãi hiện có; gửi null = xóa giá khuyến mãi.
   salePrice?: number | null;
 };
+
+// Thay thế TOÀN BỘ danh sách bộ sưu tập của sản phẩm — dùng cho PUT /products/:id/collections.
+export interface AssignCollectionsPayload {
+  collectionIds: string[];
+}

@@ -92,6 +92,7 @@ export interface ProductListItem {
   categoryId: string;
   totalStock: number;
   createdAt: string;
+  collections: { id: string; name: string; slug: string }[];
 }
 
 export interface ProductVariant {

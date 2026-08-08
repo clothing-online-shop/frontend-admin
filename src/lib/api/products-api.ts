@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api/api-client";
 import type { PaginatedResult, ProductDetail, ProductListItem } from "@/types/shared-types";
 import type {
+  AssignCollectionsPayload,
   CreateProductPayload,
   ListProductsAdminParams,
   UpdateProductPayload,
@@ -45,4 +46,18 @@ export async function updateVariantStock(
   await apiClient.patch(`/products/${productId}/variants/${variantId}/stock`, {
     stockQuantity,
   });
+}
+
+export async function assignProductCollections(
+  productId: string,
+  payload: AssignCollectionsPayload,
+): Promise<void> {
+  await apiClient.put(`/products/${productId}/collections`, payload);
+}
+
+export async function removeProductFromCollection(
+  productId: string,
+  collectionId: string,
+): Promise<void> {
+  await apiClient.delete(`/products/${productId}/collections/${collectionId}`);
 }
