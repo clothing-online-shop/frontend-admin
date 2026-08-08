@@ -18,10 +18,11 @@ import type {
 
 const PRODUCTS_KEY = "products";
 
-export function useProductsAdmin(params: ListProductsAdminParams) {
+export function useProductsAdmin(params: ListProductsAdminParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [PRODUCTS_KEY, "list", params],
     queryFn: () => getProductsAdmin(params),
+    enabled: options?.enabled,
   });
 }
 
