@@ -82,7 +82,10 @@ const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "" })
     const hasChildren = !!node.children && node.children.length > 0;
     const isCollapsed = collapsedKeys.has(node.key);
     const isDropTarget = dragState?.dropKey === node.key;
-    const childRailFlags = [...railFlags, !isLastChild];
+    // Node gốc (card riêng, không có elbow/rail của chính nó) không tính vào hệ rail —
+    // con trực tiếp của nó phải bắt đầu lại từ mảng rỗng, nếu không mỗi cấp sẽ bị dư 1
+    // cột rail rỗng kế thừa nhầm từ gốc, khiến toàn bộ cây bị thụt lề dư 1 cấp.
+    const childRailFlags = isRoot ? [] : [...railFlags, !isLastChild];
 
     return (
       <div key={node.key}>
