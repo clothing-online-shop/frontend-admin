@@ -1,0 +1,42 @@
+import { apiClient } from "@/lib/api-client";
+import type { Collection } from "@/lib/shared-types";
+
+export interface CreateCollectionPayload {
+  name: string;
+  banner?: string;
+  description?: string;
+  startDate: string;
+  endDate: string;
+}
+
+export type UpdateCollectionPayload = Partial<
+  Omit<CreateCollectionPayload, "banner" | "description">
+> & {
+  // Bỏ trống = giữ nguyên giá trị hiện có; gửi null = xoá.
+  banner?: string | null;
+  description?: string | null;
+};
+
+export async function getCollections(search?: string): Promise<Collection[]> {
+  const { data } = await apiClient.get<Collection[]>("/collections", {
+    params: search ? { search } : undefined,
+  });
+  return data;
+}
+
+export async function createCollection(payload: CreateCollectionPayload): Promise<Collection> {
+  const { data } = await apiClient.post<Collection>("/collections", payload);
+  return data;
+}
+
+export async function updateCollection(
+  id: string,
+  payload: UpdateCollectionPayload,
+): Promise<Collection> {
+  const { data } = await apiClient.patch<Collection>(`/collections/${id}`, payload);
+  return data;
+}
+
+export async function deleteCollection(id: string): Promise<void> {
+  await apiClient.delete(`/collections/${id}`);
+}
