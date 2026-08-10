@@ -14,7 +14,16 @@ interface ProductCollectionsStepProps {
 
 export function ProductCollectionsStep({ viewOnly = false }: ProductCollectionsStepProps) {
   const { control, setValue, getValues } = useFormContext<ProductFormValues>();
-  const { data: collections, isLoading } = useCollections();
+  // Khi CHỌN (không viewOnly): chỉ cho gán vào bộ sưu tập chưa diễn ra/đang diễn ra
+  // (excludeEnded) — khớp rule BE đã chặn gán sản phẩm vào bộ sưu tập ENDED
+  // (products.service.ts assertCollectionsNotEnded), và bộ sưu tập đã xóa mềm cũng
+  // không cho chọn (includeDeleted mặc định false). Khi XEM (viewOnly): lấy TẤT CẢ
+  // (kể cả ENDED/đã xóa) để hiện đúng những bộ sưu tập sản phẩm này thực sự đã từng
+  // được gán, không bị "biến mất" khỏi màn xem chỉ vì bộ sưu tập sau đó kết thúc/bị xóa.
+  const { data: collections, isLoading } = useCollections({
+    excludeEnded: !viewOnly,
+    includeDeleted: viewOnly,
+  });
 
   const selectedIds = useWatch({ control, name: "collectionIds" }) ?? [];
   const visibleCollections = viewOnly

@@ -189,6 +189,7 @@ export default function CategoryList() {
       return;
     }
 
+    const previousTreeData = treeData;
     const data = cloneTree(treeData);
     let dragObj: CategoryTreeNode | undefined;
 
@@ -246,6 +247,10 @@ export default function CategoryList() {
       await reorderMutation.mutateAsync(items);
       toast.success("Đã cập nhật thứ tự danh mục");
     } catch (error) {
+      // setTreeData(data) ở trên đã đổi UI ngay khi kéo-thả (optimistic, mượt hơn chờ API
+      // xong mới hiện) — BE từ chối (vd trùng tên khi đổi cha) thì phải trả UI về đúng vị
+      // trí cũ, không để màn hình trông như đã kéo thành công trong khi DB không đổi gì.
+      setTreeData(previousTreeData);
       toast.error(getErrorMessage(error));
     }
   }
@@ -296,8 +301,10 @@ export default function CategoryList() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Xóa danh mục này?"
-        description="Không thể xóa nếu còn sản phẩm hoặc danh mục con bên trong."
+        title="Thông báo"
+        description="Bạn có chắc chắn muốn xóa danh mục này không?"
+        confirmText="Đồng ý"
+        cancelText="Hủy"
         danger
       />
     </div>

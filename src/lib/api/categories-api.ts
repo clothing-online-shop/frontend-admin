@@ -6,9 +6,15 @@ import type {
   UpdateCategoryPayload,
 } from "@/types/categories-api.types";
 
-export async function getCategoryTree(includeInactive = true): Promise<CategoryNode[]> {
+export async function getCategoryTree(
+  includeInactive = true,
+  includeDeleted = false,
+): Promise<CategoryNode[]> {
   const { data } = await apiClient.get<CategoryNode[]>("/categories", {
-    params: includeInactive ? { includeInactive: true } : undefined,
+    params: {
+      ...(includeInactive ? { includeInactive: true } : {}),
+      ...(includeDeleted ? { includeDeleted: true } : {}),
+    },
   });
   return data;
 }

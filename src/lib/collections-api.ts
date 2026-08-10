@@ -17,9 +17,23 @@ export type UpdateCollectionPayload = Partial<
   description?: string | null;
 };
 
-export async function getCollections(search?: string): Promise<Collection[]> {
+export interface GetCollectionsParams {
+  search?: string;
+  // Chỉ dùng nội bộ để hiện đúng bộ sưu tập cũ đã xóa (vd màn xem sản phẩm) — không dùng
+  // cho dropdown/checkbox chọn bộ sưu tập.
+  includeDeleted?: boolean;
+  // Chỉ lấy bộ sưu tập chưa diễn ra/đang diễn ra (loại ENDED) — dùng cho nơi CHỌN bộ sưu
+  // tập để gán (vd bước "Bộ sưu tập" trong ProductForm).
+  excludeEnded?: boolean;
+}
+
+export async function getCollections(params: GetCollectionsParams = {}): Promise<Collection[]> {
   const { data } = await apiClient.get<Collection[]>("/collections", {
-    params: search ? { search } : undefined,
+    params: {
+      ...(params.search ? { search: params.search } : {}),
+      ...(params.includeDeleted ? { includeDeleted: true } : {}),
+      ...(params.excludeEnded ? { excludeEnded: true } : {}),
+    },
   });
   return data;
 }

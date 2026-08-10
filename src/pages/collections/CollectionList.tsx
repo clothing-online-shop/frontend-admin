@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { Collection } from "@/types/shared-types";
+import { CollectionStatus, type Collection } from "@/types/shared-types";
 import { useCollections, useDeleteCollection } from "@/hooks/useCollections";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getErrorMessage } from "@/lib/error";
@@ -13,7 +13,7 @@ import Badge from "@/components/ui/badge/Badge";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon, BoxCubeIcon } from "@/icons";
+import { PlusIcon, PencilIcon, TrashBinIcon, BoxCubeIcon, EyeIcon } from "@/icons";
 import CollectionFormModal from "./CollectionFormModal";
 import AssignProductsModal from "./AssignProductsModal";
 
@@ -24,19 +24,28 @@ export default function CollectionList() {
   const search = useDebounce(searchInput, 500);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Collection | null>(null);
+  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Collection | null>(null);
   const [assigningCollection, setAssigningCollection] = useState<Collection | null>(null);
 
-  const { data, isLoading } = useCollections(search || undefined);
+  const { data, isLoading } = useCollections({ search: search || undefined });
   const deleteMutation = useDeleteCollection();
 
   function openCreate() {
     setEditing(null);
+    setViewMode(false);
     setModalOpen(true);
   }
 
   function openEdit(collection: Collection) {
     setEditing(collection);
+    setViewMode(false);
+    setModalOpen(true);
+  }
+
+  function openView(collection: Collection) {
+    setEditing(collection);
+    setViewMode(true);
     setModalOpen(true);
   }
 
@@ -102,36 +111,55 @@ export default function CollectionList() {
         header: "Thao tác",
         className: "min-w-24",
         stickyRight: true,
-        render: (collection) => (
-          <div className="flex items-center justify-center gap-3">
-            <Tooltip content="Gán sản phẩm">
+        render: (collection) => {
+          // Đã kết thúc: không cho gán sản phẩm/sửa nữa (khớp rule mới ở BE) — chỉ còn
+          // xem + xóa, ẩn hẳn 2 icon còn lại thay vì để bấm rồi mới báo lỗi.
+          const isEnded = collection.status === CollectionStatus.ENDED;
+          return (
+            <div className="flex items-center justify-center gap-3">
+              <Tooltip content="Xem">
+                <button
+                  type="button"
+                  onClick={() => openView(collection)}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                  aria-label="Xem bộ sưu tập"
+                >
+                  <EyeIcon className="h-4 w-4" />
+                </button>
+              </Tooltip>
+              {!isEnded && (
+                <Tooltip content="Gán sản phẩm">
+                  <button
+                    type="button"
+                    onClick={() => setAssigningCollection(collection)}
+                    className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                    aria-label="Gán sản phẩm vào bộ sưu tập"
+                  >
+                    <BoxCubeIcon className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+              )}
+              {!isEnded && (
+                <button
+                  type="button"
+                  onClick={() => openEdit(collection)}
+                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+                  aria-label="Sửa bộ sưu tập"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => setAssigningCollection(collection)}
-                className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-                aria-label="Gán sản phẩm vào bộ sưu tập"
+                onClick={() => setDeleteTarget(collection)}
+                className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
+                aria-label="Xóa bộ sưu tập"
               >
-                <BoxCubeIcon className="h-4 w-4" />
+                <TrashBinIcon className="h-4 w-4" />
               </button>
-            </Tooltip>
-            <button
-              type="button"
-              onClick={() => openEdit(collection)}
-              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-              aria-label="Sửa bộ sưu tập"
-            >
-              <PencilIcon className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteTarget(collection)}
-              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
-              aria-label="Xóa bộ sưu tập"
-            >
-              <TrashBinIcon className="h-4 w-4" />
-            </button>
-          </div>
-        ),
+            </div>
+          );
+        },
       },
     ],
     [],
@@ -164,7 +192,12 @@ export default function CollectionList() {
         />
       </div>
 
-      <CollectionFormModal open={modalOpen} onClose={() => setModalOpen(false)} editing={editing} />
+      <CollectionFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        editing={editing}
+        viewOnly={viewMode}
+      />
 
       <AssignProductsModal
         open={assigningCollection !== null}
@@ -176,7 +209,10 @@ export default function CollectionList() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Xóa bộ sưu tập này?"
+        title="Thông báo"
+        description="Bạn có chắc chắn muốn xóa bộ sưu tập này không?"
+        confirmText="Đồng ý"
+        cancelText="Hủy"
         danger
       />
     </div>

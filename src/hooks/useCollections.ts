@@ -7,6 +7,7 @@ import {
   updateCollection,
   type AssignProductsPayload,
   type CreateCollectionPayload,
+  type GetCollectionsParams,
   type UpdateCollectionPayload,
 } from "@/lib/collections-api";
 
@@ -15,10 +16,11 @@ const COLLECTIONS_KEY = ["collections"];
 // `collections` trên product (list lẫn detail), phải invalidate để 2 màn đó tự refetch.
 const PRODUCTS_KEY = "products";
 
-export function useCollections(search?: string) {
+export function useCollections(params: GetCollectionsParams = {}) {
+  const { search, includeDeleted, excludeEnded } = params;
   return useQuery({
-    queryKey: [...COLLECTIONS_KEY, search],
-    queryFn: () => getCollections(search),
+    queryKey: [...COLLECTIONS_KEY, search, includeDeleted, excludeEnded],
+    queryFn: () => getCollections(params),
   });
 }
 

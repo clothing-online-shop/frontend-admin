@@ -57,8 +57,13 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
 
   // Nạp trước toàn bộ id sản phẩm ĐANG thuộc bộ sưu tập (limit cao để lấy hết trong 1
   // lần, không phân trang) để tick sẵn — tận dụng luôn filter collectionIds đã có.
+  // includeDeleted: true — nếu bỏ, 1 sản phẩm đã bị xóa mềm nhưng vẫn đang thuộc bộ sưu
+  // tập này sẽ không được tick sẵn, và do "Lưu" thay thế TOÀN BỘ danh sách
+  // (assignProducts()), bấm Lưu mà không đụng gì cũng vô tình gỡ mất sản phẩm đó khỏi
+  // bộ sưu tập. Picker chính bên dưới KHÔNG truyền includeDeleted — sản phẩm đã xóa vẫn
+  // không được CHỌN MỚI.
   const { data: assignedData } = useProductsAdmin(
-    { collectionIds: collection?.id, limit: 1000 },
+    { collectionIds: collection?.id, limit: 1000, includeDeleted: true },
     { enabled: open && !!collection },
   );
 

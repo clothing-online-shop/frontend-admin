@@ -146,7 +146,10 @@ export default function BrandList() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Xóa thương hiệu này?"
+        title="Thông báo"
+        description="Bạn có chắc chắn muốn xóa thương hiệu này không?"
+        confirmText="Đồng ý"
+        cancelText="Hủy"
         danger
       />
     </div>

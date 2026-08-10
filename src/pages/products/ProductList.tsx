@@ -378,9 +378,10 @@ export default function ProductList() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Xóa vĩnh viễn sản phẩm này?"
-        description="Sản phẩm sẽ bị xóa hẳn khỏi hệ thống, không thể khôi phục. Nếu chỉ muốn ngừng bán tạm thời, dùng icon khóa thay vì xóa."
-        confirmText="Xóa vĩnh viễn"
+        title="Thông báo"
+        description="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+        confirmText="Đồng ý"
+        cancelText="Hủy"
         danger
       />
     </div>

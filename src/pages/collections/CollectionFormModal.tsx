@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import type { Collection } from "@/types/shared-types";
+import { CollectionStatus, type Collection } from "@/types/shared-types";
 import { ImageUploader } from "@/components/common/ImageUploader";
 import { useCreateCollection, useUpdateCollection } from "@/hooks/useCollections";
 import { getErrorMessage } from "@/lib/error";
@@ -18,6 +18,7 @@ interface CollectionFormModalProps {
   open: boolean;
   onClose: () => void;
   editing: Collection | null;
+  viewOnly?: boolean;
 }
 
 const EMPTY_VALUES: CollectionFormValues = {
@@ -34,7 +35,12 @@ function toDateOnly(iso: string): string {
   return iso.slice(0, 10);
 }
 
-export default function CollectionFormModal({ open, onClose, editing }: CollectionFormModalProps) {
+export default function CollectionFormModal({
+  open,
+  onClose,
+  editing,
+  viewOnly = false,
+}: CollectionFormModalProps) {
   const toast = useToast();
   const createMutation = useCreateCollection();
   const updateMutation = useUpdateCollection();
@@ -50,6 +56,17 @@ export default function CollectionFormModal({ open, onClose, editing }: Collecti
     resolver: yupResolver(collectionSchema),
     defaultValues: EMPTY_VALUES,
   });
+
+  // minDate cho lịch chọn ngày kết thúc bám theo ngày bắt đầu đang chọn — không cho chọn
+  // kết thúc trước bắt đầu ngay ở UI (bổ sung cho rule "after-start" đã có ở Yup), luôn
+  // dùng "today" khi chưa chọn ngày bắt đầu.
+  const startDateValue = useWatch({ control, name: "startDate" });
+
+  // Bộ sưu tập đang RUNNING: đổi tên kéo theo đổi slug (URL đang chia sẻ/index thật trên
+  // web bị gãy), đổi ngày bắt đầu thì vô nghĩa vì đã diễn ra rồi — chỉ còn banner/mô tả/
+  // ngày kết thúc là hợp lý để sửa giữa chừng (kéo dài/rút ngắn chiến dịch). BE
+  // (collections.service.ts update()) chặn y hệt 2 field này, đây chỉ là khoá UI tương ứng.
+  const isRunning = editing?.status === CollectionStatus.RUNNING;
 
   useEffect(() => {
     if (open) {
@@ -99,10 +116,19 @@ export default function CollectionFormModal({ open, onClose, editing }: Collecti
     <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
       <form onSubmit={handleSubmit(onValid)} className="p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          {editing ? "Sửa bộ sưu tập" : "Thêm bộ sưu tập"}
+          {viewOnly ? "Xem bộ sưu tập" : editing ? "Sửa bộ sưu tập" : "Thêm bộ sưu tập"}
         </h3>
 
-        <div className="space-y-4">
+        {!viewOnly && isRunning && (
+          <p className="mb-4 rounded-lg bg-blue-light-50 px-3 py-2 text-xs text-blue-light-500 dark:bg-blue-light-500/15">
+            Bộ sưu tập đang diễn ra — chỉ có thể sửa banner, mô tả và ngày kết thúc.
+          </p>
+        )}
+
+        {/* fieldset disabled tự vô hiệu hoá Input/TextArea/nút bấm trong ImageUploader (đều
+            là form control gốc) khi xem — riêng DatePicker vẫn truyền disabled riêng vì
+            flatpickr tự mở lịch bằng JS, không dựa theo input[disabled] của trình duyệt. */}
+        <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
           <div>
             <label
               htmlFor="collection-name"
@@ -113,6 +139,7 @@ export default function CollectionFormModal({ open, onClose, editing }: Collecti
             <Input
               id="collection-name"
               placeholder="Ví dụ: Bộ sưu tập Thu Đông 2026"
+              disabled={viewOnly || isRunning}
               {...register("name")}
               error={!!errors.name}
               hint={errors.name?.message}
@@ -129,6 +156,10 @@ export default function CollectionFormModal({ open, onClose, editing }: Collecti
                   label="Ngày bắt đầu"
                   placeholder="Chọn ngày bắt đầu"
                   defaultDate={field.value || undefined}
+                  // Không cho chọn ngày bắt đầu trong quá khứ — bộ sưu tập cũ (đã đang chạy/
+                  // kết thúc) vẫn giữ nguyên hiển thị được, chỉ chặn CHỌN MỚI ngày quá khứ.
+                  minDate="today"
+                  disabled={viewOnly || isRunning}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 />
               )}
@@ -142,6 +173,8 @@ export default function CollectionFormModal({ open, onClose, editing }: Collecti
                   label="Ngày kết thúc"
                   placeholder="Chọn ngày kết thúc"
                   defaultDate={field.value || undefined}
+                  minDate={startDateValue || "today"}
+                  disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 />
               )}
@@ -186,20 +219,22 @@ export default function CollectionFormModal({ open, onClose, editing }: Collecti
               )}
             />
           </div>
-        </div>
+        </fieldset>
 
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-            Hủy
+            {viewOnly ? "Đóng" : "Hủy"}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSaving}
-            startIcon={isSaving ? <Spinner size="sm" /> : undefined}
-          >
-            Lưu
-          </Button>
+          {!viewOnly && (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving}
+              startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+            >
+              Lưu
+            </Button>
+          )}
         </div>
       </form>
     </Modal>
