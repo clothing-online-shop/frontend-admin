@@ -45,18 +45,16 @@ const Switch: React.FC<SwitchProps> = ({
 
   return (
     <label
-      className={`flex cursor-pointer select-none items-center gap-3 text-sm font-medium ${
-        disabled ? "text-gray-400" : "text-gray-700 dark:text-gray-400"
+      className={`flex select-none items-center gap-3 text-sm font-medium ${
+        disabled ? "cursor-not-allowed text-gray-400" : "cursor-pointer text-gray-700 dark:text-gray-400"
       }`}
-      onClick={handleToggle} // Toggle when the label itself is clicked
+      onClick={handleToggle} // Toggle when the label itself is clicked — handleToggle tự
+      // no-op khi disabled, track vẫn giữ đúng màu theo trạng thái checked thay vì bị ép
+      // xám (chỉ cần trông "không bấm được", không cần mất thông tin đang bật hay tắt).
     >
       <div className="relative">
         <div
-          className={`block transition-colors duration-150 ease-standard h-6 w-11 rounded-full ${
-            disabled
-              ? "bg-gray-100 pointer-events-none dark:bg-gray-800"
-              : switchColors.background
-          }`}
+          className={`block transition-colors duration-150 ease-standard h-6 w-11 rounded-full ${switchColors.background}`}
         ></div>
         <div
           className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full shadow-theme-sm duration-150 ease-standard transform transition-transform ${switchColors.knob}`}

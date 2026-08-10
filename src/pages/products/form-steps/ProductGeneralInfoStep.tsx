@@ -52,9 +52,9 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
   );
 
   const listStatus = [
-    { value: String(ProductStatus.DRAFT), label: "Nháp" },
-    { value: String(ProductStatus.ACTIVE), label: "Đang bán" },
-    { value: String(ProductStatus.INACTIVE), label: "Ngừng bán" },
+    { value: String(ProductStatus.DRAFT), label: "Chưa mở bán" },
+    { value: String(ProductStatus.ACTIVE), label: "Đang mở bán" },
+    { value: String(ProductStatus.INACTIVE), label: "Ngừng kinh doanh" },
   ];
 
   return (

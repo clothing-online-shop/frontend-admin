@@ -21,9 +21,8 @@ export default function Dashboard() {
           </ComponentCard>
         ))}
       </div>
-      <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-        Biểu đồ doanh thu và top sản phẩm bán chạy sẽ được triển khai ở Sprint 6.
-      </p>
+      <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+        Tính năng chờ phát triển.</p>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { isAdminPanelRole } from "@/lib/roles";
 import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { loginSchema, type LoginFormValues } from "@/schemas/login.schema";
-import shopIllustration from "@/assets/images/shop-illustration.svg";
+import { LockIcon, EyeIcon, EyeCloseIcon } from "@/icons";
 
 import Button from "@/components/ui/button/Button";
 import Alert from "@/components/ui/alert/Alert";
@@ -22,6 +22,7 @@ export default function Login() {
   const setSession = useAuthStore((state) => state.setSession);
   const toast = useToast();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -52,24 +53,20 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-10">
-      {/* Left brand panel — hidden on small screens */}
-      <div className="relative hidden items-center justify-center overflow-hidden bg-gradient-to-br from-brand-500 to-brand-700 p-12 lg:col-span-6 lg:flex">
-        <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-
-        <img
-          src={shopIllustration}
-          alt=""
-          className="relative block w-full max-w-md"
-        />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 p-6 dark:bg-gray-950 sm:p-10">
+      {/* Nền trang trí — vài khối gradient mờ theo màu theme, không có box minh hoạ bên
+          trái nữa nên cần cái gì đó đỡ trống cho toàn màn hình, không ảnh hưởng thao tác
+          (pointer-events-none) và không đổi theo form. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-32 -left-24 h-96 w-96 rounded-full bg-brand-200/50 blur-3xl dark:bg-brand-500/10" />
+        <div className="absolute -right-24 -bottom-32 h-96 w-96 rounded-full bg-brand-300/40 blur-3xl dark:bg-brand-500/10" />
       </div>
 
-      {/* Right form panel */}
-      <div className="flex min-h-screen items-center justify-center bg-white p-6 dark:bg-gray-950 sm:p-10 lg:col-span-4 lg:min-h-0">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 flex flex-col items-center text-center lg:items-start lg:text-left">
+      <div className="relative w-full max-w-md">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900 sm:p-10">
+          <div className="mb-8 flex flex-col items-center text-center">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 shadow-theme-md">
+              <LockIcon className="h-7 w-7 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Đăng nhập quản trị
@@ -87,7 +84,7 @@ export default function Login() {
                 label="Email"
                 required
                 type="email"
-                placeholder="admin@clothing-shop.com"
+                placeholder="Tên đăng nhập..."
                 {...register("email")}
                 error={!!errors.email}
                 hint={errors.email?.message}
@@ -100,11 +97,25 @@ export default function Login() {
                 id="login-password"
                 label="Mật khẩu"
                 required
-                type="password"
-                placeholder="••••••••"
+                type={showPassword ? "text" : "password"}
+                placeholder="Nhập mật khẩu"
                 {...register("password")}
                 error={!!errors.password}
                 hint={errors.password?.message}
+                endIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                    className="text-gray-400 transition-colors duration-200 ease-standard hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    {showPassword ? (
+                      <EyeIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeCloseIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                }
               />
             </div>
 
@@ -130,6 +141,9 @@ export default function Login() {
             </Button>
           </Form>
         </div>
+        <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
+          © {new Date().getFullYear()} Trang quản trị.
+        </p>
       </div>
     </div>
   );

@@ -3,18 +3,18 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { useBreadcrumbStore } from "@/store/breadcrumb-store";
 import { ADMIN_ROLE_LABELS, toAdminRole, type AdminRole } from "@/lib/roles";
-import { ALL_ADMIN_ROLES, INVENTORY_ROLES, MARKETING_ROLES, ADMIN_ONLY_ROLES } from "@/lib/permissions";
+import { ALL_ADMIN_ROLES, INVENTORY_ROLES, /*MARKETING_ROLES, ADMIN_ONLY_ROLES*/ } from "@/lib/permissions";
 import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
   BoxIcon,
   BoxCubeIcon,
   GridIcon,
-  FolderIcon,
-  ListIcon,
-  GroupIcon,
-  PageIcon,
-  PlugInIcon,
+  // FolderIcon,
+  // ListIcon,
+  // GroupIcon,
+  // PageIcon,
+  // PlugInIcon,
   AngleRightIcon,
 } from "@/icons";
 
@@ -30,15 +30,15 @@ function getInitial(name: string | undefined): string {
 }
 
 const MENU_ITEMS: MenuItem[] = [
-  { key: "/dashboard", icon: PieChartIcon, label: "Dashboard", allow: ALL_ADMIN_ROLES },
+  { key: "/dashboard", icon: PieChartIcon, label: "Trang chủ", allow: ALL_ADMIN_ROLES },
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
-  { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
-  { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
-  { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
-  { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
-  { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
+  // { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
+  // { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
+  // { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
+  // { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
+  // { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
 ];
 
 export default function AdminLayout() {
@@ -64,7 +64,7 @@ export default function AdminLayout() {
     <div className="flex min-h-screen">
       <aside className="flex w-72 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <div className="px-6 py-6 text-lg font-semibold text-gray-800 dark:text-white/90">
-          Clothing Shop CMS
+          Trang quản trị
         </div>
         <nav className="flex-1 space-y-2 px-4">
           {menuItems.map((item) => {
@@ -75,18 +75,16 @@ export default function AdminLayout() {
                 key={item.key}
                 type="button"
                 onClick={() => navigate(item.key)}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 ease-standard ${
-                  isActive
-                    ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
-                    : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-                }`}
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 ease-standard ${isActive
+                  ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                  }`}
               >
                 <Icon
-                  className={`h-5 w-5 shrink-0 transition-colors duration-200 ease-standard ${
-                    isActive
-                      ? "text-brand-500 dark:text-brand-400"
-                      : "text-gray-500 dark:text-gray-400"
-                  }`}
+                  className={`h-7 w-7 shrink-0 transition-colors duration-200 ease-standard ${isActive
+                    ? "text-brand-500 dark:text-brand-400"
+                    : "text-gray-500 dark:text-gray-400"
+                    }`}
                 />
                 {item.label}
               </button>
@@ -108,7 +106,7 @@ export default function AdminLayout() {
               const isLast = index === breadcrumbItems.length - 1;
               return (
                 <span key={`${item.label}-${index}`} className="flex items-center gap-1.5">
-                  <AngleRightIcon className="size-3.5 text-gray-400" />
+                  <AngleRightIcon className="size-5 text-gray-400" />
                   {item.href && !isLast ? (
                     <Link
                       to={item.href}
@@ -155,7 +153,7 @@ export default function AdminLayout() {
               }}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors duration-200 ease-standard hover:bg-error-50 hover:text-error-600 dark:text-gray-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M15 17l5-5-5-5M20 12H9M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"
                   stroke="currentColor"

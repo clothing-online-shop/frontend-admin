@@ -141,7 +141,7 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   onClick={() => remove(index)}
                   aria-label={`Xóa ${rowLabel}`}
                 >
-                  <TrashBinIcon className="h-4 w-4" />
+                  <TrashBinIcon className="h-6 w-6" />
                 </Button>
               )}
             </div>
@@ -151,7 +151,7 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
           <Button
             type="button"
             variant="outline"
-            startIcon={<PlusIcon className="h-4 w-4" />}
+            startIcon={<PlusIcon className="h-6 w-6" />}
             onClick={() => append({ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 })}
             className="self-start"
           >

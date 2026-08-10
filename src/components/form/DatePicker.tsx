@@ -71,7 +71,7 @@ export default function DatePicker({
         />
 
         <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 dark:text-gray-400">
-          <CalenderIcon className="size-6" />
+          <CalenderIcon className="size-8" />
         </span>
       </div>
 

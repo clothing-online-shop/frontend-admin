@@ -69,7 +69,7 @@ export default function MultiSelectFilterDropdown({
           {value.length > 0 ? `${label} (${value.length})` : label}
         </span>
         <ChevronDownIcon
-          className={`size-5 shrink-0 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${
+          className={`size-7 shrink-0 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${
             isOpen ? "rotate-180" : ""
           }`}
         />

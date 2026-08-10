@@ -76,7 +76,7 @@ const Pagination: React.FC<PaginationProps> = ({
           aria-label="Trang trước"
           className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
         >
-          <AngleLeftIcon className="size-4" />
+          <AngleLeftIcon className="size-6" />
         </button>
 
         {items.map((item, index) =>
@@ -111,7 +111,7 @@ const Pagination: React.FC<PaginationProps> = ({
           aria-label="Trang sau"
           className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
         >
-          <AngleRightIcon className="size-4" />
+          <AngleRightIcon className="size-6" />
         </button>
       </nav>
 

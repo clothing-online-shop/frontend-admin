@@ -15,7 +15,7 @@ import DragTree, { type DragTreeNode } from "@/components/ui/tree/DragTree";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { PlusIcon, PencilIcon, TrashBinIcon, EyeIcon } from "@/icons";
 
 interface CategoryTreeNode extends DragTreeNode {
   key: string;
@@ -97,6 +97,7 @@ export default function CategoryList() {
   const [treeData, setTreeData] = useState<CategoryTreeNode[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -110,11 +111,19 @@ export default function CategoryList() {
 
   function handleAdd() {
     setEditingId(null);
+    setViewMode(false);
     setModalOpen(true);
   }
 
   function handleEdit(id: string) {
     setEditingId(id);
+    setViewMode(false);
+    setModalOpen(true);
+  }
+
+  function handleView(id: string) {
+    setEditingId(id);
+    setViewMode(true);
     setModalOpen(true);
   }
 
@@ -147,12 +156,23 @@ export default function CategoryList() {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              handleView(node.key);
+            }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 ease-standard hover:bg-brand-50 hover:text-brand-500 dark:hover:bg-brand-500/15 dark:hover:text-brand-400"
+            aria-label="Xem danh mục"
+          >
+            <EyeIcon className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
               handleEdit(node.key);
             }}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 ease-standard hover:bg-brand-50 hover:text-brand-500 dark:hover:bg-brand-500/15 dark:hover:text-brand-400"
             aria-label="Sửa danh mục"
           >
-            <PencilIcon className="h-4 w-4" />
+            <PencilIcon className="h-6 w-6" />
           </button>
           <button
             type="button"
@@ -163,7 +183,7 @@ export default function CategoryList() {
             className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 ease-standard hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/15"
             aria-label="Xóa danh mục"
           >
-            <TrashBinIcon className="h-4 w-4" />
+            <TrashBinIcon className="h-6 w-6" />
           </button>
         </div>
       </div>
@@ -258,19 +278,16 @@ export default function CategoryList() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Danh mục</h3>
-        <div className="flex items-center gap-3">
-          <div className="w-65">
-            <Input
-              placeholder="Tìm theo tên danh mục"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Button variant="primary" onClick={handleAdd} startIcon={<PlusIcon className="h-4 w-4" />}>
-            Thêm danh mục
-          </Button>
+        <div className="w-96">
+          <Input
+            placeholder="Tìm theo tên danh mục"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
+        <Button variant="primary" onClick={handleAdd} startIcon={<PlusIcon className="h-6 w-6" />}>
+          Thêm danh mục
+        </Button>
       </div>
 
       {isLoading ? (
@@ -287,7 +304,11 @@ export default function CategoryList() {
       ) : filteredTreeData.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">Không tìm thấy danh mục phù hợp.</p>
       ) : (
-        <DragTree treeData={withRenderedTitles(filteredTreeData)} onDrop={handleDrop} />
+        <DragTree
+          treeData={withRenderedTitles(filteredTreeData)}
+          onDrop={handleDrop}
+          onNodeClick={handleView}
+        />
       )}
 
       <CategoryFormModal
@@ -295,6 +316,7 @@ export default function CategoryList() {
         onClose={() => setModalOpen(false)}
         editing={editingNode}
         parentOptions={parentOptions}
+        viewOnly={viewMode}
       />
 
       <ConfirmModal

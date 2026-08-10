@@ -81,11 +81,11 @@ const Select: React.FC<SelectProps> = ({
                 className="text-gray-400 transition-colors duration-200 ease-standard hover:text-gray-600 dark:hover:text-gray-300"
                 aria-label="Xóa lựa chọn"
               >
-                <CloseIcon className="size-3.5" />
+                <CloseIcon className="size-5" />
               </span>
             )}
             <ChevronDownIcon
-              className={`size-5 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${isOpen ? "rotate-180" : ""}`}
+              className={`size-7 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${isOpen ? "rotate-180" : ""}`}
             />
           </span>
         </button>

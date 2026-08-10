@@ -26,6 +26,7 @@ interface CategoryFormModalProps {
   onClose: () => void;
   editing: CategoryNode | null;
   parentOptions: CategoryOption[];
+  viewOnly?: boolean;
 }
 
 const EMPTY_VALUES: CategoryFormValues = {
@@ -41,6 +42,7 @@ export function CategoryFormModal({
   onClose,
   editing,
   parentOptions,
+  viewOnly = false,
 }: CategoryFormModalProps) {
   const toast = useToast();
   const [imagePublicId, setImagePublicId] = useState<string | null>(null);
@@ -105,10 +107,14 @@ export function CategoryFormModal({
     <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
       <form onSubmit={handleSubmit(onValid)} className="p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          {editing ? "Sửa danh mục" : "Thêm danh mục"}
+          {viewOnly ? "Xem danh mục" : editing ? "Sửa danh mục" : "Thêm danh mục"}
         </h3>
 
-        <div className="space-y-4">
+        {/* fieldset disabled tự vô hiệu hoá Input/Select/nút bấm trong ImageUploader (đều là
+            <button>/<input> gốc) khi xem — riêng Switch dựng từ <label onClick>, không phải
+            form control gốc nên fieldset không tự khoá được, phải truyền disabled riêng
+            (xem prop disabled ở Switch bên dưới). */}
+        <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
           <div>
             <Input
               label="Tên danh mục"
@@ -150,7 +156,12 @@ export function CategoryFormModal({
             name="isActive"
             control={control}
             render={({ field }) => (
-              <Switch label="Hiển thị" checked={field.value} onChange={field.onChange} />
+              <Switch
+                label="Hiển thị"
+                checked={field.value}
+                onChange={field.onChange}
+                disabled={viewOnly}
+              />
             )}
           />
 
@@ -164,25 +175,28 @@ export function CategoryFormModal({
                   value={field.value}
                   onChange={field.onChange}
                   max={1}
+                  readOnly={viewOnly}
                   onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
                 />
               )}
             />
           </div>
-        </div>
+        </fieldset>
 
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-            Hủy
+            {viewOnly ? "Đóng" : "Hủy"}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSaving}
-            startIcon={isSaving ? <Spinner size="sm" /> : undefined}
-          >
-            Lưu
-          </Button>
+          {!viewOnly && (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving}
+              startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+            >
+              Lưu
+            </Button>
+          )}
         </div>
       </form>
     </Modal>

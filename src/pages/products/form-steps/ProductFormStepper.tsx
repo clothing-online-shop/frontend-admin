@@ -46,7 +46,7 @@ export function ProductFormStepper({
                       : "border border-gray-300 text-gray-400 dark:border-gray-700 dark:text-gray-500"
                 }`}
               >
-                {isCompleted && !allVisited ? <CheckLineIcon className="h-4 w-4" /> : index + 1}
+                {isCompleted && !allVisited ? <CheckLineIcon className="h-6 w-6" /> : index + 1}
               </span>
               <span
                 className={`text-sm font-medium ${

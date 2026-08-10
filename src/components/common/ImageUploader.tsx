@@ -59,7 +59,7 @@ export function ImageUploader({
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-theme-xs transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Di chuyển ảnh sang trái"
                 >
-                  <AngleLeftIcon className="h-5 w-5" />
+                  <AngleLeftIcon className="h-7 w-7" />
                 </button>
               )}
               <button
@@ -68,7 +68,7 @@ export function ImageUploader({
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-error-500 shadow-theme-xs transition-colors hover:bg-error-50"
                 aria-label="Xóa ảnh"
               >
-                <TrashBinIcon className="h-5 w-5" />
+                <TrashBinIcon className="h-7 w-7" />
               </button>
               {canReorder && (
                 <button
@@ -78,7 +78,7 @@ export function ImageUploader({
                   className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-theme-xs transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                   aria-label="Di chuyển ảnh sang phải"
                 >
-                  <AngleRightIcon className="h-5 w-5" />
+                  <AngleRightIcon className="h-7 w-7" />
                 </button>
               )}
             </div>
@@ -108,7 +108,7 @@ export function ImageUploader({
                 <Spinner className="text-brand-500" />
               ) : (
                 <>
-                  <PlusIcon className="h-9 w-9" />
+                  <PlusIcon className="h-11 w-11" />
                   <span>Thêm ảnh</span>
                 </>
               )}
