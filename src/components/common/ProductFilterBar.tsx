@@ -42,7 +42,7 @@ export default function ProductFilterBar({
 
   return (
     <div className={`flex flex-wrap gap-3 ${className}`}>
-      <div className="w-65">
+      <div className="w-96">
         <Input
           placeholder="Tìm theo tên/SKU sản phẩm"
           value={searchInput}
