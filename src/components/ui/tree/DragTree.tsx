@@ -1,4 +1,4 @@
-import { useState, type DragEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { ChevronDownIcon, FolderIcon, FileIcon } from "@/icons";
 
 export interface DragTreeNode {
@@ -25,6 +25,14 @@ interface DragState {
 
 const RAIL_WIDTH = "w-6";
 const RAIL_LINE = "bg-gray-200 dark:bg-gray-700";
+
+function collectKeysWithChildren(nodes: DragTreeNode[]): string[] {
+  return nodes.flatMap((node) =>
+    node.children && node.children.length > 0
+      ? [node.key, ...collectKeysWithChildren(node.children)]
+      : [],
+  );
+}
 
 function computeDropPosition(e: DragEvent<HTMLDivElement>): DropPosition {
   const rect = e.currentTarget.getBoundingClientRect();
@@ -65,6 +73,16 @@ function ElbowCell({ isLastChild }: { isLastChild: boolean }) {
 const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "", onNodeClick }) => {
   const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
   const [dragState, setDragState] = useState<DragState | null>(null);
+  // Mặc định thu gọn hết mọi node có con ngay lần đầu treeData có dữ liệu (tránh cây xổ
+  // hết ra ngay khi vào màn) — chỉ áp 1 lần lúc tải xong, không lặp lại mỗi lần treeData
+  // đổi identity (gõ tìm kiếm, sửa/xoá danh mục...) để không xoá mất trạng thái mở/đóng
+  // mà user đang thao tác dở.
+  const hasAppliedDefaultCollapse = useRef(false);
+  useEffect(() => {
+    if (hasAppliedDefaultCollapse.current || treeData.length === 0) return;
+    hasAppliedDefaultCollapse.current = true;
+    setCollapsedKeys(new Set(collectKeysWithChildren(treeData)));
+  }, [treeData]);
 
   function toggleCollapse(key: string) {
     setCollapsedKeys((prev) => {

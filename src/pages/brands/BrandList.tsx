@@ -60,12 +60,16 @@ export default function BrandList() {
         key: "logo",
         header: "Logo",
         align: "center",
-        className: "min-w-30",
+        className: "min-w-40",
         render: (brand) =>
           brand.logo ? (
-            <img src={brand.logo} className="mx-auto h-10 w-10 rounded-md object-cover" alt="" />
+            <img
+              src={brand.logo}
+              className="mx-auto h-32 w-24 rounded-md object-contain"
+              alt=""
+            />
           ) : (
-            <div className="mx-auto h-10 w-10 rounded-md bg-gray-100 dark:bg-gray-800" />
+            <div className="mx-auto h-32 w-24 rounded-md bg-gray-100 dark:bg-gray-800" />
           ),
       },
       {
@@ -89,6 +93,7 @@ export default function BrandList() {
       {
         key: "description",
         header: "Mô tả",
+        align: "center",
         className: "min-w-72",
         render: (brand) => (
           <span className="line-clamp-3 w-full text-sm text-gray-700 dark:text-gray-300">

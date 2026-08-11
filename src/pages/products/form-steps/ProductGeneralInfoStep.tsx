@@ -3,6 +3,7 @@ import { Controller, useFormContext } from "react-hook-form";
 import { ProductStatus } from "@/types/shared-types";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { slugifyPreview } from "@/lib/slug";
+import { visibleFieldError } from "@/lib/form";
 import { useBrands } from "@/hooks/useBrands";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -21,7 +22,7 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
     register,
     control,
     setValue,
-    formState: { errors },
+    formState: { errors, dirtyFields, isSubmitted },
   } = useFormContext<ProductFormValues>();
 
   // Chỉ đồng bộ slug theo đúng thao tác gõ tên (onChange thật của input), không
@@ -58,8 +59,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
               setValue("slug", slugifyPreview(e.target.value), { shouldValidate: true });
             }
           }}
-          error={!!errors.name}
-          hint={errors.name?.message}
+          error={!!visibleFieldError(errors.name?.message, dirtyFields.name, isSubmitted)}
+          hint={visibleFieldError(errors.name?.message, dirtyFields.name, isSubmitted)}
         />
       </div>
 
@@ -72,8 +73,10 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
             <RichTextEditor value={field.value ?? ""} onChange={field.onChange} disabled={viewOnly} />
           )}
         />
-        {errors.description && (
-          <p className="mt-1.5 text-xs text-form-error">{errors.description.message}</p>
+        {visibleFieldError(errors.description?.message, dirtyFields.description, isSubmitted) && (
+          <p className="mt-1.5 text-xs text-form-error">
+            {visibleFieldError(errors.description?.message, dirtyFields.description, isSubmitted)}
+          </p>
         )}
       </div>
 
@@ -84,8 +87,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
             required
             placeholder="Ví dụ: Cotton 100%"
             {...register("material")}
-            error={!!errors.material}
-            hint={errors.material?.message}
+            error={!!visibleFieldError(errors.material?.message, dirtyFields.material, isSubmitted)}
+            hint={visibleFieldError(errors.material?.message, dirtyFields.material, isSubmitted)}
           />
         </div>
         <div className="flex-1">
@@ -108,8 +111,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
                 required
                 value={field.value || undefined}
                 onChange={(value) => field.onChange(value ?? "")}
-                error={!!errors.categoryId}
-                hint={errors.categoryId?.message}
+                error={!!visibleFieldError(errors.categoryId?.message, dirtyFields.categoryId, isSubmitted)}
+                hint={visibleFieldError(errors.categoryId?.message, dirtyFields.categoryId, isSubmitted)}
                 disabled={viewOnly}
               />
             )}
@@ -148,8 +151,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-                error={!!errors.basePrice}
-                hint={errors.basePrice?.message}
+                error={!!visibleFieldError(errors.basePrice?.message, dirtyFields.basePrice, isSubmitted)}
+                hint={visibleFieldError(errors.basePrice?.message, dirtyFields.basePrice, isSubmitted)}
                 disabled={viewOnly}
               />
             )}
@@ -166,8 +169,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-                error={!!errors.salePrice}
-                hint={errors.salePrice?.message}
+                error={!!visibleFieldError(errors.salePrice?.message, dirtyFields.salePrice, isSubmitted)}
+                hint={visibleFieldError(errors.salePrice?.message, dirtyFields.salePrice, isSubmitted)}
                 disabled={viewOnly}
               />
             )}
@@ -189,8 +192,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
                   field.onChange(value !== undefined ? Number(value) : ProductStatus.DRAFT)
                 }
                 options={listStatus}
-                error={!!errors.status}
-                hint={errors.status?.message}
+                error={!!visibleFieldError(errors.status?.message, dirtyFields.status, isSubmitted)}
+                hint={visibleFieldError(errors.status?.message, dirtyFields.status, isSubmitted)}
                 disabled={viewOnly}
               />
             )}
@@ -208,8 +211,8 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
             slugTouchedRef.current = true;
             slugField.onChange(e);
           }}
-          error={!!errors.slug}
-          hint={errors.slug?.message}
+          error={!!visibleFieldError(errors.slug?.message, dirtyFields.slug, isSubmitted)}
+          hint={visibleFieldError(errors.slug?.message, dirtyFields.slug, isSubmitted)}
         />
         <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
           Tự sinh theo tên sản phẩm — có thể sửa tay nếu cần URL khác.
