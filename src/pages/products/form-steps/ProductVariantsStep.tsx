@@ -1,10 +1,12 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { slugifyPreview } from "@/lib/slug";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
+import CurrencyInput from "@/components/form/input/CurrencyInput";
 import { PlusIcon, TrashBinIcon } from "@/icons";
+import { visibleFieldError } from "@/lib/form";
 
 interface ProductVariantsStepProps {
   viewOnly?: boolean;
@@ -26,7 +28,8 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
     control,
     getValues,
     setValue,
-    formState: { errors },
+    trigger,
+    formState: { errors, dirtyFields, isSubmitted },
   } = useFormContext<ProductFormValues>();
   const { fields, append, remove } = useFieldArray({ control, name: "variants" });
 
@@ -39,7 +42,11 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
     setValue(`variants.${index}.sku`, sku);
   }
 
-  const variantsError = errors.variants?.message ?? errors.variants?.root?.message;
+  const variantsError = visibleFieldError(
+    errors.variants?.message ?? errors.variants?.root?.message,
+    !!dirtyFields.variants,
+    isSubmitted,
+  );
 
   return (
     <ComponentCard title="Biến thể (size / màu)" required={true}>
@@ -84,11 +91,27 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   placeholder="M"
                   aria-label={`Size ${rowLabel}`}
                   {...sizeField}
+                  onChange={(e) => {
+                    sizeField.onChange(e);
+                    // Rule "no-duplicate-variants" ở product.schema.ts gắn trên field
+                    // "variants" (mảng), không phải "variants.N.size" — RHF mode "onChange"
+                    // chỉ tự re-validate đúng field vừa đổi, không tự lan sang field cha
+                    // dạng mảng nên lỗi trùng lặp không tự mất dù đã sửa đúng. Gọi trigger()
+                    // tường minh để yêu cầu RHF chạy lại đúng rule đó (không phải tự viết
+                    // validate mới, vẫn dùng lại Yup schema).
+                    void trigger("variants");
+                  }}
                   onBlur={(e) => {
                     sizeField.onBlur(e);
                     suggestSku(index);
                   }}
-                  error={!!errors.variants?.[index]?.size}
+                  error={
+                    !!visibleFieldError(
+                      errors.variants?.[index]?.size?.message,
+                      dirtyFields.variants?.[index]?.size,
+                      isSubmitted,
+                    )
+                  }
                 />
               </div>
               <div className={COLUMN_WIDTH.color}>
@@ -96,11 +119,21 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   placeholder="Đen"
                   aria-label={`Màu sắc ${rowLabel}`}
                   {...colorField}
+                  onChange={(e) => {
+                    colorField.onChange(e);
+                    void trigger("variants");
+                  }}
                   onBlur={(e) => {
                     colorField.onBlur(e);
                     suggestSku(index);
                   }}
-                  error={!!errors.variants?.[index]?.color}
+                  error={
+                    !!visibleFieldError(
+                      errors.variants?.[index]?.color?.message,
+                      dirtyFields.variants?.[index]?.color,
+                      isSubmitted,
+                    )
+                  }
                 />
               </div>
               <div className={COLUMN_WIDTH.sku}>
@@ -117,11 +150,18 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                 />
               </div>
               <div className={COLUMN_WIDTH.price}>
-                <Input
-                  type="number"
-                  placeholder="Theo giá gốc"
-                  aria-label={`Giá bán ${rowLabel}`}
-                  {...register(`variants.${index}.price`)}
+                <Controller
+                  name={`variants.${index}.price`}
+                  control={control}
+                  render={({ field }) => (
+                    <CurrencyInput
+                      placeholder="Theo giá gốc"
+                      ariaLabel={`Giá bán ${rowLabel}`}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
                 />
               </div>
               <div className={COLUMN_WIDTH.stock}>
@@ -138,7 +178,10 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   type="button"
                   variant="outline"
                   className="!px-2.5 !py-2.5 !text-error-500 hover:!bg-error-50"
-                  onClick={() => remove(index)}
+                  onClick={() => {
+                    remove(index);
+                    void trigger("variants");
+                  }}
                   aria-label={`Xóa ${rowLabel}`}
                 >
                   <TrashBinIcon className="h-6 w-6" />

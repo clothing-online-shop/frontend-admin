@@ -6,6 +6,7 @@ import { ImageUploader } from "@/components/common/ImageUploader";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import { PlusIcon, TrashBinIcon, CheckLineIcon } from "@/icons";
+import { visibleFieldError } from "@/lib/form";
 
 interface ProductImagesStepProps {
   viewOnly?: boolean;
@@ -16,7 +17,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
     control,
     getValues,
     setValue,
-    formState: { errors },
+    formState: { errors, dirtyFields, isSubmitted },
   } = useFormContext<ProductFormValues>();
 
   const images = useWatch({ control, name: "images" }) ?? [];
@@ -66,8 +67,10 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
             />
           )}
         />
-        {errors.thumbnail && (
-          <p className="mt-1.5 text-xs text-form-error">{errors.thumbnail.message}</p>
+        {visibleFieldError(errors.thumbnail?.message, dirtyFields.thumbnail, isSubmitted) && (
+          <p className="mt-1.5 text-xs text-form-error">
+            {visibleFieldError(errors.thumbnail?.message, dirtyFields.thumbnail, isSubmitted)}
+          </p>
         )}
       </ComponentCard>
 
@@ -113,8 +116,10 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
             />
           )}
         />
-        {errors.images && (
-          <p className="mt-1.5 text-xs text-form-error">{errors.images.message}</p>
+        {visibleFieldError(errors.images?.message, dirtyFields.images, isSubmitted) && (
+          <p className="mt-1.5 text-xs text-form-error">
+            {visibleFieldError(errors.images?.message, dirtyFields.images, isSubmitted)}
+          </p>
         )}
       </ComponentCard>
 

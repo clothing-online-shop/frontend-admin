@@ -3,6 +3,10 @@ import FieldLabel from "@/components/form/FieldLabel";
 interface CurrencyInputProps {
   id?: string;
   label?: string;
+  // Dùng khi input nằm trong bảng đã có tiêu đề cột dùng chung (vd cột "Giá bán" ở bảng
+  // biến thể sản phẩm) — không hiện label riêng từng dòng nhưng vẫn cần mô tả cho
+  // screen reader, khớp cách các input khác trong cùng bảng dùng aria-label thay label.
+  ariaLabel?: string;
   required?: boolean;
   placeholder?: string;
   // Giá trị THẬT (số nguyên VNĐ, không phải chuỗi đã format) — khác InputField vì input
@@ -26,6 +30,7 @@ function formatThousands(digits: string): string {
 export default function CurrencyInput({
   id,
   label,
+  ariaLabel,
   required = false,
   placeholder,
   value,
@@ -61,6 +66,7 @@ export default function CurrencyInput({
           id={id}
           type="text"
           inputMode="numeric"
+          aria-label={ariaLabel}
           placeholder={placeholder}
           value={displayValue}
           onChange={handleChange}

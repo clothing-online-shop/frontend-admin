@@ -88,21 +88,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               {endIcon}
             </span>
           )}
-
-          {hint && (
-            <p
-              className={`mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 ${
-                error
-                  ? "text-form-error"
-                  : success
-                  ? "text-success-500"
-                  : "text-gray-500"
-              }`}
-            >
-              {hint}
-            </p>
-          )}
         </div>
+
+        {hint && (
+          <p
+            className={`mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 ${
+              error
+                ? "text-form-error"
+                : success
+                ? "text-success-500"
+                : "text-gray-500"
+            }`}
+          >
+            {hint}
+          </p>
+        )}
       </div>
     );
   },

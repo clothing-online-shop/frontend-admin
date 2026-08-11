@@ -41,7 +41,7 @@ export default function Login() {
         return;
       }
       setSession(data.user, data.accessToken, data.refreshToken);
-      toast.success("Đăng nhập thành công");
+      toast.success("Đăng nhập thành công.");
       navigate("/dashboard");
     },
     onError: (error) => setServerError(getErrorMessage(error)),
@@ -49,7 +49,7 @@ export default function Login() {
 
   const onValid = (values: LoginFormValues) => {
     setServerError(null);
-    mutation.mutate(values);
+    mutation.mutate(values as Required<LoginFormValues>);
   };
 
   return (
@@ -62,7 +62,7 @@ export default function Login() {
         <div className="absolute -right-24 -bottom-32 h-96 w-96 rounded-full bg-brand-300/40 blur-3xl dark:bg-brand-500/10" />
       </div>
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-lg">
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-theme-lg dark:border-gray-800 dark:bg-gray-900 sm:p-10">
           <div className="mb-8 flex flex-col items-center text-center">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 shadow-theme-md">
