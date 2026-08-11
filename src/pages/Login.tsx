@@ -41,7 +41,7 @@ export default function Login() {
         return;
       }
       setSession(data.user, data.accessToken, data.refreshToken);
-      toast.success("Đăng nhập thành công");
+      toast.success("Đăng nhập thành công.");
       navigate("/dashboard");
     },
     onError: (error) => setServerError(getErrorMessage(error)),
