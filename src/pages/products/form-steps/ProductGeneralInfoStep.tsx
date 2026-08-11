@@ -3,12 +3,13 @@ import { Controller, useFormContext } from "react-hook-form";
 import { ProductStatus } from "@/types/shared-types";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { slugifyPreview } from "@/lib/slug";
-import { useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
+import CurrencyInput from "@/components/form/input/CurrencyInput";
 import Select from "@/components/form/Select";
+import CategorySelect from "@/components/form/CategorySelect";
 import FieldLabel from "@/components/form/FieldLabel";
 
 interface ProductGeneralInfoStepProps {
@@ -30,20 +31,6 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
   const slugTouchedRef = useRef(false);
   const nameField = register("name");
   const slugField = register("slug");
-
-  const { data: categoryTree } = useCategoryTree();
-  const categoryOptions = useMemo(() => {
-    function flatten(
-      nodes: typeof categoryTree = [],
-      depth = 0,
-    ): { value: string; label: string }[] {
-      return (nodes ?? []).flatMap((node) => [
-        { value: node.id, label: `${"— ".repeat(depth)}${node.name}` },
-        ...flatten(node.children, depth + 1),
-      ]);
-    }
-    return flatten(categoryTree);
-  }, [categoryTree]);
 
   const { data: brands } = useBrands();
   const brandOptions = useMemo(
@@ -116,11 +103,9 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
             name="categoryId"
             control={control}
             render={({ field }) => (
-              <Select
+              <CategorySelect
                 label="Danh mục"
                 required
-                placeholder="Chọn danh mục"
-                options={categoryOptions}
                 value={field.value || undefined}
                 onChange={(value) => field.onChange(value ?? "")}
                 error={!!errors.categoryId}
@@ -143,6 +128,7 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
                 value={field.value || undefined}
                 onChange={(value) => field.onChange(value ?? "")}
                 disabled={viewOnly}
+                placeholderColor="gray-400"
               />
             )}
           />
@@ -151,28 +137,40 @@ export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoS
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <Input
-            label="Giá gốc"
-            required
-            type="number"
-            min="1000"
-            step={1000}
-            placeholder="0"
-            {...register("basePrice")}
-            error={!!errors.basePrice}
-            hint={errors.basePrice?.message}
+          <Controller
+            name="basePrice"
+            control={control}
+            render={({ field }) => (
+              <CurrencyInput
+                label="Giá gốc"
+                required
+                placeholder="0"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!errors.basePrice}
+                hint={errors.basePrice?.message}
+                disabled={viewOnly}
+              />
+            )}
           />
         </div>
         <div className="flex-1">
-          <Input
-            label="Giá khuyến mãi"
-            type="number"
-            min="0"
-            step={1000}
-            placeholder="Bỏ trống nếu không giảm giá"
-            {...register("salePrice")}
-            error={!!errors.salePrice}
-            hint={errors.salePrice?.message}
+          <Controller
+            name="salePrice"
+            control={control}
+            render={({ field }) => (
+              <CurrencyInput
+                label="Giá khuyến mãi"
+                placeholder="Bỏ trống nếu không giảm giá"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!errors.salePrice}
+                hint={errors.salePrice?.message}
+                disabled={viewOnly}
+              />
+            )}
           />
         </div>
         <div className="flex-1">

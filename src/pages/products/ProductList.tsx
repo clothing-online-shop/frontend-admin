@@ -38,7 +38,7 @@ export default function ProductList() {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
-  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   // const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
@@ -60,7 +60,7 @@ export default function ProductList() {
   const { data, isLoading } = useProductsAdmin({
     search: search || undefined,
     brandId,
-    category,
+    categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
     status,
     // collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
     page,
@@ -106,12 +106,17 @@ export default function ProductList() {
       {
         key: "thumbnail",
         header: "Ảnh",
+        align: "center",
         className: "min-w-40",
         render: (product) =>
           product.thumbnail ? (
-            <img src={product.thumbnail} className="h-32 w-24 rounded-md object-cover" alt="" />
+            <img
+              src={product.thumbnail}
+              className="mx-auto h-32 w-24 rounded-md object-cover"
+              alt=""
+            />
           ) : (
-            <div className="h-32 w-24 rounded-md bg-gray-100 dark:bg-gray-800" />
+            <div className="mx-auto h-32 w-24 rounded-md bg-gray-100 dark:bg-gray-800" />
           ),
       },
       {
@@ -128,7 +133,8 @@ export default function ProductList() {
       {
         key: "name",
         header: "Tên sản phẩm",
-        className: "min-w-56",
+        align: "center",
+        className: "min-w-72",
         render: (product) => (
           <span className="text-sm text-gray-800 dark:text-white/90">{product.name}</span>
         ),
@@ -136,6 +142,7 @@ export default function ProductList() {
       {
         key: "category",
         header: "Danh mục",
+        align: "center",
         className: "min-w-56",
         render: (product) => (
           <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -146,6 +153,7 @@ export default function ProductList() {
       {
         key: "brand",
         header: "Thương hiệu",
+        align: "center",
         className: "min-w-36",
         render: (product) => (
           <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -201,6 +209,7 @@ export default function ProductList() {
       {
         key: "material",
         header: "Chất liệu",
+        align: "center",
         className: "min-w-40",
         render: (product) => (
           <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -211,9 +220,10 @@ export default function ProductList() {
       {
         key: "description",
         header: "Mô tả",
+        align: "center",
         className: "min-w-72",
         render: (product) => (
-          <span className="line-clamp-2 max-w-sm text-sm text-gray-700 dark:text-gray-300">
+          <span className="mx-auto line-clamp-3 max-w-sm text-center text-sm text-gray-700 dark:text-gray-300">
             {product.description ? stripHtml(product.description) : "—"}
           </span>
         ),
@@ -221,6 +231,7 @@ export default function ProductList() {
       {
         key: "slug",
         header: "URL",
+        align: "center",
         className: "min-w-90",
         render: (product) => (
           <span className="text-sm text-gray-500 dark:text-gray-400">{product.slug}</span>
@@ -240,6 +251,7 @@ export default function ProductList() {
       {
         key: "actions",
         header: "Thao tác",
+        align: "center",
         className: "min-w-24",
         stickyRight: true,
         render: (product) => {
@@ -318,8 +330,41 @@ export default function ProductList() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90"></h3>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start gap-3">
+          <ProductFilterBar
+            searchInput={searchInput}
+            onSearchInputChange={setSearchInput}
+            brandId={brandId}
+            onBrandIdChange={(value) => {
+              setBrandId(value);
+              setPage(1);
+            }}
+            categoryIds={categoryIds}
+            onCategoryIdsChange={(ids) => {
+              setCategoryIds(ids);
+              setPage(1);
+            }}
+            status={status}
+            onStatusChange={(value) => {
+              setStatus(value);
+              setPage(1);
+            }}
+          />
+          {/* <div className="w-48">
+            <MultiSelectFilterDropdown
+              label="Bộ sưu tập"
+              options={collectionOptions}
+              isLoading={isLoadingCollections}
+              emptyMessage="Chưa có bộ sưu tập nào."
+              value={collectionIds}
+              onApply={(ids) => {
+                setCollectionIds(ids);
+                setPage(1);
+              }}
+            />
+          </div> */}
+        </div>
         <Button
           variant="primary"
           startIcon={<PlusIcon className="h-6 w-6" />}
@@ -327,41 +372,6 @@ export default function ProductList() {
         >
           Thêm sản phẩm
         </Button>
-      </div>
-
-      <div className="mb-4 flex flex-wrap items-start gap-3">
-        <ProductFilterBar
-          searchInput={searchInput}
-          onSearchInputChange={setSearchInput}
-          brandId={brandId}
-          onBrandIdChange={(value) => {
-            setBrandId(value);
-            setPage(1);
-          }}
-          category={category}
-          onCategoryChange={(value) => {
-            setCategory(value);
-            setPage(1);
-          }}
-          status={status}
-          onStatusChange={(value) => {
-            setStatus(value);
-            setPage(1);
-          }}
-        />
-        {/* <div className="w-48">
-          <MultiSelectFilterDropdown
-            label="Bộ sưu tập"
-            options={collectionOptions}
-            isLoading={isLoadingCollections}
-            emptyMessage="Chưa có bộ sưu tập nào."
-            value={collectionIds}
-            onApply={(ids) => {
-              setCollectionIds(ids);
-              setPage(1);
-            }}
-          />
-        </div> */}
       </div>
 
       <div className="rounded-2xl bg-white">

@@ -62,7 +62,7 @@ export default function MultiSelectFilterDropdown({
         type="button"
         onClick={toggle}
         className={`flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-800 ${
-          value.length === 0 ? "text-gray-400 dark:text-white/30" : "text-gray-800 dark:text-white/90"
+          value.length === 0 ? "text-gray-700 dark:text-white/30" : "text-gray-800 dark:text-white/90"
         }`}
       >
         <span className="truncate text-gray-700 dark:text-white/90">

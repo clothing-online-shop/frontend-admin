@@ -1,18 +1,18 @@
 import { useMemo } from "react";
 import { ProductStatus } from "@/types/shared-types";
-import { useCategoryTree } from "@/hooks/useCategories";
 import { useBrands } from "@/hooks/useBrands";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
+import CategoryTreeSelect from "@/components/form/CategoryTreeSelect";
 
 interface ProductFilterBarProps {
   searchInput: string;
   onSearchInputChange: (value: string) => void;
   brandId: string | undefined;
   onBrandIdChange: (value: string | undefined) => void;
-  category: string | undefined;
-  onCategoryChange: (value: string | undefined) => void;
+  categoryIds: string[];
+  onCategoryIdsChange: (ids: string[]) => void;
   status: ProductStatus | undefined;
   onStatusChange: (value: ProductStatus | undefined) => void;
   className?: string;
@@ -28,28 +28,12 @@ export default function ProductFilterBar({
   onSearchInputChange,
   brandId,
   onBrandIdChange,
-  category,
-  onCategoryChange,
+  categoryIds,
+  onCategoryIdsChange,
   status,
   onStatusChange,
   className = "",
 }: ProductFilterBarProps) {
-  const { data: categoryTree } = useCategoryTree();
-  const categoryOptions = useMemo(() => {
-    // "— " lặp theo depth để thể hiện phân cấp cha/con trong dropdown phẳng — cùng
-    // convention với parentOptions ở CategoryFormModal.tsx.
-    function flatten(
-      nodes: typeof categoryTree = [],
-      depth = 0,
-    ): { value: string; label: string }[] {
-      return (nodes ?? []).flatMap((node) => [
-        { value: node.slug, label: `${"— ".repeat(depth)}${node.name}` },
-        ...flatten(node.children, depth + 1),
-      ]);
-    }
-    return flatten(categoryTree);
-  }, [categoryTree]);
-
   const { data: brands } = useBrands();
   const brandOptions = useMemo(
     () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
@@ -68,24 +52,20 @@ export default function ProductFilterBar({
       <div className="w-48">
         <Select
           allowClear
+          placeholderColor="gray-700"
           placeholder="Thương hiệu"
           options={brandOptions}
           value={brandId}
           onChange={onBrandIdChange}
         />
       </div>
-      <div className="w-50">
-        <Select
-          allowClear
-          placeholder="Danh mục"
-          options={categoryOptions}
-          value={category}
-          onChange={onCategoryChange}
-        />
+      <div className="w-64">
+        <CategoryTreeSelect placeholder="Danh mục" value={categoryIds} onChange={onCategoryIdsChange} />
       </div>
-      <div className="w-40">
+      <div className="w-52">
         <Select
           allowClear
+          placeholderColor="gray-700"
           placeholder="Trạng thái"
           // Select dùng chung chỉ nhận option.value dạng string — status thật (state +
           // query param) vẫn là number, ép qua lại đúng ở ranh giới UI này.

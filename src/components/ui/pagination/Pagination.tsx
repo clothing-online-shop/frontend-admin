@@ -120,7 +120,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <span className="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
             Số dòng/trang
           </span>
-          <div className="w-20">
+          <div className="w-24">
             <Select
               value={String(pageSize)}
               onChange={(value) => value && onPageSizeChange(Number(value))}

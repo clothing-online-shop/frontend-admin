@@ -124,14 +124,24 @@ export default function BrandFormModal({
             <Controller
               name="description"
               control={control}
-              render={({ field }) => (
-                <TextArea
-                  id="brand-description"
-                  placeholder="Giới thiệu ngắn về thương hiệu"
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
+              render={({ field }) =>
+                // Xem (viewOnly): textarea disabled vẫn chỉ cao 3 dòng nhưng KHÔNG tự xuống
+                // dòng đẹp — mô tả dài tràn ra ngoài, phải cuộn mới đọc hết, nhìn như thừa
+                // khoảng trắng/lỗi hiển thị. Đổi sang đoạn text thường + line-clamp-3, đúng
+                // kiểu rút gọn "..." như cột Mô tả bên danh sách sản phẩm.
+                viewOnly ? (
+                  <p className="line-clamp-3 text-sm text-gray-800 dark:text-white/90">
+                    {field.value || "—"}
+                  </p>
+                ) : (
+                  <TextArea
+                    id="brand-description"
+                    placeholder="Giới thiệu ngắn về thương hiệu"
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )
+              }
             />
           </div>
 

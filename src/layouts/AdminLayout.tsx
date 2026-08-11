@@ -76,7 +76,7 @@ export default function AdminLayout() {
                 type="button"
                 onClick={() => navigate(item.key)}
                 className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 ease-standard ${isActive
-                  ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
+                  ? "bg-brand-50 text-brand-600 dark:bg-brand-500/[0.2] dark:text-brand-400"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
                   }`}
               >
@@ -98,7 +98,7 @@ export default function AdminLayout() {
           <nav className="flex items-center gap-1.5 text-sm">
             <Link
               to="/dashboard"
-              className="text-gray-500 transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              className="text-gray-800 font-medium transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
               Trang chủ
             </Link>
@@ -110,7 +110,7 @@ export default function AdminLayout() {
                   {item.href && !isLast ? (
                     <Link
                       to={item.href}
-                      className="text-gray-500 transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                      className="text-gray-800 font-medium transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                     >
                       {item.label}
                     </Link>
