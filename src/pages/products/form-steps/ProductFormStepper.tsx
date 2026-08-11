@@ -49,7 +49,7 @@ export function ProductFormStepper({
                 {isCompleted && !allVisited ? <CheckLineIcon className="h-6 w-6" /> : index + 1}
               </span>
               <span
-                className={`text-sm font-medium ${
+                className={`text-lg font-medium ${
                   index === currentStep
                     ? "text-gray-800 dark:text-white/90"
                     : isReachable

@@ -75,7 +75,7 @@ export default function AdminLayout() {
                 key={item.key}
                 type="button"
                 onClick={() => navigate(item.key)}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors duration-200 ease-standard ${isActive
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ease-standard ${isActive
                   ? "bg-brand-50 text-brand-600 dark:bg-brand-500/[0.2] dark:text-brand-400"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
                   }`}
@@ -95,7 +95,7 @@ export default function AdminLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
-          <nav className="flex items-center gap-1.5 text-sm">
+          <nav className="flex items-center gap-1.5 text-base">
             <Link
               to="/dashboard"
               className="text-gray-800 font-medium transition-colors duration-200 ease-standard hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
