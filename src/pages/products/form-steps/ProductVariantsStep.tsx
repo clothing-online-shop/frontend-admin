@@ -44,28 +44,28 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
   return (
     <ComponentCard title="Biến thể (size / màu)" required={true}>
       <div className="flex flex-col gap-3">
-        {variantsError && <p className="text-xs text-form-error">{variantsError}</p>}
+        {variantsError && <p className="text-base text-form-error">{variantsError}</p>}
 
-        <p className="text-xs text-gray-700 font-bold dark:text-gray-500">
+        <p className="text-base text-gray-700 font-bold dark:text-gray-500">
           Bỏ trống SKU để tự sinh theo tên sản phẩm + size + màu. Bỏ trống Giá bán để dùng giá
           gốc của sản phẩm.
         </p>
 
         {fields.length > 0 && (
           <div className="flex items-center gap-3 px-1">
-            <span className={`${COLUMN_WIDTH.size} text-xs font-medium text-gray-500 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.size} text-base font-medium text-gray-700 dark:text-gray-400`}>
               Size <span className="text-error-500">*</span>
             </span>
-            <span className={`${COLUMN_WIDTH.color} text-xs font-medium text-gray-500 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.color} text-base font-medium text-gray-700 dark:text-gray-400`}>
               Màu sắc <span className="text-error-500">*</span>
             </span>
-            <span className={`${COLUMN_WIDTH.sku} text-xs font-medium text-gray-500 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.sku} text-base font-medium text-gray-700 dark:text-gray-400`}>
               SKU
             </span>
-            <span className={`${COLUMN_WIDTH.price} text-xs font-medium text-gray-500 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.price} text-base font-medium text-gray-700 dark:text-gray-400`}>
               Giá bán
             </span>
-            <span className={`${COLUMN_WIDTH.stock} text-xs font-medium text-gray-500 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.stock} text-base font-medium text-gray-700 dark:text-gray-400`}>
               Tồn kho
             </span>
           </div>
@@ -141,7 +141,7 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   onClick={() => remove(index)}
                   aria-label={`Xóa ${rowLabel}`}
                 >
-                  <TrashBinIcon className="h-4 w-4" />
+                  <TrashBinIcon className="h-6 w-6" />
                 </Button>
               )}
             </div>
@@ -151,7 +151,7 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
           <Button
             type="button"
             variant="outline"
-            startIcon={<PlusIcon className="h-4 w-4" />}
+            startIcon={<PlusIcon className="h-6 w-6" />}
             onClick={() => append({ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 })}
             className="self-start"
           >

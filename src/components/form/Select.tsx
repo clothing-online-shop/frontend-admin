@@ -24,6 +24,10 @@ interface SelectProps {
   // Nhãn đi liền với select — thay cho việc mỗi nơi gọi tự viết <label> riêng.
   label?: string;
   required?: boolean;
+  // Màu chữ placeholder khi chưa chọn gì — Select ở thanh lọc danh sách (ProductFilterBar)
+  // dùng gray-700 (đậm hơn, dễ đọc vì đây là 1 bộ lọc luôn hiện diện); Select trong form
+  // (nhập liệu) giữ gray-400 mặc định, đúng vai trò gợi ý nhập nhạt hơn giá trị thật.
+  placeholderColor?: "gray-400" | "gray-700";
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -39,6 +43,7 @@ const Select: React.FC<SelectProps> = ({
   dropdownPlacement = "bottom",
   label,
   required = false,
+  placeholderColor = "gray-400",
 }) => {
   const { isOpen, containerRef, toggle, close } = useSelect();
   const { shouldRender: shouldRenderPanel, isVisible: isPanelVisible } = useMountTransition(isOpen);
@@ -58,11 +63,17 @@ const Select: React.FC<SelectProps> = ({
             error
               ? "border-form-error focus:border-form-error"
               : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
-          } ${
-            disabled ? "text-gray-500 opacity-40 cursor-not-allowed dark:text-gray-400" : "text-gray-800 dark:text-white/90"
-          } ${!selectedOption ? "text-gray-400 dark:text-white/30" : ""} ${className}`}
+          } text-gray-800 dark:text-white/90 ${
+            disabled ? "cursor-not-allowed bg-gray-50 dark:bg-white/[0.03]" : ""
+          } ${className}`}
         >
-          <span className="truncate">{selectedOption ? selectedOption.label : (placeholder ?? "")}</span>
+          <span className={`truncate ${
+            !selectedOption
+              ? placeholderColor === "gray-700"
+                ? "text-gray-700 dark:text-white/30"
+                : "text-gray-400 dark:text-white/30"
+              : ""
+          }`}>{selectedOption ? selectedOption.label : (placeholder ?? "")}</span>
           <span className="flex shrink-0 items-center gap-1 pl-2">
             {showClear && (
               <span
@@ -81,11 +92,11 @@ const Select: React.FC<SelectProps> = ({
                 className="text-gray-400 transition-colors duration-200 ease-standard hover:text-gray-600 dark:hover:text-gray-300"
                 aria-label="Xóa lựa chọn"
               >
-                <CloseIcon className="size-3.5" />
+                <CloseIcon className="size-5" />
               </span>
             )}
             <ChevronDownIcon
-              className={`size-5 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${isOpen ? "rotate-180" : ""}`}
+              className={`size-7 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${isOpen ? "rotate-180" : ""}`}
             />
           </span>
         </button>
@@ -115,10 +126,10 @@ const Select: React.FC<SelectProps> = ({
                       onChange(option.value);
                       close();
                     }}
-                    className={`block w-full truncate px-4 py-2 text-left text-sm transition-colors duration-150 ease-standard ${
+                    className={`block w-full truncate px-4 py-2 text-left text-sm transition-colors duration-150 ease-standard hover:bg-brand-500 hover:text-white ${
                       isSelected
                         ? "bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                        : "text-gray-700 dark:text-gray-300"
                     }`}
                   >
                     {option.label}

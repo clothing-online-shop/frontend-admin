@@ -1,9 +1,16 @@
+import { useEffect, useRef } from "react";
 import type React from "react";
 
 interface CheckboxProps {
   label?: string;
   checked: boolean;
+  // Trạng thái "tick 1 phần" (cây checkbox 3 trạng thái) — chỉ là hiển thị, không thay
+  // đổi ý nghĩa của `checked`/`onChange`; xem useCategoryCheckboxTree.ts cho nơi tính.
+  indeterminate?: boolean;
   className?: string;
+  // Override style mặc định của label (vd cây danh mục cần đậm/nhạt khác nhau theo cấp
+  // — xem CategoryTreeSelect.tsx) — không truyền thì giữ nguyên style mặc định.
+  labelClassName?: string;
   id?: string;
   onChange: (checked: boolean) => void;
   disabled?: boolean;
@@ -12,11 +19,22 @@ interface CheckboxProps {
 const Checkbox: React.FC<CheckboxProps> = ({
   label,
   checked,
+  indeterminate = false,
   id,
   onChange,
   className = "",
+  labelClassName,
   disabled = false,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Không có attribute HTML cho indeterminate — phải set thẳng property qua DOM ref.
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.indeterminate = indeterminate;
+  }, [indeterminate]);
+
+  const filled = checked || indeterminate;
+
   return (
     <label
       className={`flex items-center space-x-3 group cursor-pointer ${
@@ -25,9 +43,12 @@ const Checkbox: React.FC<CheckboxProps> = ({
     >
       <div className="relative w-5 h-5">
         <input
+          ref={inputRef}
           id={id}
           type="checkbox"
-          className={`w-5 h-5 appearance-none cursor-pointer dark:border-gray-700 border border-gray-300 checked:border-transparent rounded-md checked:bg-brand-500 disabled:opacity-60 transition-colors duration-200 ease-standard
+          className={`w-5 h-5 appearance-none cursor-pointer dark:border-gray-700 border border-gray-300 checked:border-transparent rounded-md checked:bg-brand-500 disabled:opacity-60 transition-colors duration-200 ease-standard ${
+            indeterminate ? "border-transparent bg-brand-500" : ""
+          }
           ${className}`}
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
@@ -35,7 +56,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
         />
         <svg
           className={`absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none top-1/2 left-1/2 transition-[opacity,transform] duration-150 ease-standard ${
-            checked ? "scale-100 opacity-100" : "scale-50 opacity-0"
+            filled ? "scale-100 opacity-100" : "scale-50 opacity-0"
           }`}
           xmlns="http://www.w3.org/2000/svg"
           width="14"
@@ -43,13 +64,17 @@ const Checkbox: React.FC<CheckboxProps> = ({
           viewBox="0 0 14 14"
           fill="none"
         >
-          <path
-            d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
-            stroke="white"
-            strokeWidth="1.94437"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          {indeterminate ? (
+            <path d="M2.91663 7H11.0833" stroke="white" strokeWidth="1.94437" strokeLinecap="round" />
+          ) : (
+            <path
+              d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+              stroke="white"
+              strokeWidth="1.94437"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
         </svg>
         {disabled && (
           <svg
@@ -71,7 +96,12 @@ const Checkbox: React.FC<CheckboxProps> = ({
         )}
       </div>
       {label && (
-        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+        <span
+          className={
+            labelClassName ??
+            "text-sm font-medium text-gray-800 transition-colors duration-150 ease-standard group-hover:text-white dark:text-gray-200"
+          }
+        >
           {label}
         </span>
       )}

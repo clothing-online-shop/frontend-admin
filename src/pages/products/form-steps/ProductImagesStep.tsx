@@ -143,7 +143,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-theme-xs transition-colors hover:bg-white"
                               aria-label={`Đổi ảnh cho màu ${color}`}
                             >
-                              <PlusIcon className="h-4 w-4" />
+                              <PlusIcon className="h-6 w-6" />
                             </button>
                             <button
                               type="button"
@@ -151,7 +151,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-error-500 shadow-theme-xs transition-colors hover:bg-error-50"
                               aria-label={`Bỏ ảnh cho màu ${color}`}
                             >
-                              <TrashBinIcon className="h-4 w-4" />
+                              <TrashBinIcon className="h-6 w-6" />
                             </button>
                           </div>
                         )}
@@ -163,7 +163,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
                         onClick={() => setPickingColor(color)}
                         className="flex h-full w-full flex-col items-center justify-center gap-1 border border-dashed border-gray-300 text-xs text-gray-400 transition-colors hover:border-brand-400 hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:text-gray-500"
                       >
-                        <PlusIcon className="h-5 w-5" />
+                        <PlusIcon className="h-7 w-7" />
                         <span>Chọn ảnh</span>
                       </button>
                     )}
@@ -216,7 +216,7 @@ export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) 
                   <img src={url} alt="" className="h-full w-auto" />
                   {isSelected && (
                     <span className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-white">
-                      <CheckLineIcon className="h-4 w-4" />
+                      <CheckLineIcon className="h-6 w-6" />
                     </span>
                   )}
                 </button>

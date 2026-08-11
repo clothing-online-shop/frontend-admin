@@ -124,7 +124,7 @@ export default function CollectionList() {
                   className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                   aria-label="Xem bộ sưu tập"
                 >
-                  <EyeIcon className="h-4 w-4" />
+                  <EyeIcon className="h-6 w-6" />
                 </button>
               </Tooltip>
               {!isEnded && (
@@ -135,7 +135,7 @@ export default function CollectionList() {
                     className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                     aria-label="Gán sản phẩm vào bộ sưu tập"
                   >
-                    <BoxCubeIcon className="h-4 w-4" />
+                    <BoxCubeIcon className="h-6 w-6" />
                   </button>
                 </Tooltip>
               )}
@@ -146,7 +146,7 @@ export default function CollectionList() {
                   className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                   aria-label="Sửa bộ sưu tập"
                 >
-                  <PencilIcon className="h-4 w-4" />
+                  <PencilIcon className="h-6 w-6" />
                 </button>
               )}
               <button
@@ -155,7 +155,7 @@ export default function CollectionList() {
                 className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
                 aria-label="Xóa bộ sưu tập"
               >
-                <TrashBinIcon className="h-4 w-4" />
+                <TrashBinIcon className="h-6 w-6" />
               </button>
             </div>
           );
@@ -169,7 +169,7 @@ export default function CollectionList() {
     <div className="flex h-full flex-col">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Bộ sưu tập</h3>
-        <Button variant="primary" startIcon={<PlusIcon className="h-4 w-4" />} onClick={openCreate}>
+        <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
           Thêm bộ sưu tập
         </Button>
       </div>

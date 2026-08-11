@@ -18,11 +18,17 @@ interface BrandFormModalProps {
   open: boolean;
   onClose: () => void;
   editing: Brand | null;
+  viewOnly?: boolean;
 }
 
 const EMPTY_VALUES: BrandFormValues = { name: "", description: "", origin: "", logo: [] };
 
-export default function BrandFormModal({ open, onClose, editing }: BrandFormModalProps) {
+export default function BrandFormModal({
+  open,
+  onClose,
+  editing,
+  viewOnly = false,
+}: BrandFormModalProps) {
   const toast = useToast();
   const createMutation = useCreateBrand();
   const updateMutation = useUpdateBrand();
@@ -86,10 +92,12 @@ export default function BrandFormModal({ open, onClose, editing }: BrandFormModa
     <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
       <form onSubmit={handleSubmit(onValid)} className="p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          {editing ? "Sửa thương hiệu" : "Thêm thương hiệu"}
+          {viewOnly ? "Xem thương hiệu" : editing ? "Sửa thương hiệu" : "Thêm thương hiệu"}
         </h3>
 
-        <div className="space-y-4">
+        {/* fieldset disabled tự vô hiệu hoá Input/TextArea/nút bấm trong ImageUploader khi
+            xem, khớp cách CollectionFormModal.tsx đang làm. */}
+        <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
           <div>
             <Input
               id="brand-name"
@@ -116,14 +124,24 @@ export default function BrandFormModal({ open, onClose, editing }: BrandFormModa
             <Controller
               name="description"
               control={control}
-              render={({ field }) => (
-                <TextArea
-                  id="brand-description"
-                  placeholder="Giới thiệu ngắn về thương hiệu"
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
+              render={({ field }) =>
+                // Xem (viewOnly): textarea disabled vẫn chỉ cao 3 dòng nhưng KHÔNG tự xuống
+                // dòng đẹp — mô tả dài tràn ra ngoài, phải cuộn mới đọc hết, nhìn như thừa
+                // khoảng trắng/lỗi hiển thị. Đổi sang đoạn text thường + line-clamp-3, đúng
+                // kiểu rút gọn "..." như cột Mô tả bên danh sách sản phẩm.
+                viewOnly ? (
+                  <p className="line-clamp-3 text-sm text-gray-800 dark:text-white/90">
+                    {field.value || "—"}
+                  </p>
+                ) : (
+                  <TextArea
+                    id="brand-description"
+                    placeholder="Giới thiệu ngắn về thương hiệu"
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )
+              }
             />
           </div>
 
@@ -133,24 +151,26 @@ export default function BrandFormModal({ open, onClose, editing }: BrandFormModa
               name="logo"
               control={control}
               render={({ field }) => (
-                <ImageUploader value={field.value} onChange={field.onChange} max={1} />
+                <ImageUploader value={field.value} onChange={field.onChange} max={1} readOnly={viewOnly} />
               )}
             />
           </div>
-        </div>
+        </fieldset>
 
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-            Hủy
+            {viewOnly ? "Đóng" : "Hủy"}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSaving}
-            startIcon={isSaving ? <Spinner size="sm" /> : undefined}
-          >
-            Lưu
-          </Button>
+          {!viewOnly && (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving}
+              startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+            >
+              Lưu
+            </Button>
+          )}
         </div>
       </form>
     </Modal>

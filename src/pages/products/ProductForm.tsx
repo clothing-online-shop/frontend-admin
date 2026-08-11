@@ -24,7 +24,8 @@ import { ProductFormStepper } from "./form-steps/ProductFormStepper";
 import { ProductGeneralInfoStep } from "./form-steps/ProductGeneralInfoStep";
 import { ProductVariantsStep } from "./form-steps/ProductVariantsStep";
 import { ProductImagesStep } from "./form-steps/ProductImagesStep";
-import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
+// Ẩn tạm cùng bước "Bộ sưu tập" — không xoá, xem STEPS bên dưới.
+// import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
 import { ProductSeoStep } from "./form-steps/ProductSeoStep";
 
 const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
@@ -43,7 +44,10 @@ const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
   },
   { label: "Biến thể", fields: ["variants"] },
   { label: "Ảnh", fields: ["thumbnail", "images"] },
-  { label: "Bộ sưu tập", fields: [] },
+  // Ẩn tạm bước "Bộ sưu tập" cho demo (không xoá) — COLLECTIONS_STEP_INDEX bên dưới tự
+  // thành -1 khi comment dòng này, currentStep không bao giờ khớp nên bước này tự ẩn
+  // khỏi cả stepper lẫn khối render, không cần sửa gì thêm.
+  // { label: "Bộ sưu tập", fields: [] },
   { label: "SEO", fields: [] },
 ];
 
@@ -335,10 +339,6 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
   return (
     <FormProvider {...methods}>
       <div>
-        <h3 className="mb-5 text-2xl font-semibold text-gray-800 dark:text-white/90">
-          {pageTitle}
-        </h3>
-
         <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
           <ProductFormStepper
             steps={STEPS}
@@ -357,9 +357,10 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
             {currentStep === 0 && <ProductGeneralInfoStep viewOnly={viewOnly} />}
             {currentStep === 1 && <ProductVariantsStep viewOnly={viewOnly} />}
             {currentStep === 2 && <ProductImagesStep viewOnly={viewOnly} />}
-            {currentStep === COLLECTIONS_STEP_INDEX && (
+            {/* Ẩn tạm cùng với STEPS ở trên — không xoá. */}
+            {/* {currentStep === COLLECTIONS_STEP_INDEX && (
               <ProductCollectionsStep viewOnly={viewOnly} />
-            )}
+            )} */}
             {currentStep === STEPS.length - 1 && <ProductSeoStep />}
           </fieldset>
 

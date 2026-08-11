@@ -6,7 +6,7 @@ export const PRODUCT_STATUS_LABEL: Record<
   ProductStatus,
   { label: string; color: "light" | "success" | "error" }
 > = {
-  [ProductStatus.DRAFT]: { label: "Nháp", color: "light" },
-  [ProductStatus.ACTIVE]: { label: "Đang bán", color: "success" },
-  [ProductStatus.INACTIVE]: { label: "Ngừng bán", color: "error" },
+  [ProductStatus.DRAFT]: { label: "Chưa mở bán", color: "light" },
+  [ProductStatus.ACTIVE]: { label: "Đang mở bán", color: "success" },
+  [ProductStatus.INACTIVE]: { label: "Ngừng kinh doanh", color: "error" },
 };

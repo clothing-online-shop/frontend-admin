@@ -22,6 +22,10 @@ interface DataTableProps<T> {
   rowKey: (row: T) => string;
   isLoading?: boolean;
   emptyMessage?: string;
+  // Có thì cả dòng click được (vd mở màn xem chi tiết) — nút thao tác trong cột "actions"
+  // (Sửa/Xóa...) phải tự stopPropagation() ở onClick của chúng để không kích hoạt luôn
+  // onRowClick khi bấm nhầm phải nút, xem ProductList.tsx làm mẫu.
+  onRowClick?: (row: T) => void;
 }
 
 const ALIGN_CLASS: Record<"left" | "center" | "right", string> = {
@@ -52,6 +56,7 @@ export function DataTable<T>({
   rowKey,
   isLoading = false,
   emptyMessage = "Không có dữ liệu.",
+  onRowClick,
 }: DataTableProps<T>) {
   const isEmpty = !isLoading && rows.length === 0;
 
@@ -74,7 +79,7 @@ export function DataTable<T>({
         {!isLoading && !isEmpty && (
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {rows.map((row) => (
-              <TableRow key={rowKey(row)}>
+              <TableRow key={rowKey(row)} onClick={onRowClick ? () => onRowClick(row) : undefined}>
                 {columns.map((column) => (
                   <TableCell
                     key={column.key}

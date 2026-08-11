@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import type React from "react";
+import type { ReactNode } from "react";
 import FieldLabel from "@/components/form/FieldLabel";
 
 interface InputProps {
@@ -21,6 +22,9 @@ interface InputProps {
   // Nhãn đi liền với input — thay cho việc mỗi nơi gọi tự viết <label> riêng.
   label?: string;
   required?: boolean;
+  // Icon cuối input (vd nút hiện/ẩn mật khẩu) — nằm trong khối relative sẵn có của input,
+  // không phải tự viết lại positioning ở từng nơi gọi.
+  endIcon?: ReactNode;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -43,10 +47,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       hint,
       label,
       required = false,
+      endIcon,
     },
     ref,
   ) => {
-    let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${className}`;
+    let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${endIcon ? "pr-11" : ""} ${className}`;
 
     if (disabled) {
       inputClasses += ` text-gray-500 border-gray-300 opacity-40 bg-gray-100 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 opacity-40`;
@@ -77,6 +82,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             className={inputClasses}
           />
+
+          {endIcon && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+              {endIcon}
+            </span>
+          )}
 
           {hint && (
             <p

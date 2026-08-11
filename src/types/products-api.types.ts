@@ -2,6 +2,10 @@ import type { ProductStatus } from "@/types/shared-types";
 
 export interface ListProductsAdminParams {
   category?: string;
+  // Lọc theo nhiều danh mục cùng lúc (cây checkbox 3 trạng thái ở ProductFilterBar đã tự
+  // gộp phẳng id mọi cấp) — id cách nhau bởi dấu phẩy, khớp convention collectionIds/
+  // size/color. Có giá trị thì BE ưu tiên dùng, bỏ qua `category`.
+  categoryIds?: string;
   search?: string;
   brandId?: string;
   // Có thể truyền nhiều id cách nhau bởi dấu phẩy — khớp convention size/color ở BE.

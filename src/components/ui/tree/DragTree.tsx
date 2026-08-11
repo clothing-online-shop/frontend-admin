@@ -13,6 +13,9 @@ interface DragTreeProps {
   treeData: DragTreeNode[];
   onDrop: (dragKey: string, dropKey: string, position: DropPosition) => void;
   className?: string;
+  // Click vào phần nội dung dòng (không phải nút thu gọn hay nút thao tác bên trong
+  // node.title, các nút đó tự stopPropagation() — xem CategoryList.tsx renderTitle()).
+  onNodeClick?: (key: string) => void;
 }
 
 interface DragState {
@@ -59,7 +62,7 @@ function ElbowCell({ isLastChild }: { isLastChild: boolean }) {
   );
 }
 
-const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "" }) => {
+const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "", onNodeClick }) => {
   const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
   const [dragState, setDragState] = useState<DragState | null>(null);
 
@@ -130,9 +133,10 @@ const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "" })
           {!isRoot && <ElbowCell isLastChild={isLastChild} />}
 
           <div
+            onClick={() => onNodeClick?.(node.key)}
             className={`flex flex-1 items-center gap-3 rounded-lg transition-colors duration-150 ease-standard ${
-              isRoot ? "px-4 py-4" : "px-2 py-2.5"
-            } ${
+              onNodeClick ? "cursor-pointer" : ""
+            } ${isRoot ? "px-4 py-4" : "px-2 py-2.5"} ${
               isDropTarget && dragState?.position === "inside"
                 ? "bg-brand-50 dark:bg-brand-500/15"
                 : "hover:bg-gray-50 dark:hover:bg-white/5"
@@ -141,12 +145,15 @@ const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "" })
             {hasChildren ? (
               <button
                 type="button"
-                onClick={() => toggleCollapse(node.key)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCollapse(node.key);
+                }}
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors duration-150 ease-standard hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300"
                 aria-label={isCollapsed ? "Mở rộng" : "Thu gọn"}
               >
                 <ChevronDownIcon
-                  className={`size-4 transition-transform duration-200 ease-standard ${
+                  className={`size-6 transition-transform duration-200 ease-standard ${
                     isCollapsed ? "-rotate-90" : ""
                   }`}
                 />
@@ -156,9 +163,9 @@ const DragTree: React.FC<DragTreeProps> = ({ treeData, onDrop, className = "" })
             )}
 
             {isRoot ? (
-              <FolderIcon className="size-5 shrink-0 text-brand-500" />
+              <FolderIcon className="size-7 shrink-0 text-brand-500" />
             ) : (
-              <FileIcon className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
+              <FileIcon className="size-6 shrink-0 text-gray-400 dark:text-gray-500" />
             )}
 
             <div className={`min-w-0 flex-1 ${isRoot ? "text-[15px] font-semibold" : "text-sm"}`}>

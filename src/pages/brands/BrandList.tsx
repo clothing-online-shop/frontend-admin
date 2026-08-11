@@ -9,7 +9,7 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { PlusIcon, PencilIcon, TrashBinIcon, EyeIcon } from "@/icons";
 import BrandFormModal from "./BrandFormModal";
 
 export default function BrandList() {
@@ -19,6 +19,7 @@ export default function BrandList() {
   const search = useDebounce(searchInput, 500);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Brand | null>(null);
+  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Brand | null>(null);
 
   const { data, isLoading } = useBrands(search || undefined);
@@ -26,11 +27,19 @@ export default function BrandList() {
 
   function openCreate() {
     setEditing(null);
+    setViewMode(false);
     setModalOpen(true);
   }
 
   function openEdit(brand: Brand) {
     setEditing(brand);
+    setViewMode(false);
+    setModalOpen(true);
+  }
+
+  function openView(brand: Brand) {
+    setEditing(brand);
+    setViewMode(true);
     setModalOpen(true);
   }
 
@@ -51,6 +60,7 @@ export default function BrandList() {
         key: "logo",
         header: "Logo",
         align: "center",
+        className: "min-w-30",
         render: (brand) =>
           brand.logo ? (
             <img src={brand.logo} className="mx-auto h-10 w-10 rounded-md object-cover" alt="" />
@@ -62,6 +72,7 @@ export default function BrandList() {
         key: "name",
         header: "Tên",
         align: "center",
+        className: "min-w-96",
         render: (brand) => (
           <span className="text-sm text-gray-800 dark:text-white/90">{brand.name}</span>
         ),
@@ -70,6 +81,7 @@ export default function BrandList() {
         key: "origin",
         header: "Xuất xứ",
         align: "center",
+        className: "min-w-40",
         render: (brand) => (
           <span className="text-sm text-gray-700 dark:text-gray-300">{brand.origin ?? "—"}</span>
         ),
@@ -77,8 +89,9 @@ export default function BrandList() {
       {
         key: "description",
         header: "Mô tả",
+        className: "min-w-72",
         render: (brand) => (
-          <span className="line-clamp-1 max-w-xs text-sm text-gray-700 dark:text-gray-300">
+          <span className="line-clamp-3 w-full text-sm text-gray-700 dark:text-gray-300">
             {brand.description ?? "—"}
           </span>
         ),
@@ -92,19 +105,36 @@ export default function BrandList() {
           <div className="flex items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => openEdit(brand)}
+              onClick={(e) => {
+                e.stopPropagation();
+                openView(brand);
+              }}
               className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-              aria-label="Sửa thương hiệu"
+              aria-label="Xem thương hiệu"
             >
-              <PencilIcon className="h-4 w-4" />
+              <EyeIcon className="h-6 w-6" />
             </button>
             <button
               type="button"
-              onClick={() => setDeleteTarget(brand)}
+              onClick={(e) => {
+                e.stopPropagation();
+                openEdit(brand);
+              }}
+              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+              aria-label="Sửa thương hiệu"
+            >
+              <PencilIcon className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteTarget(brand);
+              }}
               className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
               aria-label="Xóa thương hiệu"
             >
-              <TrashBinIcon className="h-4 w-4" />
+              <TrashBinIcon className="h-6 w-6" />
             </button>
           </div>
         ),
@@ -115,19 +145,17 @@ export default function BrandList() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Thương hiệu</h3>
-        <Button variant="primary" startIcon={<PlusIcon className="h-4 w-4" />} onClick={openCreate}>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="w-96">
+          <Input
+            placeholder="Tìm theo tên thương hiệu"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+        <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
           Thêm thương hiệu
         </Button>
-      </div>
-
-      <div className="mb-4 w-65">
-        <Input
-          placeholder="Tìm theo tên thương hiệu"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
       </div>
 
       <div className="flex flex-1 flex-col rounded-2xl bg-white">
@@ -137,10 +165,16 @@ export default function BrandList() {
           rowKey={(brand) => brand.id}
           isLoading={isLoading}
           emptyMessage="Chưa có thương hiệu nào."
+          onRowClick={openView}
         />
       </div>
 
-      <BrandFormModal open={modalOpen} onClose={() => setModalOpen(false)} editing={editing} />
+      <BrandFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        editing={editing}
+        viewOnly={viewMode}
+      />
 
       <ConfirmModal
         open={deleteTarget !== null}

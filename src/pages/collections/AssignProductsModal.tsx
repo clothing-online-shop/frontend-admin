@@ -34,7 +34,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
-  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -48,7 +48,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
     if (!open) return;
     setSearchInput("");
     setBrandId(undefined);
-    setCategory(undefined);
+    setCategoryIds([]);
     setStatus(undefined);
     setPage(1);
     setSelectedIds(new Set());
@@ -85,7 +85,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
     {
       search: search || undefined,
       brandId,
-      category,
+      categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
       status,
       page,
       limit: DEFAULT_PAGE_SIZE,
@@ -245,9 +245,9 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
                   setBrandId(value);
                   setPage(1);
                 }}
-                category={category}
-                onCategoryChange={(value) => {
-                  setCategory(value);
+                categoryIds={categoryIds}
+                onCategoryIdsChange={(ids) => {
+                  setCategoryIds(ids);
                   setPage(1);
                 }}
                 status={status}

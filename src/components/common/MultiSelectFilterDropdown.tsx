@@ -62,14 +62,14 @@ export default function MultiSelectFilterDropdown({
         type="button"
         onClick={toggle}
         className={`flex h-11 w-full items-center justify-between rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-800 ${
-          value.length === 0 ? "text-gray-400 dark:text-white/30" : "text-gray-800 dark:text-white/90"
+          value.length === 0 ? "text-gray-700 dark:text-white/30" : "text-gray-800 dark:text-white/90"
         }`}
       >
         <span className="truncate text-gray-700 dark:text-white/90">
           {value.length > 0 ? `${label} (${value.length})` : label}
         </span>
         <ChevronDownIcon
-          className={`size-5 shrink-0 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${
+          className={`size-7 shrink-0 text-gray-400 transition-transform duration-200 ease-standard dark:text-gray-500 ${
             isOpen ? "rotate-180" : ""
           }`}
         />

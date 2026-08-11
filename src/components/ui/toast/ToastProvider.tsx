@@ -47,7 +47,7 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: num
       } ${shown ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"}`}
     >
       <div className="flex items-start gap-3 p-4 pr-9">
-        <Icon className="mt-0.5 size-5 shrink-0" />
+        <Icon className="mt-0.5 size-7 shrink-0" />
         <p className="text-sm font-medium text-gray-700 dark:text-white/90">{toast.message}</p>
       </div>
 
@@ -57,7 +57,7 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: num
         aria-label="Đóng thông báo"
         className="absolute right-3 top-3 text-gray-400 transition-colors duration-200 ease-standard hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
       >
-        <CloseIcon className="size-4" />
+        <CloseIcon className="size-6" />
       </button>
 
       <div className="h-1 w-full bg-gray-100 dark:bg-white/5">

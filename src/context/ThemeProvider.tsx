@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isInitialized) {
       localStorage.setItem("theme", theme);
-      document.documentElement.classList.toggle("dark", theme === "dark");
+      document.documentElement.classList.toggle("light", theme === "light");
     }
   }, [theme, isInitialized]);
 

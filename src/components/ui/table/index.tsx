@@ -23,6 +23,7 @@ interface TableBodyProps {
 interface TableRowProps {
   children: ReactNode; // Cells (th or td)
   className?: string; // Optional className for styling
+  onClick?: () => void; // Có thì cả dòng click được (vd mở màn xem chi tiết)
 }
 
 // Props for TableCell
@@ -62,9 +63,12 @@ const TableBody: React.FC<TableBodyProps> = ({ children, className }) => {
 };
 
 // TableRow Component
-const TableRow: React.FC<TableRowProps> = ({ children, className }) => {
+const TableRow: React.FC<TableRowProps> = ({ children, className, onClick }) => {
   return (
-    <tr className={`group transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5 ${className ?? ""}`}>
+    <tr
+      onClick={onClick}
+      className={`group transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5 ${onClick ? "cursor-pointer" : ""} ${className ?? ""}`}
+    >
       {children}
     </tr>
   );
