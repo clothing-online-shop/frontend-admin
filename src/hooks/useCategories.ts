@@ -28,7 +28,7 @@ export function useCategoryTree() {
 export function useCategoryTreeIncludingDeleted() {
   return useQuery({
     queryKey: CATEGORIES_ALL_KEY,
-    queryFn: () => getCategoryTree(true),
+    queryFn: () => getCategoryTree(true, true),
   });
 }
 
