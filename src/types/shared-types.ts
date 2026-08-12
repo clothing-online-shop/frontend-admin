@@ -75,6 +75,7 @@ export interface Collection {
   startDate: string;
   endDate: string;
   status: CollectionStatus;
+  isDelete: boolean;
   createdAt: string;
   updatedAt: string;
 }
