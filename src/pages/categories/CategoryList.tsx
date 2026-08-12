@@ -87,6 +87,23 @@ function containsKey(node: CategoryTreeNode, key: string): boolean {
   return (node.children ?? []).some((child) => containsKey(child, key));
 }
 
+// Trả về mảng (danh sách anh em, bao gồm chính node đó) đang chứa node có key này —
+// dùng để lấy đúng danh sách "anh em" ở vị trí thả trước khi thực sự di chuyển, phục vụ
+// check trùng tên ngay trong handleDrop().
+function findContainingArray(
+  nodes: CategoryTreeNode[],
+  key: string,
+): CategoryTreeNode[] | null {
+  if (nodes.some((node) => node.key === key)) return nodes;
+  for (const node of nodes) {
+    if (node.children) {
+      const found = findContainingArray(node.children, key);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export default function CategoryList() {
   const toast = useToast();
   useBreadcrumb([{ label: "Danh mục" }]);
@@ -206,6 +223,29 @@ export default function CategoryList() {
     const dragNode = findNodeInTree(treeData, dragKey);
     if (dragNode && containsKey(dragNode, dropKey)) {
       toast.error("Không thể chuyển danh mục vào chính danh mục con của nó");
+      return;
+    }
+    if (!dragNode) return;
+
+    // Check trùng tên NGAY tại đây (dùng treeData hiện có trên client, chưa đổi gì) để
+    // chặn trước khi optimistic-update UI — tránh hiệu ứng nhảy vị trí rồi bật lại mà
+    // vẫn chặn được đúng case "chỗ thả đã có danh mục tên như vậy". BE (reorder()) vẫn
+    // check lại — lưới an toàn cho race condition 2 admin thao tác cùng lúc.
+    const dragName = (typeof dragNode.title === "string" ? dragNode.title : "")
+      .trim()
+      .toLowerCase();
+    const targetSiblings =
+      position === "inside"
+        ? (findNodeInTree(treeData, dropKey)?.children ?? [])
+        : (findContainingArray(treeData, dropKey) ?? []);
+    const hasDuplicateName = targetSiblings.some(
+      (sibling) =>
+        sibling.key !== dragKey &&
+        (typeof sibling.title === "string" ? sibling.title : "").trim().toLowerCase() ===
+          dragName,
+    );
+    if (hasDuplicateName) {
+      toast.error("Đã tồn tại danh mục cùng tên trong cùng danh mục cha.");
       return;
     }
 
