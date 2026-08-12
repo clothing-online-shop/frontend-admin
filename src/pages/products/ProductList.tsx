@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/types/shared-types";
 import { useCategoryNameMap } from "@/hooks/useCategories";
 import { useBrandNameMap } from "@/hooks/useBrands";
-// import { useCollections } from "@/hooks/useCollections";
+import { useCollections } from "@/hooks/useCollections";
 import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
-// import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
+ import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
 import ProductFilterBar from "@/components/common/ProductFilterBar";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 
@@ -40,7 +40,7 @@ export default function ProductList() {
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
-  // const [collectionIds, setCollectionIds] = useState<string[]>([]);
+   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
@@ -51,18 +51,18 @@ export default function ProductList() {
   const categoryNameById = useCategoryNameMap();
   const brandNameById = useBrandNameMap();
 
-  // const { data: collections, isLoading: isLoadingCollections } = useCollections();
-  // const collectionOptions = useMemo(
-  //   () => (collections ?? []).map((c) => ({ value: c.id, label: c.name })),
-  //   [collections],
-  // );
+  const { data: collections, isLoading: isLoadingCollections } = useCollections();
+  const collectionOptions = useMemo(
+    () => (collections ?? []).map((c) => ({ value: c.id, label: c.name })),
+    [collections],
+  );
 
   const { data, isLoading } = useProductsAdmin({
     search: search || undefined,
     brandId,
     categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
     status,
-    // collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
+     collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
     page,
     limit,
   });
@@ -161,23 +161,23 @@ export default function ProductList() {
           </span>
         ),
       },
-      // {
-      //   key: "collections",
-      //   header: "Bộ sưu tập",
-      //   className: "min-w-90",
-      //   render: (product) =>
-      //     product.collections.length > 0 ? (
-      //       <div className="flex flex-wrap gap-1.5">
-      //         {product.collections.map((collection) => (
-      //           <Badge key={collection.id} color="light">
-      //             {collection.name}
-      //           </Badge>
-      //         ))}
-      //       </div>
-      //     ) : (
-      //       <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
-      //     ),
-      // },
+      {
+        key: "collections",
+        header: "Bộ sưu tập",
+        className: "min-w-90",
+        render: (product) =>
+          product.collections.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {product.collections.map((collection) => (
+                <Badge key={collection.id} color="light">
+                  {collection.name}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+          ),
+      },
       {
         key: "price",
         header: "Giá",
@@ -351,7 +351,7 @@ export default function ProductList() {
               setPage(1);
             }}
           />
-          {/* <div className="w-48">
+          <div className="w-48">
             <MultiSelectFilterDropdown
               label="Bộ sưu tập"
               options={collectionOptions}
@@ -363,7 +363,7 @@ export default function ProductList() {
                 setPage(1);
               }}
             />
-          </div> */}
+          </div>
         </div>
         <Button
           variant="primary"
@@ -402,7 +402,13 @@ export default function ProductList() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Thông báo"
-        description="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+        description={
+          deleteTarget && deleteTarget.collections.length > 0
+            ? `Bạn có chắc chắn muốn xóa sản phẩm này không? Sản phẩm đang thuộc bộ sưu tập: ${deleteTarget.collections
+                .map((c) => c.name)
+                .join(", ")} — xóa sản phẩm sẽ tự động gỡ khỏi các bộ sưu tập này.`
+            : "Bạn có chắc chắn muốn xóa sản phẩm này không?"
+        }
         confirmText="Đồng ý"
         cancelText="Hủy"
         danger
