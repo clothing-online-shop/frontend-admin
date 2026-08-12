@@ -3,18 +3,18 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { useBreadcrumbStore } from "@/store/breadcrumb-store";
 import { ADMIN_ROLE_LABELS, toAdminRole, type AdminRole } from "@/lib/roles";
-import { ALL_ADMIN_ROLES, INVENTORY_ROLES, /*MARKETING_ROLES, ADMIN_ONLY_ROLES*/ } from "@/lib/permissions";
+import { ADMIN_ONLY_ROLES, ALL_ADMIN_ROLES, INVENTORY_ROLES, MARKETING_ROLES, /*MARKETING_ROLES, ADMIN_ONLY_ROLES*/ } from "@/lib/permissions";
 import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
   BoxIcon,
   BoxCubeIcon,
   GridIcon,
-  // FolderIcon,
-  // ListIcon,
-  // GroupIcon,
-  // PageIcon,
-  // PlugInIcon,
+  FolderIcon,
+  ListIcon,
+  GroupIcon,
+  PageIcon,
+  PlugInIcon,
   AngleRightIcon,
 } from "@/icons";
 
@@ -34,11 +34,11 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
-  // { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
-  // { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
-  // { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
-  // { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
-  // { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
+  { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
+  { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
+  { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
+  { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
+  { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
 ];
 
 export default function AdminLayout() {

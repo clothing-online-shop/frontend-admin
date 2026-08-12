@@ -25,7 +25,7 @@ import { ProductGeneralInfoStep } from "./form-steps/ProductGeneralInfoStep";
 import { ProductVariantsStep } from "./form-steps/ProductVariantsStep";
 import { ProductImagesStep } from "./form-steps/ProductImagesStep";
 // Ẩn tạm cùng bước "Bộ sưu tập" — không xoá, xem STEPS bên dưới.
-// import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
+ import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
 import { ProductSeoStep } from "./form-steps/ProductSeoStep";
 
 const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
@@ -47,7 +47,7 @@ const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
   // Ẩn tạm bước "Bộ sưu tập" cho demo (không xoá) — COLLECTIONS_STEP_INDEX bên dưới tự
   // thành -1 khi comment dòng này, currentStep không bao giờ khớp nên bước này tự ẩn
   // khỏi cả stepper lẫn khối render, không cần sửa gì thêm.
-  // { label: "Bộ sưu tập", fields: [] },
+  { label: "Bộ sưu tập", fields: [] },
   { label: "SEO", fields: [] },
 ];
 
@@ -358,9 +358,9 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
             {currentStep === 1 && <ProductVariantsStep viewOnly={viewOnly} />}
             {currentStep === 2 && <ProductImagesStep viewOnly={viewOnly} />}
             {/* Ẩn tạm cùng với STEPS ở trên — không xoá. */}
-            {/* {currentStep === COLLECTIONS_STEP_INDEX && (
+             {currentStep === COLLECTIONS_STEP_INDEX && (
               <ProductCollectionsStep viewOnly={viewOnly} />
-            )} */}
+            )}
             {currentStep === STEPS.length - 1 && <ProductSeoStep />}
           </fieldset>
 
