@@ -104,6 +104,24 @@ function findContainingArray(
   return null;
 }
 
+// Trả về key của cha trực tiếp (null nếu ở gốc, undefined nếu không tìm thấy node) — dùng
+// để so sánh cha cũ/cha mới trong handleDrop(), chỉ check trùng tên khi cha thực sự đổi
+// (xem comment ở handleDrop()).
+function findParentKey(
+  nodes: CategoryTreeNode[],
+  key: string,
+  parentKey: string | null = null,
+): string | null | undefined {
+  for (const node of nodes) {
+    if (node.key === key) return parentKey;
+    if (node.children) {
+      const found = findParentKey(node.children, key, node.key);
+      if (found !== undefined) return found;
+    }
+  }
+  return undefined;
+}
+
 export default function CategoryList() {
   const toast = useToast();
   useBreadcrumb([{ label: "Danh mục" }]);
@@ -227,26 +245,38 @@ export default function CategoryList() {
     }
     if (!dragNode) return;
 
-    // Check trùng tên NGAY tại đây (dùng treeData hiện có trên client, chưa đổi gì) để
-    // chặn trước khi optimistic-update UI — tránh hiệu ứng nhảy vị trí rồi bật lại mà
-    // vẫn chặn được đúng case "chỗ thả đã có danh mục tên như vậy". BE (reorder()) vẫn
-    // check lại — lưới an toàn cho race condition 2 admin thao tác cùng lúc.
-    const dragName = (typeof dragNode.title === "string" ? dragNode.title : "")
-      .trim()
-      .toLowerCase();
-    const targetSiblings =
-      position === "inside"
-        ? (findNodeInTree(treeData, dropKey)?.children ?? [])
-        : (findContainingArray(treeData, dropKey) ?? []);
-    const hasDuplicateName = targetSiblings.some(
-      (sibling) =>
-        sibling.key !== dragKey &&
-        (typeof sibling.title === "string" ? sibling.title : "").trim().toLowerCase() ===
-          dragName,
-    );
-    if (hasDuplicateName) {
-      toast.error("Đã tồn tại danh mục cùng tên trong cùng danh mục cha.");
-      return;
+    // Chỉ check trùng tên khi cha THỰC SỰ đổi — khớp đúng nguyên tắc bên BE (reorder() chỉ
+    // check trong nhóm cha thực sự nhận node mới, xem categories.service.ts). Nếu bỏ qua
+    // điều kiện này, 1 cặp danh mục trùng tên có sẵn từ trước (trước khi có validate này,
+    // không có ràng buộc nào chặn) trong cùng 1 cha sẽ chặn nhầm mọi thao tác kéo-thả khác
+    // trong đúng cha đó — kể cả chỉ đổi vị trí, không đụng gì tới việc trùng tên.
+    const targetParentKey =
+      position === "inside" ? dropKey : findParentKey(treeData, dropKey);
+    const currentParentKey = findParentKey(treeData, dragKey);
+    const parentChanged = targetParentKey !== currentParentKey;
+
+    if (parentChanged) {
+      // Check trùng tên NGAY tại đây (dùng treeData hiện có trên client, chưa đổi gì) để
+      // chặn trước khi optimistic-update UI — tránh hiệu ứng nhảy vị trí rồi bật lại mà
+      // vẫn chặn được đúng case "chỗ thả đã có danh mục tên như vậy". BE (reorder()) vẫn
+      // check lại — lưới an toàn cho race condition 2 admin thao tác cùng lúc.
+      const dragName = (typeof dragNode.title === "string" ? dragNode.title : "")
+        .trim()
+        .toLowerCase();
+      const targetSiblings =
+        position === "inside"
+          ? (findNodeInTree(treeData, dropKey)?.children ?? [])
+          : (findContainingArray(treeData, dropKey) ?? []);
+      const hasDuplicateName = targetSiblings.some(
+        (sibling) =>
+          sibling.key !== dragKey &&
+          (typeof sibling.title === "string" ? sibling.title : "").trim().toLowerCase() ===
+            dragName,
+      );
+      if (hasDuplicateName) {
+        toast.error("Đã tồn tại danh mục cùng tên trong cùng danh mục cha.");
+        return;
+      }
     }
 
     const previousTreeData = treeData;
