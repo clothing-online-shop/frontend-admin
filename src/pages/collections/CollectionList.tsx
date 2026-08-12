@@ -167,19 +167,18 @@ export default function CollectionList() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Bộ sưu tập</h3>
-        <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
+
+      <div className="mb-4 w-full flex justify-between gap-3">
+        <div className="w-65">
+          <Input
+            placeholder="Tìm theo tên bộ sưu tập"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+         <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
           Thêm bộ sưu tập
         </Button>
-      </div>
-
-      <div className="mb-4 w-65">
-        <Input
-          placeholder="Tìm theo tên bộ sưu tập"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
       </div>
 
       <div className="flex flex-1 flex-col rounded-2xl bg-white">
