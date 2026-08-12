@@ -75,6 +75,10 @@ export function CategoryFormModal({
   }, [open, editing, reset]);
 
   async function onValid(values: CategoryFormValues) {
+    // Bỏ trống ảnh ở form nghĩa là user chủ động xoá ảnh — phải gửi null (không phải bỏ
+    // field) để backend phân biệt với "không đổi", và cùng lúc phải khớp với
+    // imagePublicId (cùng null hoặc cùng có giá trị) — xem assertImagePublicIdAligned ở
+    // categories.service.ts.
     const payload = {
       name: values.name,
       slug: values.slug || undefined,
@@ -86,12 +90,7 @@ export function CategoryFormModal({
 
     try {
       if (editing) {
-        // Bỏ trống ảnh ở form nghĩa là user chủ động xoá ảnh — phải gửi null
-        // (không phải bỏ field) để backend phân biệt với "không đổi".
-        await updateMutation.mutateAsync({
-          id: editing.id,
-          payload: { ...payload, image: values.image[0] ?? null },
-        });
+        await updateMutation.mutateAsync({ id: editing.id, payload });
         toast.success("Đã cập nhật danh mục");
       } else {
         await createMutation.mutateAsync(payload);
