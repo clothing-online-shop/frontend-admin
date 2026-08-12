@@ -40,6 +40,7 @@ export interface CategoryNode {
   image: string | null;
   imagePublicId: string | null;
   isActive: boolean;
+  isDelete: boolean;
   sortOrder: number;
   parentId: string | null;
   // Số sản phẩm gán trực tiếp vào danh mục này — không cộng dồn từ danh mục con.
