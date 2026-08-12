@@ -95,11 +95,10 @@ function findContainingArray(
   key: string,
 ): CategoryTreeNode[] | null {
   if (nodes.some((node) => node.key === key)) return nodes;
+
   for (const node of nodes) {
-    if (node.children) {
-      const found = findContainingArray(node.children, key);
-      if (found) return found;
-    }
+    const found = node.children && findContainingArray(node.children, key);
+    if (found) return found;
   }
   return null;
 }
@@ -114,10 +113,9 @@ function findParentKey(
 ): string | null | undefined {
   for (const node of nodes) {
     if (node.key === key) return parentKey;
-    if (node.children) {
-      const found = findParentKey(node.children, key, node.key);
-      if (found !== undefined) return found;
-    }
+
+    const found = node.children && findParentKey(node.children, key, node.key);
+    if (found !== undefined) return found;
   }
   return undefined;
 }
