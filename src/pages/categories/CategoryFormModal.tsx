@@ -80,7 +80,7 @@ export function CategoryFormModal({
       slug: values.slug || undefined,
       parentId: values.parentId ?? null,
       isActive: values.isActive,
-      image: values.image[0],
+      image: values.image[0] ?? null,
       imagePublicId: values.image[0] ? imagePublicId : null,
     };
 
