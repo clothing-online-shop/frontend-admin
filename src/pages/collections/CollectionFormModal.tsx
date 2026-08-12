@@ -11,6 +11,7 @@ import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import DatePicker from "@/components/form/DatePicker";
 import Spinner from "@/components/ui/spinner/Spinner";
+import Badge from "@/components/ui/badge/Badge";
 import { useToast } from "@/hooks/useToast";
 import { collectionSchema, type CollectionFormValues } from "@/schemas/collection.schema";
 
@@ -220,6 +221,29 @@ export default function CollectionFormModal({
             />
           </div>
         </fieldset>
+
+        {/* Chỉ hiện khi xem — thêm/sửa bộ sưu tập không quản lý sản phẩm ở đây, đi qua
+            AssignProductsModal riêng (nút "Gán sản phẩm" ở CollectionList.tsx). */}
+        {viewOnly && (
+          <div className="mt-4">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Sản phẩm thuộc bộ sưu tập
+            </label>
+            {editing && editing.products.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {editing.products.map((product) => (
+                  <Badge key={product.id} color="light">
+                    {product.name}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                Chưa có sản phẩm nào.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>

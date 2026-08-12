@@ -59,6 +59,12 @@ export function useAssignCollectionProducts() {
       collectionId: string;
       payload: AssignProductsPayload;
     }) => assignCollectionProducts(collectionId, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] }),
+    onSuccess: () => {
+      // Đổi cả 2 chiều: product.collections (đổi ở FE products) VÀ collection.products
+      // (cột "Sản phẩm"/màn xem ở CollectionList.tsx) — thiếu vế collections thì màn danh
+      // sách bộ sưu tập vẫn hiện dữ liệu cũ tới khi tự F5.
+      queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
+      queryClient.invalidateQueries({ queryKey: COLLECTIONS_KEY });
+    },
   });
 }

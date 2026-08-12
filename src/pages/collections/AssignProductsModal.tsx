@@ -56,14 +56,11 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
   }, [open, collection?.id]);
 
   // Nạp trước toàn bộ id sản phẩm ĐANG thuộc bộ sưu tập (limit cao để lấy hết trong 1
-  // lần, không phân trang) để tick sẵn — tận dụng luôn filter collectionIds đã có.
-  // includeDeleted: true — nếu bỏ, 1 sản phẩm đã bị xóa mềm nhưng vẫn đang thuộc bộ sưu
-  // tập này sẽ không được tick sẵn, và do "Lưu" thay thế TOÀN BỘ danh sách
-  // (assignProducts()), bấm Lưu mà không đụng gì cũng vô tình gỡ mất sản phẩm đó khỏi
-  // bộ sưu tập. Picker chính bên dưới KHÔNG truyền includeDeleted — sản phẩm đã xóa vẫn
-  // không được CHỌN MỚI.
+  // lần, không phân trang) để tick sẵn — tận dụng luôn filter collectionIds đã có. Không
+  // cần includeDeleted: Product.remove() đã tự gỡ khỏi mọi CollectionProduct khi xóa mềm
+  // (xem products.service.ts), nên 1 sản phẩm trả về ở đây chắc chắn chưa bị xóa.
   const { data: assignedData } = useProductsAdmin(
-    { collectionIds: collection?.id, limit: 1000, includeDeleted: true },
+    { collectionIds: collection?.id, limit: 1000 },
     { enabled: open && !!collection },
   );
 
@@ -139,10 +136,15 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
       align: "center",
       className: "w-12",
       render: (product) => (
-        <Checkbox
-          checked={selectedIds.has(product.id)}
-          onChange={(checked) => toggleProduct(product.id, checked)}
-        />
+        // stopPropagation — ô này nằm trong 1 dòng đã có onRowClick (click cả dòng cũng
+        // toggle chọn), không chặn thì click vào checkbox sẽ toggle 2 lần (Checkbox tự
+        // toggle + onRowClick toggle lại) khiến trạng thái không đổi.
+        <div onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={selectedIds.has(product.id)}
+            onChange={(checked) => toggleProduct(product.id, checked)}
+          />
+        </div>
       ),
     },
     {
@@ -275,6 +277,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
             rowKey={(product) => product.id}
             isLoading={isLoading}
             emptyMessage="Không tìm thấy sản phẩm phù hợp."
+            onRowClick={(product) => toggleProduct(product.id, !selectedIds.has(product.id))}
           />
           <Pagination
             page={page}
