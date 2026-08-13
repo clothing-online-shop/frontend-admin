@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { useBreadcrumbStore } from "@/store/breadcrumb-store";
 import { ADMIN_ROLE_LABELS, toAdminRole, type AdminRole } from "@/lib/roles";
-import { ADMIN_ONLY_ROLES, ALL_ADMIN_ROLES, INVENTORY_ROLES, MARKETING_ROLES, /*MARKETING_ROLES, ADMIN_ONLY_ROLES*/ } from "@/lib/permissions";
+import { ADMIN_ONLY_ROLES, ALL_ADMIN_ROLES, INVENTORY_ROLES, MARKETING_ROLES} from "@/lib/permissions";
 import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
@@ -34,6 +34,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
+  { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
   { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
   { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
   { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },

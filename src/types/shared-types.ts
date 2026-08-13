@@ -82,6 +82,27 @@ export interface Collection {
   updatedAt: string;
 }
 
+export const BannerStatus = {
+  UPCOMING: "UPCOMING",
+  RUNNING: "RUNNING",
+  ENDED: "ENDED",
+} as const;
+export type BannerStatus = (typeof BannerStatus)[keyof typeof BannerStatus];
+
+export interface Banner {
+  id: string;
+  title: string;
+  imageUrl: string;
+  imagePublicId: string | null;
+  linkUrl: string | null;
+  sortOrder: number;
+  startDate: string;
+  endDate: string;
+  status: BannerStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ProductListItem {
   id: string;
   name: string;
