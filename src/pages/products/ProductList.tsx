@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/types/shared-types";
 import { useCategoryNameMap } from "@/hooks/useCategories";
 import { useBrandNameMap } from "@/hooks/useBrands";
-// import { useCollections } from "@/hooks/useCollections";
+import { useCollections } from "@/hooks/useCollections";
 import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
-// import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
+ import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
 import ProductFilterBar from "@/components/common/ProductFilterBar";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 
@@ -40,10 +40,11 @@ export default function ProductList() {
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
-  // const [collectionIds, setCollectionIds] = useState<string[]>([]);
+   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<ProductListItem | null>(null);
 
   // Options cho dropdown lọc đã chuyển vào ProductFilterBar (tự fetch category/brand
   // riêng, react-query cache chung nên không tốn thêm request) — ở đây chỉ cần map tên
@@ -51,18 +52,18 @@ export default function ProductList() {
   const categoryNameById = useCategoryNameMap();
   const brandNameById = useBrandNameMap();
 
-  // const { data: collections, isLoading: isLoadingCollections } = useCollections();
-  // const collectionOptions = useMemo(
-  //   () => (collections ?? []).map((c) => ({ value: c.id, label: c.name })),
-  //   [collections],
-  // );
+  const { data: collections, isLoading: isLoadingCollections } = useCollections();
+  const collectionOptions = useMemo(
+    () => (collections ?? []).map((c) => ({ value: c.id, label: c.name })),
+    [collections],
+  );
 
   const { data, isLoading } = useProductsAdmin({
     search: search || undefined,
     brandId,
     categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
     status,
-    // collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
+     collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
     page,
     limit,
   });
@@ -84,9 +85,8 @@ export default function ProductList() {
     }
   }
 
-  const handleToggleLock = useCallback(
+  const performToggleLock = useCallback(
     async (product: ProductListItem) => {
-      if (product.status === ProductStatus.DRAFT) return;
       const nextStatus =
         product.status === ProductStatus.ACTIVE ? ProductStatus.INACTIVE : ProductStatus.ACTIVE;
       try {
@@ -101,6 +101,29 @@ export default function ProductList() {
     [updateMutation, toast],
   );
 
+  const handleToggleLock = useCallback(
+    (product: ProductListItem) => {
+      if (product.status === ProductStatus.DRAFT) return;
+      // Khóa (chuyển khỏi ACTIVE) 1 sản phẩm đang gán bộ sưu tập sẽ khiến BE tự gỡ khỏi hết
+      // các bộ sưu tập đó (xem products.service.ts update()) — xác nhận trước, khớp cảnh
+      // báo đã có ở ProductForm.tsx khi đổi status qua form đầy đủ, tránh khóa nhanh 1 click
+      // ở màn danh sách âm thầm làm mất liên kết mà admin không hay biết.
+      if (product.status === ProductStatus.ACTIVE && product.collections.length > 0) {
+        setDeactivateTarget(product);
+        return;
+      }
+      void performToggleLock(product);
+    },
+    [performToggleLock],
+  );
+
+  async function handleConfirmDeactivate() {
+    if (!deactivateTarget) return;
+    const product = deactivateTarget;
+    setDeactivateTarget(null);
+    await performToggleLock(product);
+  }
+
   const columns = useMemo<DataTableColumn<ProductListItem>[]>(
     () => [
       {
@@ -110,9 +133,12 @@ export default function ProductList() {
         className: "min-w-40",
         render: (product) =>
           product.thumbnail ? (
+            // object-contain (không phải object-cover) — ảnh sản phẩm upload lên không bị ép
+            // theo 1 tỉ lệ cố định (xem ImageUploader.tsx), object-cover sẽ cắt mất phần ảnh
+            // tràn ra ngoài khung 3:4 này nếu ảnh thật không đúng tỉ lệ đó.
             <img
               src={product.thumbnail}
-              className="mx-auto h-32 w-24 rounded-md object-cover"
+              className="mx-auto h-32 w-24 rounded-md object-contain dark:bg-gray-800"
               alt=""
             />
           ) : (
@@ -123,7 +149,7 @@ export default function ProductList() {
         key: "status",
         header: "Trạng thái",
         align: "center",
-        className: "min-w-40",
+        className: "min-w-50",
         render: (product) => (
           <Badge color={PRODUCT_STATUS_LABEL[product.status].color}>
             {PRODUCT_STATUS_LABEL[product.status].label}
@@ -161,23 +187,26 @@ export default function ProductList() {
           </span>
         ),
       },
-      // {
-      //   key: "collections",
-      //   header: "Bộ sưu tập",
-      //   className: "min-w-90",
-      //   render: (product) =>
-      //     product.collections.length > 0 ? (
-      //       <div className="flex flex-wrap gap-1.5">
-      //         {product.collections.map((collection) => (
-      //           <Badge key={collection.id} color="light">
-      //             {collection.name}
-      //           </Badge>
-      //         ))}
-      //       </div>
-      //     ) : (
-      //       <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
-      //     ),
-      // },
+      {
+  key: "collections",
+  header: "Bộ sưu tập",
+  align: "center",
+  className: "min-w-90",
+  render: (product) =>
+    product.collections.length > 0 ? (
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {product.collections.map((collection) => (
+          <Badge key={collection.id} color="light">
+            {collection.name}
+          </Badge>
+        ))}
+      </div>
+    ) : (
+      <div className="flex justify-center">
+        <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+      </div>
+    ),  
+      },
       {
         key: "price",
         header: "Giá",
@@ -351,7 +380,7 @@ export default function ProductList() {
               setPage(1);
             }}
           />
-          {/* <div className="w-48">
+          <div className="w-48">
             <MultiSelectFilterDropdown
               label="Bộ sưu tập"
               options={collectionOptions}
@@ -363,7 +392,7 @@ export default function ProductList() {
                 setPage(1);
               }}
             />
-          </div> */}
+          </div>
         </div>
         <Button
           variant="primary"
@@ -402,7 +431,30 @@ export default function ProductList() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Thông báo"
-        description="Bạn có chắc chắn muốn xóa sản phẩm này không?"
+        description={
+          deleteTarget && deleteTarget.collections.length > 0
+            ? `Bạn có chắc chắn muốn xóa sản phẩm này không? Sản phẩm đang thuộc bộ sưu tập: ${deleteTarget.collections
+                .map((c) => c.name)
+                .join(", ")} — xóa sản phẩm sẽ tự động gỡ khỏi các bộ sưu tập này.`
+            : "Bạn có chắc chắn muốn xóa sản phẩm này không?"
+        }
+        confirmText="Đồng ý"
+        cancelText="Hủy"
+        danger
+      />
+
+      <ConfirmModal
+        open={deactivateTarget !== null}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={handleConfirmDeactivate}
+        title="Thông báo"
+        description={
+          deactivateTarget
+            ? `Sản phẩm đang thuộc bộ sưu tập: ${deactivateTarget.collections
+                .map((c) => c.name)
+                .join(", ")} — khóa sản phẩm sẽ tự động gỡ khỏi các bộ sưu tập này. Bạn có chắc chắn muốn tiếp tục?`
+            : ""
+        }
         confirmText="Đồng ý"
         cancelText="Hủy"
         danger

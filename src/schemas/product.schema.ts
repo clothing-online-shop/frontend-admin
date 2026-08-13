@@ -85,8 +85,23 @@ export const productSchema = yup.object({
       }
       return true;
     }),
-  // Không bắt buộc — sản phẩm không cần thuộc bộ sưu tập nào cũng hợp lệ.
-  collectionIds: yup.array().of(yup.string().required()).default([]),
+  // Không bắt buộc — sản phẩm không cần thuộc bộ sưu tập nào cũng hợp lệ. Chỉ sản phẩm
+  // đang mở bán (ACTIVE) mới được gán vào bộ sưu tập (khớp rule BE —
+  // products.service.ts assertActiveIfAddingCollections()) — validate chéo ở đây để chặn
+  // sớm ngay lúc submit, không để tạo sản phẩm gửi API rồi mất trắng dữ liệu vì BE từ chối
+  // (xem ProductCollectionsStep.tsx/ProductForm.tsx STEPS cho banner cảnh báo tương ứng).
+  collectionIds: yup
+    .array()
+    .of(yup.string().required())
+    .default([])
+    .test(
+      "only-active-can-have-collections",
+      "Chỉ sản phẩm đang mở bán mới được gán vào bộ sưu tập.",
+      function (value) {
+        if (!value || value.length === 0) return true;
+        return this.parent.status === ProductStatus.ACTIVE;
+      },
+    ),
 });
 
 export type ProductFormValues = yup.InferType<typeof productSchema>;

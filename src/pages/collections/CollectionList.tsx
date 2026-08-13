@@ -107,6 +107,26 @@ export default function CollectionList() {
         ),
       },
       {
+        key: "products",
+        header: "Sản phẩm",
+        align: "center",
+        className: "min-w-90",
+        render: (collection) =>
+          collection.products.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {collection.products.map((product) => (
+                <Badge key={product.id} color="light">
+                  {product.name}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+            </div>
+          ),
+      },
+      {
         key: "actions",
         header: "Thao tác",
         className: "min-w-24",
@@ -120,7 +140,10 @@ export default function CollectionList() {
               <Tooltip content="Xem">
                 <button
                   type="button"
-                  onClick={() => openView(collection)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openView(collection);
+                  }}
                   className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                   aria-label="Xem bộ sưu tập"
                 >
@@ -131,7 +154,10 @@ export default function CollectionList() {
                 <Tooltip content="Gán sản phẩm">
                   <button
                     type="button"
-                    onClick={() => setAssigningCollection(collection)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAssigningCollection(collection);
+                    }}
                     className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                     aria-label="Gán sản phẩm vào bộ sưu tập"
                   >
@@ -142,7 +168,10 @@ export default function CollectionList() {
               {!isEnded && (
                 <button
                   type="button"
-                  onClick={() => openEdit(collection)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openEdit(collection);
+                  }}
                   className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
                   aria-label="Sửa bộ sưu tập"
                 >
@@ -151,7 +180,10 @@ export default function CollectionList() {
               )}
               <button
                 type="button"
-                onClick={() => setDeleteTarget(collection)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteTarget(collection);
+                }}
                 className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
                 aria-label="Xóa bộ sưu tập"
               >
@@ -167,19 +199,18 @@ export default function CollectionList() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Bộ sưu tập</h3>
-        <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
+
+      <div className="mb-4 w-full flex justify-between gap-3">
+        <div className="w-65">
+          <Input
+            placeholder="Tìm theo tên bộ sưu tập"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
+         <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
           Thêm bộ sưu tập
         </Button>
-      </div>
-
-      <div className="mb-4 w-65">
-        <Input
-          placeholder="Tìm theo tên bộ sưu tập"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
       </div>
 
       <div className="flex flex-1 flex-col rounded-2xl bg-white">
@@ -188,6 +219,7 @@ export default function CollectionList() {
           rows={data ?? []}
           rowKey={(collection) => collection.id}
           isLoading={isLoading}
+          onRowClick={openView}
           emptyMessage="Chưa có bộ sưu tập nào."
         />
       </div>

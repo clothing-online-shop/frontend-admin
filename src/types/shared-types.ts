@@ -76,6 +76,8 @@ export interface Collection {
   startDate: string;
   endDate: string;
   status: CollectionStatus;
+  isDelete: boolean;
+  products: { id: string; name: string; slug: string; thumbnail: string | null }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -93,6 +95,7 @@ export interface ProductListItem {
   brandId: string | null;
   status: ProductStatus;
   categoryId: string;
+  isDelete: boolean;
   totalStock: number;
   createdAt: string;
   collections: { id: string; name: string; slug: string }[];

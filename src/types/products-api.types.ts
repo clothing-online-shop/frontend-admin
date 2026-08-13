@@ -13,9 +13,6 @@ export interface ListProductsAdminParams {
   status?: ProductStatus;
   page?: number;
   limit?: number;
-  // Chỉ dùng nội bộ để nạp lại sản phẩm ĐANG gán cho 1 bộ sưu tập (kể cả sản phẩm đã bị
-  // xóa mềm) — không dùng cho màn danh sách/chọn sản phẩm thông thường (xem AssignProductsModal.tsx).
-  includeDeleted?: boolean;
 }
 
 export interface ProductVariantPayload {

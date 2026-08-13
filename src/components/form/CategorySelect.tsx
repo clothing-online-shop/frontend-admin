@@ -17,6 +17,10 @@ interface CategorySelectProps {
   hint?: string;
   className?: string;
   placeholderColor?: string;
+  // Ẩn 1 danh mục khỏi danh sách chọn — dùng ở CategoryFormModal.tsx để không cho chọn
+  // chính danh mục đang sửa làm cha của chính nó (chọn 1 danh mục con của nó làm cha thì
+  // vẫn lọt qua đây, BE tự chặn ở assertNoCycle()).
+  excludeId?: string;
 }
 
 interface FlatEntry {
@@ -40,10 +44,12 @@ function findNode(nodes: CategoryNode[], id: string): CategoryNode | null {
   return null;
 }
 
-// Chọn 1 danh mục cho sản phẩm — thay pattern cũ "— " lặp theo depth (khó đọc, trông như
-// lỗi hiển thị) bằng thụt lề thật + icon + độ đậm chữ phân biệt cấp cha/con, giống ngôn
-// ngữ hình ảnh cây danh mục ở DragTree.tsx (FolderIcon cấp gốc, FileIcon cấp con) để nhất
-// quán trong toàn app. Vẫn là single-select — mọi cấp đều chọn được (danh mục cha cũng có
+// Chọn 1 danh mục — dùng cho cả "Danh mục" của sản phẩm (ProductGeneralInfoStep.tsx) lẫn
+// "Danh mục cha" khi thêm/sửa danh mục (CategoryFormModal.tsx). Thay pattern cũ "— " lặp
+// theo depth (khó đọc, trông như lỗi hiển thị) bằng thụt lề thật + icon + độ đậm chữ phân
+// biệt cấp cha/con, giống ngôn ngữ hình ảnh cây danh mục ở DragTree.tsx (FolderIcon cấp
+// gốc, FileIcon cấp con) để nhất quán trong toàn app. Vẫn là single-select — mọi cấp đều
+// chọn được (danh mục cha cũng có
 // thể gán trực tiếp cho sản phẩm), không giới hạn chỉ lá.
 export default function CategorySelect({
   value,
@@ -57,10 +63,11 @@ export default function CategorySelect({
   hint,
   className = "",
   placeholderColor = "text-gray-400 dark:text-white/30",
+  excludeId,
 }: CategorySelectProps) {
   const { data: tree } = useCategoryTree();
   const roots = tree ?? [];
-  const entries = flattenTree(roots);
+  const entries = flattenTree(roots).filter(({ node }) => node.id !== excludeId);
   const selectedNode = value ? findNode(roots, value) : null;
 
   const { isOpen, containerRef, toggle, close } = useSelect();

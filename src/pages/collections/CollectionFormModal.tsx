@@ -156,9 +156,11 @@ export default function CollectionFormModal({
                   label="Ngày bắt đầu"
                   placeholder="Chọn ngày bắt đầu"
                   defaultDate={field.value || undefined}
-                  // Không cho chọn ngày bắt đầu trong quá khứ — bộ sưu tập cũ (đã đang chạy/
-                  // kết thúc) vẫn giữ nguyên hiển thị được, chỉ chặn CHỌN MỚI ngày quá khứ.
-                  minDate="today"
+                  // Không cho chọn ngày bắt đầu trong quá khứ — nhưng chỉ áp khi field còn
+                  // sửa được. Field disabled (xem/RUNNING) mà vẫn set minDate="today" thì
+                  // flatpickr âm thầm bỏ qua defaultDate nằm trước minDate, khiến ngày bắt đầu
+                  // thật (đã ở quá khứ) không hiển thị dù data vẫn đúng trong form.
+                  minDate={viewOnly || isRunning ? undefined : "today"}
                   disabled={viewOnly || isRunning}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 />
@@ -220,6 +222,47 @@ export default function CollectionFormModal({
             />
           </div>
         </fieldset>
+
+        {/* Chỉ hiện khi xem — thêm/sửa bộ sưu tập không quản lý sản phẩm ở đây, đi qua
+            AssignProductsModal riêng (nút "Gán sản phẩm" ở CollectionList.tsx). */}
+        {viewOnly && (
+          <div className="mt-4">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+              Sản phẩm thuộc bộ sưu tập
+              {editing && editing.products.length > 0 && ` (${editing.products.length})`}
+            </label>
+            {editing && editing.products.length > 0 ? (
+              // max-h + overflow — bộ sưu tập có thể gán hàng chục sản phẩm, không để modal
+              // cao vô hạn theo số lượng. Ảnh nhỏ + tên thay vì badge chữ đơn thuần để dễ
+              // nhận diện đúng sản phẩm hơn (khớp cách AssignProductsModal.tsx hiển thị).
+              <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-gray-200 p-2 dark:border-gray-800">
+                {editing.products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5"
+                  >
+                    {product.thumbnail ? (
+                      <img
+                        src={product.thumbnail}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-md object-contain bg-gray-100 dark:bg-gray-800"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 shrink-0 rounded-md bg-gray-100 dark:bg-gray-800" />
+                    )}
+                    <span className="truncate text-sm text-gray-800 dark:text-white/90">
+                      {product.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                Chưa có sản phẩm nào.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
