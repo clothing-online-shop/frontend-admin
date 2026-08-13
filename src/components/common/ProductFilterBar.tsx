@@ -13,8 +13,12 @@ interface ProductFilterBarProps {
   onBrandIdChange: (value: string | undefined) => void;
   categoryIds: string[];
   onCategoryIdsChange: (ids: string[]) => void;
-  status: ProductStatus | undefined;
-  onStatusChange: (value: ProductStatus | undefined) => void;
+  status?: ProductStatus | undefined;
+  onStatusChange?: (value: ProductStatus | undefined) => void;
+  // Ẩn bộ lọc "Trạng thái" — dùng khi nơi gọi đã tự khóa cứng status (vd
+  // AssignProductsModal chỉ cho gán sản phẩm đang mở bán, không cần cho admin tự đổi sang
+  // trạng thái khác). Mặc định true (giữ nguyên hành vi cũ cho ProductList.tsx).
+  showStatusFilter?: boolean;
   className?: string;
 }
 
@@ -32,6 +36,7 @@ export default function ProductFilterBar({
   onCategoryIdsChange,
   status,
   onStatusChange,
+  showStatusFilter = true,
   className = "",
 }: ProductFilterBarProps) {
   const { data: brands } = useBrands();
@@ -62,23 +67,25 @@ export default function ProductFilterBar({
       <div className="w-64">
         <CategoryTreeSelect placeholder="Danh mục" value={categoryIds} onChange={onCategoryIdsChange} />
       </div>
-      <div className="w-52">
-        <Select
-          allowClear
-          placeholderColor="gray-700"
-          placeholder="Trạng thái"
-          // Select dùng chung chỉ nhận option.value dạng string — status thật (state +
-          // query param) vẫn là number, ép qua lại đúng ở ranh giới UI này.
-          value={status !== undefined ? String(status) : undefined}
-          onChange={(value) =>
-            onStatusChange(value !== undefined ? (Number(value) as ProductStatus) : undefined)
-          }
-          options={Object.values(ProductStatus).map((value) => ({
-            value: String(value),
-            label: PRODUCT_STATUS_LABEL[value].label,
-          }))}
-        />
-      </div>
+      {showStatusFilter && (
+        <div className="w-52">
+          <Select
+            allowClear
+            placeholderColor="gray-700"
+            placeholder="Trạng thái"
+            // Select dùng chung chỉ nhận option.value dạng string — status thật (state +
+            // query param) vẫn là number, ép qua lại đúng ở ranh giới UI này.
+            value={status !== undefined ? String(status) : undefined}
+            onChange={(value) =>
+              onStatusChange?.(value !== undefined ? (Number(value) as ProductStatus) : undefined)
+            }
+            options={Object.values(ProductStatus).map((value) => ({
+              value: String(value),
+              label: PRODUCT_STATUS_LABEL[value].label,
+            }))}
+          />
+        </div>
+      )}
     </div>
   );
 }

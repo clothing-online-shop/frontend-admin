@@ -2,7 +2,7 @@ import { useFormContext, useWatch } from "react-hook-form";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { useCollections } from "@/hooks/useCollections";
 import { formatDate } from "@/lib/format";
-import { CollectionStatus, type Collection } from "@/types/shared-types";
+import { CollectionStatus, ProductStatus, type Collection } from "@/types/shared-types";
 import { COLLECTION_STATUS_LABEL, COLLECTION_STATUS_COLOR } from "@/lib/collectionStatus";
 import ComponentCard from "@/components/common/ComponentCard";
 import Checkbox from "@/components/form/input/Checkbox";
@@ -24,6 +24,12 @@ export function ProductCollectionsStep({ viewOnly = false }: ProductCollectionsS
     excludeEnded: false,
     includeDeleted: viewOnly,
   });
+
+  const status = useWatch({ control, name: "status" });
+  // Chỉ sản phẩm ĐANG MỞ BÁN mới được gán vào bộ sưu tập (khớp rule BE —
+  // products.service.ts assertActiveIfAddingCollections()) — khóa toàn bộ checkbox khi
+  // status khác ACTIVE thay vì để admin tick xong mới bị BE từ chối lúc lưu.
+  const isProductActive = status === ProductStatus.ACTIVE;
 
   const selectedIds = useWatch({ control, name: "collectionIds" }) ?? [];
   const selectableCollections = (collections ?? []).filter(
@@ -82,6 +88,13 @@ export function ProductCollectionsStep({ viewOnly = false }: ProductCollectionsS
         Chọn các bộ sưu tập chứa sản phẩm này — không bắt buộc, 1 sản phẩm có thể thuộc nhiều bộ
         sưu tập cùng lúc.
       </p>
+      {!viewOnly && !isProductActive && (
+        <p className="mb-4 rounded-lg bg-warning-50 px-3 py-2 text-xs text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
+          Sản phẩm chưa mở bán hoặc đã ngừng kinh doanh — chỉ sản phẩm đang mở bán mới được
+          gán vào bộ sưu tập. Đổi trạng thái ở bước "Thông tin chung" thành "Đang mở bán"
+          trước khi gán.
+        </p>
+      )}
       {isLoading ? (
         <Spinner className="text-brand-500" />
       ) : isEmpty ? (
@@ -90,7 +103,9 @@ export function ProductCollectionsStep({ viewOnly = false }: ProductCollectionsS
         </p>
       ) : (
         <div className="flex flex-col gap-3">
-          {visibleCollections.map((collection) => renderRow(collection, viewOnly))}
+          {visibleCollections.map((collection) =>
+            renderRow(collection, viewOnly || !isProductActive),
+          )}
           {endedAssignedCollections.length > 0 && (
             <>
               {/* Đã kết thúc nên không cho gán mới, nhưng vẫn phải hiện — không hiện thì

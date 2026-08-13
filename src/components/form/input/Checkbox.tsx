@@ -99,7 +99,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
         <span
           className={
             labelClassName ??
-            "text-sm font-medium text-gray-800 transition-colors duration-150 ease-standard group-hover:text-white dark:text-gray-200"
+            "text-sm font-medium text-gray-800 transition-colors duration-150 ease-standard group-hover:text-brand-500 dark:text-gray-200"
           }
         >
           {label}

@@ -17,6 +17,7 @@ import type {
 import { getErrorMessage } from "@/lib/error";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { productSchema, type ProductFormValues } from "@/schemas/product.schema";
@@ -24,8 +25,7 @@ import { ProductFormStepper } from "./form-steps/ProductFormStepper";
 import { ProductGeneralInfoStep } from "./form-steps/ProductGeneralInfoStep";
 import { ProductVariantsStep } from "./form-steps/ProductVariantsStep";
 import { ProductImagesStep } from "./form-steps/ProductImagesStep";
-// Ẩn tạm cùng bước "Bộ sưu tập" — không xoá, xem STEPS bên dưới.
- import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
+import { ProductCollectionsStep } from "./form-steps/ProductCollectionsStep";
 import { ProductSeoStep } from "./form-steps/ProductSeoStep";
 
 const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
@@ -44,10 +44,7 @@ const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
   },
   { label: "Biến thể", fields: ["variants"] },
   { label: "Ảnh", fields: ["thumbnail", "images"] },
-  // Ẩn tạm bước "Bộ sưu tập" cho demo (không xoá) — COLLECTIONS_STEP_INDEX bên dưới tự
-  // thành -1 khi comment dòng này, currentStep không bao giờ khớp nên bước này tự ẩn
-  // khỏi cả stepper lẫn khối render, không cần sửa gì thêm.
-  { label: "Bộ sưu tập", fields: [] },
+  { label: "Bộ sưu tập", fields: ["collectionIds"] },
   { label: "SEO", fields: [] },
 ];
 
@@ -175,13 +172,14 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
 
   const [currentStep, setCurrentStep] = useState(0);
   const [maxStepReached, setMaxStepReached] = useState(0);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
 
   const methods = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
     defaultValues: EMPTY_VALUES,
     mode: "onChange",
   });
-  const { handleSubmit, trigger, reset, getValues, control, formState } = methods;
+  const { handleSubmit, trigger, reset, getValues, setValue, control, formState } = methods;
 
   const currentStepFields = STEPS[currentStep].fields;
   // Chỉ để subscribe re-render khi giá trị các field của bước hiện tại đổi — validity
@@ -300,6 +298,14 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     toast.error("Vui lòng kiểm tra lại thông tin đã nhập");
   }
 
+  // getValues() trả nguyên giá trị input thô (vd basePrice là string "199000") — chỉ
+  // schema.cast() mới áp transform/coerce kiểu của Yup (vd ép sang number thật) giống hệt
+  // dữ liệu handleSubmit() vẫn hay trả về, assert: false vì field ở step khác có thể chưa
+  // hợp lệ tại thời điểm này (không cần chặn, chỉ cần đúng field của step đang lưu).
+  function castCurrentValues(): ProductFormValues {
+    return productSchema.cast(getValues(), { assert: false }) as ProductFormValues;
+  }
+
   // Lưu riêng 1 step khi đang sửa sản phẩm có sẵn — PATCH đúng phần dữ liệu step đó.
   async function handleSaveStep() {
     if (!product) return;
@@ -307,11 +313,25 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     const valid = fields.length === 0 ? true : await trigger(fields);
     if (!valid) return;
 
-    // getValues() trả nguyên giá trị input thô (vd basePrice là string "199000") — chỉ
-    // schema.cast() mới áp transform/coerce kiểu của Yup (vd ép sang number thật) giống hệt
-    // dữ liệu handleSubmit() vẫn hay trả về, assert: false vì field ở step khác có thể chưa
-    // hợp lệ tại thời điểm này (không cần chặn, chỉ cần đúng field của step đang lưu).
-    const values = productSchema.cast(getValues(), { assert: false }) as ProductFormValues;
+    const values = castCurrentValues();
+
+    // Đổi status khỏi ACTIVE trong khi sản phẩm đang thuộc ≥1 bộ sưu tập — lưu sẽ tự động
+    // gỡ khỏi các bộ sưu tập đó (xem products.service.ts update()), xác nhận trước để
+    // admin không bị bất ngờ mất liên kết mà không hay biết.
+    if (
+      currentStep === 0 &&
+      values.status !== ProductStatus.ACTIVE &&
+      product.collections.length > 0
+    ) {
+      setConfirmDeactivate(true);
+      return;
+    }
+
+    await saveStep(values);
+  }
+
+  async function saveStep(values: ProductFormValues) {
+    if (!product) return;
     try {
       if (currentStep === COLLECTIONS_STEP_INDEX) {
         await assignCollectionsMutation.mutateAsync({
@@ -323,11 +343,24 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
           id: product.id,
           payload: buildStepUpdatePayload(currentStep, values),
         });
+        // BE tự gỡ sản phẩm khỏi mọi bộ sưu tập khi status đổi khỏi ACTIVE (xem
+        // products.service.ts update()) — đồng bộ lại ngay ở form, nếu không giữ nguyên
+        // collectionIds cũ thì lần lưu bước "Bộ sưu tập" sau (kể cả sau khi đã bật lại
+        // ACTIVE, vì admin không đụng gì tới checkbox) sẽ vô tình gán lại đúng những bộ sưu
+        // tập vừa bị gỡ, do PUT .../collections là API thay thế toàn bộ.
+        if (currentStep === 0 && values.status !== ProductStatus.ACTIVE) {
+          setValue("collectionIds", []);
+        }
       }
       toast.success(`Đã lưu ${STEPS[currentStep].label}`);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
+  }
+
+  async function handleConfirmDeactivate() {
+    setConfirmDeactivate(false);
+    await saveStep(castCurrentValues());
   }
 
   if (isEditing && isLoadingProduct) {
@@ -357,8 +390,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
             {currentStep === 0 && <ProductGeneralInfoStep viewOnly={viewOnly} />}
             {currentStep === 1 && <ProductVariantsStep viewOnly={viewOnly} />}
             {currentStep === 2 && <ProductImagesStep viewOnly={viewOnly} />}
-            {/* Ẩn tạm cùng với STEPS ở trên — không xoá. */}
-             {currentStep === COLLECTIONS_STEP_INDEX && (
+            {currentStep === COLLECTIONS_STEP_INDEX && (
               <ProductCollectionsStep viewOnly={viewOnly} />
             )}
             {currentStep === STEPS.length - 1 && <ProductSeoStep />}
@@ -413,6 +445,23 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmDeactivate}
+        onClose={() => setConfirmDeactivate(false)}
+        onConfirm={handleConfirmDeactivate}
+        title="Thông báo"
+        description={
+          product
+            ? `Sản phẩm đang thuộc bộ sưu tập: ${product.collections
+                .map((c) => c.name)
+                .join(", ")} — đổi trạng thái sẽ tự động gỡ sản phẩm khỏi các bộ sưu tập này. Bạn có chắc chắn muốn tiếp tục?`
+            : ""
+        }
+        confirmText="Đồng ý"
+        cancelText="Hủy"
+        danger
+      />
     </FormProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Collection, ProductListItem, ProductStatus } from "@/types/shared-types";
+import { ProductStatus, type Collection, type ProductListItem } from "@/types/shared-types";
 import { useProductsAdmin } from "@/hooks/useProducts";
 import { useAssignCollectionProducts } from "@/hooks/useCollections";
 import { useCategoryNameMap } from "@/hooks/useCategories";
@@ -35,7 +35,6 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
   const search = useDebounce(searchInput, 500);
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
-  const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const seededRef = useRef(false);
@@ -49,7 +48,6 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
     setSearchInput("");
     setBrandId(undefined);
     setCategoryIds([]);
-    setStatus(undefined);
     setPage(1);
     setSelectedIds(new Set());
     seededRef.current = false;
@@ -83,7 +81,10 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
       search: search || undefined,
       brandId,
       categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
-      status,
+      // Chỉ cho chọn sản phẩm ĐANG MỞ BÁN — sản phẩm nháp/ngừng kinh doanh không có lý do
+      // xuất hiện trong 1 bộ sưu tập dùng để quảng bá trên storefront (khóa cứng, không
+      // cho admin tự đổi sang trạng thái khác, xem showStatusFilter={false} bên dưới).
+      status: ProductStatus.ACTIVE,
       page,
       limit: DEFAULT_PAGE_SIZE,
     },
@@ -233,6 +234,10 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
+          <p className="mb-4 text-xs text-gray-400 dark:text-gray-500">
+            Chỉ hiển thị sản phẩm đang mở bán — sản phẩm chưa mở bán/ngừng kinh doanh không
+            được gán vào bộ sưu tập.
+          </p>
           {/* Chỉ mount khi mở dialog — ProductFilterBar tự fetch category/brand riêng,
               nếu render sẵn cả lúc đóng thì mỗi lần vào màn Bộ sưu tập sẽ tự bắn API dù
               chưa ai bấm "Gán sản phẩm" (children trong JSX luôn được dựng trước khi
@@ -252,11 +257,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
                   setCategoryIds(ids);
                   setPage(1);
                 }}
-                status={status}
-                onStatusChange={(value) => {
-                  setStatus(value);
-                  setPage(1);
-                }}
+                showStatusFilter={false}
               />
             </div>
           )}

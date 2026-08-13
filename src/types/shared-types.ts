@@ -77,7 +77,7 @@ export interface Collection {
   endDate: string;
   status: CollectionStatus;
   isDelete: boolean;
-  products: { id: string; name: string; slug: string }[];
+  products: { id: string; name: string; slug: string; thumbnail: string | null }[];
   createdAt: string;
   updatedAt: string;
 }
