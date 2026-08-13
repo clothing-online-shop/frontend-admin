@@ -157,9 +157,11 @@ export default function CollectionFormModal({
                   label="Ngày bắt đầu"
                   placeholder="Chọn ngày bắt đầu"
                   defaultDate={field.value || undefined}
-                  // Không cho chọn ngày bắt đầu trong quá khứ — bộ sưu tập cũ (đã đang chạy/
-                  // kết thúc) vẫn giữ nguyên hiển thị được, chỉ chặn CHỌN MỚI ngày quá khứ.
-                  minDate="today"
+                  // Không cho chọn ngày bắt đầu trong quá khứ — nhưng chỉ áp khi field còn
+                  // sửa được. Field disabled (xem/RUNNING) mà vẫn set minDate="today" thì
+                  // flatpickr âm thầm bỏ qua defaultDate nằm trước minDate, khiến ngày bắt đầu
+                  // thật (đã ở quá khứ) không hiển thị dù data vẫn đúng trong form.
+                  minDate={viewOnly || isRunning ? undefined : "today"}
                   disabled={viewOnly || isRunning}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 />
