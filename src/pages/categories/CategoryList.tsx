@@ -6,7 +6,7 @@ import {
   useReorderCategories,
 } from "@/hooks/useCategories";
 import { getErrorMessage } from "@/lib/error";
-import { CategoryFormModal, type CategoryOption } from "./CategoryFormModal";
+import { CategoryFormModal } from "./CategoryFormModal";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
 import Input from "@/components/form/input/InputField";
@@ -37,13 +37,6 @@ function cloneTree(nodes: CategoryTreeNode[]): CategoryTreeNode[] {
     ...node,
     children: node.children ? cloneTree(node.children) : undefined,
   }));
-}
-
-function flattenForOptions(nodes: CategoryNode[], depth = 0): CategoryOption[] {
-  return nodes.flatMap((node) => [
-    { id: node.id, name: node.name, depth },
-    ...flattenForOptions(node.children, depth + 1),
-  ]);
 }
 
 function findNodeById(nodes: CategoryNode[], id: string): CategoryNode | null {
@@ -139,7 +132,6 @@ export default function CategoryList() {
   }, [data]);
 
   const editingNode = data && editingId ? findNodeById(data, editingId) : null;
-  const parentOptions = data ? flattenForOptions(data) : [];
   const filteredTreeData = filterTreeByName(treeData, search);
 
   function handleAdd() {
@@ -383,7 +375,6 @@ export default function CategoryList() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         editing={editingNode}
-        parentOptions={parentOptions}
         viewOnly={viewMode}
       />
 

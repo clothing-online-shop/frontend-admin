@@ -8,24 +8,17 @@ import { getErrorMessage } from "@/lib/error";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
-import Select from "@/components/form/Select";
+import CategorySelect from "@/components/form/CategorySelect";
 import Switch from "@/components/form/switch/Switch";
 import FieldLabel from "@/components/form/FieldLabel";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
 import { categorySchema, type CategoryFormValues } from "@/schemas/category.schema";
 
-export interface CategoryOption {
-  id: string;
-  name: string;
-  depth: number;
-}
-
 interface CategoryFormModalProps {
   open: boolean;
   onClose: () => void;
   editing: CategoryNode | null;
-  parentOptions: CategoryOption[];
   viewOnly?: boolean;
 }
 
@@ -41,7 +34,6 @@ export function CategoryFormModal({
   open,
   onClose,
   editing,
-  parentOptions,
   viewOnly = false,
 }: CategoryFormModalProps) {
   const toast = useToast();
@@ -134,18 +126,14 @@ export function CategoryFormModal({
               name="parentId"
               control={control}
               render={({ field }) => (
-                <Select
+                <CategorySelect
                   label="Danh mục cha"
                   allowClear
                   placeholder="Không có (danh mục gốc)"
                   value={field.value}
                   onChange={field.onChange}
-                  options={parentOptions
-                    .filter((option) => option.id !== editing?.id)
-                    .map((option) => ({
-                      value: option.id,
-                      label: `${"— ".repeat(option.depth)}${option.name}`,
-                    }))}
+                  excludeId={editing?.id}
+                  disabled={viewOnly}
                 />
               )}
             />
