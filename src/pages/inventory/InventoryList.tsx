@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { InventoryItem } from "@/types/shared-types";
 import { useInventory } from "@/hooks/useInventory";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -14,6 +15,7 @@ import Button from "@/components/ui/button/Button";
 import StockMovementModal from "./StockMovementModal";
 
 export default function InventoryList() {
+  const navigate = useNavigate();
   useBreadcrumb([{ label: "Tồn kho" }]);
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
@@ -72,25 +74,30 @@ export default function InventoryList() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-4">
-        <div className="w-96">
-          <Input
-            placeholder="Tìm theo tên sản phẩm/SKU"
-            value={searchInput}
-            onChange={(e) => {
-              setSearchInput(e.target.value);
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="w-96">
+            <Input
+              placeholder="Tìm theo tên sản phẩm/SKU"
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <Checkbox
+            label="Chỉ hiện sắp hết hàng"
+            checked={lowStockOnly}
+            onChange={(checked) => {
+              setLowStockOnly(checked);
               setPage(1);
             }}
           />
         </div>
-        <Checkbox
-          label="Chỉ hiện sắp hết hàng"
-          checked={lowStockOnly}
-          onChange={(checked) => {
-            setLowStockOnly(checked);
-            setPage(1);
-          }}
-        />
+        <Button variant="outline" onClick={() => navigate("/inventory/history")}>
+          Lịch sử
+        </Button>
       </div>
 
       <div className="rounded-2xl bg-white dark:bg-white/[0.03]">
