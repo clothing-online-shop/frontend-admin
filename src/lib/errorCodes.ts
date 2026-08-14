@@ -28,6 +28,10 @@ export const ErrorCode = {
   PRODUCT_VARIANT_DUPLICATE: 1210,
   PRODUCT_IMAGES_MISALIGNED: 1211,
   PRODUCT_COLLECTION_ENDED: 1212,
+
+  // Inventory (1301–1399)
+  INVENTORY_EXPORT_EXCEEDS_STOCK: 1301,
+  INVENTORY_ADJUSTMENT_NO_CHANGE: 1302,
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -61,4 +65,7 @@ export const ERROR_CODE_MESSAGE: Partial<Record<ErrorCode, string>> = {
   [ErrorCode.PRODUCT_IMAGES_MISALIGNED]: "Ảnh sản phẩm bị lỗi đồng bộ, vui lòng tải lại ảnh.",
   [ErrorCode.PRODUCT_COLLECTION_ENDED]:
     "Có bộ sưu tập đã kết thúc trong danh sách gán — không thể gán sản phẩm vào bộ sưu tập đã kết thúc.",
+  [ErrorCode.INVENTORY_EXPORT_EXCEEDS_STOCK]: "Số lượng xuất vượt quá tồn kho hiện có.",
+  [ErrorCode.INVENTORY_ADJUSTMENT_NO_CHANGE]:
+    "Số tồn thực tế trùng với hệ thống, không có gì để điều chỉnh.",
 };
