@@ -79,6 +79,42 @@ export interface Collection {
   updatedAt: string;
 }
 
+export const StockMovementType = {
+  IMPORT: "IMPORT",
+  EXPORT: "EXPORT",
+  ADJUSTMENT: "ADJUSTMENT",
+  RETURN: "RETURN",
+} as const;
+export type StockMovementType = (typeof StockMovementType)[keyof typeof StockMovementType];
+
+export interface InventoryItem {
+  variantId: string;
+  sku: string;
+  size: string;
+  color: string;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  thumbnail: string | null;
+}
+
+export interface StockMovement {
+  id: string;
+  type: StockMovementType;
+  quantity: number;
+  note: string | null;
+  createdAt: string;
+  variantId: string;
+  sku: string;
+  size: string;
+  color: string;
+  productId: string;
+  productName: string;
+  createdByName: string;
+}
+
 export interface ProductListItem {
   id: string;
   name: string;
