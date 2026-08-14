@@ -8,9 +8,16 @@ export const stockMovementSchema = yup.object({
     .mixed<"IMPORT" | "EXPORT" | "ADJUSTMENT">()
     .oneOf(["IMPORT", "EXPORT", "ADJUSTMENT"])
     .required(),
+  // Input number qua register(..., { valueAsNumber: true }) gửi thẳng số cho yup (không
+  // phải chuỗi rỗng) — ô bị xoá trắng thành NaN, không khớp "original === ''" nên lọt qua
+  // transform cũ. Field ẩn (vd "quantity" khi đang ở tab Điều chỉnh) giữ nguyên NaN "ma" đó
+  // trong form state (modal chỉ reset() lúc mở, không reset khi đổi tab) và bị .number()
+  // coi là sai kiểu dữ liệu — chặn submit âm thầm vì ô đó không render để lộ lỗi ra UI.
   quantity: yup
     .number()
-    .transform((value, original) => (original === "" ? undefined : value))
+    .transform((value, original) =>
+      original === "" || Number.isNaN(original) ? undefined : value,
+    )
     .when("mode", {
       is: (mode: string) => mode === "IMPORT" || mode === "EXPORT",
       then: (schema) =>
@@ -23,7 +30,9 @@ export const stockMovementSchema = yup.object({
     }),
   actualQuantity: yup
     .number()
-    .transform((value, original) => (original === "" ? undefined : value))
+    .transform((value, original) =>
+      original === "" || Number.isNaN(original) ? undefined : value,
+    )
     .when("mode", {
       is: "ADJUSTMENT",
       then: (schema) =>
