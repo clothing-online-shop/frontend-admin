@@ -7,7 +7,6 @@ import {
   getProductsAdmin,
   removeProductFromCollection,
   updateProduct,
-  updateVariantStock,
 } from "@/lib/api/products-api";
 import type {
   AssignCollectionsPayload,
@@ -73,22 +72,6 @@ export function useRemoveProductFromCollection() {
   return useMutation({
     mutationFn: ({ productId, collectionId }: { productId: string; collectionId: string }) =>
       removeProductFromCollection(productId, collectionId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] }),
-  });
-}
-
-export function useUpdateVariantStock() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      productId,
-      variantId,
-      stockQuantity,
-    }: {
-      productId: string;
-      variantId: string;
-      stockQuantity: number;
-    }) => updateVariantStock(productId, variantId, stockQuantity),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] }),
   });
 }
