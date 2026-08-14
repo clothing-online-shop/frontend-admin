@@ -3,7 +3,7 @@ import type { StockMovement, StockMovementType } from "@/types/shared-types";
 import { useStockHistory } from "@/hooks/useInventory";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import { STOCK_MOVEMENT_TYPE_LABEL } from "@/lib/inventoryStatus";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
@@ -53,7 +53,7 @@ export default function InventoryHistory() {
       key: "createdAt",
       header: "Thời gian",
       align: "center",
-      render: (movement) => formatDate(movement.createdAt),
+      render: (movement) => formatDateTime(movement.createdAt),
     },
     {
       key: "product",
@@ -137,7 +137,10 @@ export default function InventoryHistory() {
             id="history-from"
             placeholder="Từ ngày"
             onChange={(_dates, dateStr) => {
-              setFrom(dateStr || undefined);
+              // DatePicker chỉ trả "YYYY-MM-DD" — BE so sánh trực tiếp bằng new Date(), gửi
+              // nguyên chuỗi này sẽ thành 00:00 UTC (07:00 giờ VN), cắt mất vài giờ đầu ngày
+              // theo giờ local.
+              setFrom(dateStr ? `${dateStr}T00:00:00.000` : undefined);
               setPage(1);
             }}
           />
@@ -147,7 +150,9 @@ export default function InventoryHistory() {
             id="history-to"
             placeholder="Đến ngày"
             onChange={(_dates, dateStr) => {
-              setTo(dateStr || undefined);
+              // Tương tự from — phải đẩy tới cuối ngày, nếu không BE sẽ cắt mất toàn bộ giao
+              // dịch trong chính ngày được chọn (00:00 UTC là điểm cắt, không phải cuối ngày).
+              setTo(dateStr ? `${dateStr}T23:59:59.999` : undefined);
               setPage(1);
             }}
           />
