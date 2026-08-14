@@ -55,7 +55,8 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
 
         <p className="text-base text-gray-700 font-bold dark:text-gray-500">
           Bỏ trống SKU để tự sinh theo tên sản phẩm + size + màu. Bỏ trống Giá bán để dùng giá
-          gốc của sản phẩm.
+          gốc của sản phẩm. Tồn kho chỉ nhập được lúc thêm biến thể mới — biến thể đã có, vào
+          trang Tồn kho để nhập/xuất/điều chỉnh (luôn có lịch sử, không sửa trực tiếp ở đây).
         </p>
 
         {fields.length > 0 && (
@@ -83,6 +84,10 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
           const colorField = register(`variants.${index}.color`);
           const skuField = register(`variants.${index}.sku`);
           const rowLabel = `biến thể dòng ${index + 1}`;
+          // Có id => biến thể đã lưu ở BE — BE giờ bỏ qua stockQuantity gửi kèm khi sửa
+          // biến thể đã có (xem products.service.ts syncVariants()), khoá input ở đây cho
+          // khớp, tránh admin tưởng sửa được nhưng lưu xong tồn kho vẫn không đổi.
+          const isExistingVariant = !!getValues(`variants.${index}.id`);
 
           return (
             <div key={field.id} className="flex flex-wrap items-end gap-3">
@@ -169,7 +174,12 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   type="number"
                   min="0"
                   placeholder="0"
-                  aria-label={`Tồn kho ${rowLabel}`}
+                  aria-label={
+                    isExistingVariant
+                      ? `Tồn kho ${rowLabel} (chỉ xem — sửa tại trang Tồn kho)`
+                      : `Tồn kho ${rowLabel}`
+                  }
+                  disabled={isExistingVariant}
                   {...register(`variants.${index}.stockQuantity`)}
                 />
               </div>
