@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
   BoxIcon,
+  BoxIconLine,
   BoxCubeIcon,
   GridIcon,
   // FolderIcon,
@@ -34,6 +35,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
+  { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
   // { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
   // { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
   // { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
