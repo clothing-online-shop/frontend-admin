@@ -45,6 +45,7 @@ export default function StockMovementModal({ open, onClose, item }: StockMovemen
   });
 
   const mode = useWatch({ control, name: "mode" });
+  const actualQuantity = useWatch({ control, name: "actualQuantity" });
 
   // Reset mỗi lần mở modal (hoặc đổi sang biến thể khác) — actualQuantity điền sẵn tồn
   // hiện tại để admin chỉ cần sửa nếu số kiểm kê khác, không phải gõ lại từ đầu.
@@ -150,6 +151,12 @@ export default function StockMovementModal({ open, onClose, item }: StockMovemen
               error={!!errors.actualQuantity}
               hint={errors.actualQuantity?.message}
             />
+            {item && Number.isFinite(actualQuantity) && (
+              <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                Chênh lệch: {actualQuantity! - item.stockQuantity > 0 ? "+" : ""}
+                {actualQuantity! - item.stockQuantity}
+              </p>
+            )}
           </div>
         )}
 

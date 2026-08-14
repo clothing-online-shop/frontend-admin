@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { useBreadcrumbStore } from "@/store/breadcrumb-store";
 import { ADMIN_ROLE_LABELS, toAdminRole, type AdminRole } from "@/lib/roles";
-import { ALL_ADMIN_ROLES, INVENTORY_ROLES, /*MARKETING_ROLES, ADMIN_ONLY_ROLES*/ } from "@/lib/permissions";
+import { ALL_ADMIN_ROLES, INVENTORY_ROLES, ADMIN_ONLY_ROLES /*, MARKETING_ROLES*/ } from "@/lib/permissions";
 import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
@@ -15,7 +15,7 @@ import {
   // ListIcon,
   // GroupIcon,
   // PageIcon,
-  // PlugInIcon,
+  PlugInIcon,
   AngleRightIcon,
 } from "@/icons";
 
@@ -40,7 +40,7 @@ const MENU_ITEMS: MenuItem[] = [
   // { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: INVENTORY_ROLES },
   // { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
   // { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
-  // { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
+  { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
 ];
 
 export default function AdminLayout() {
