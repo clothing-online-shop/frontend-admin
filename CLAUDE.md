@@ -112,6 +112,7 @@ src/
 ## Bắt đầu tính năng mới
 
 - Trước khi code: `git checkout develop && git pull` để lấy code mới nhất, sau đó tạo branch mới từ `develop` với tên phù hợp tính năng đang làm (`feature/<mo-ta-ngan>`, `fix/<mo-ta-ngan>`) — không code thẳng trên `develop`.
+- Trước khi viết 1 hàm/component mới: rà lại codebase xem đã có sẵn cái làm việc tương tự chưa (grep trong `lib/`, `hooks/`, `components/common/`, `components/form/`) — có thì dùng lại, không viết mới. Trong lúc code, nếu thấy 1 hàm/component sắp viết ra nhiều khả năng còn dùng lại ở màn khác (không phải chỉ đoán, mà thấy rõ lý do) thì viết thẳng vào `lib/`/`hooks/`/`components/common/` ngay từ đầu, không đợi phát hiện trùng lặp rồi mới refactor sau (xem thêm rule "logic lặp lại ≥ 2 nơi" ở mục Clean code).
 - Sau khi code xong, trước khi báo hoàn thành/mở PR: chủ động tự review lại toàn bộ diff theo đúng quy ước trong `CLAUDE.md` này và `README.md` của repo — không chỉ dựa vào lint/build pass.
 
 ## Trước khi mở PR
