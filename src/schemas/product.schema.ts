@@ -50,6 +50,7 @@ export const productSchema = yup.object({
     .oneOf(Object.values(ProductStatus))
     .required()
     .default(ProductStatus.DRAFT),
+  isFeatured: yup.boolean().default(false),
   thumbnail: yup
     .array()
     .of(yup.string().required())

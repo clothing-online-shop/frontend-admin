@@ -155,6 +155,7 @@ export interface ProductListItem {
   isDelete: boolean;
   totalStock: number;
   createdAt: string;
+  isFeatured: boolean;
   collections: { id: string; name: string; slug: string }[];
 }
 

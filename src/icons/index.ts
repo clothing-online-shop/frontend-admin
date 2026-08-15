@@ -18,6 +18,7 @@ import ArrowRightIcon from "./arrow-right.svg?react";
 import GroupIcon from "./group.svg?react";
 import BoxIconLine from "./box-line.svg?react";
 import ShootingStarIcon from "./shooting-star.svg?react";
+import StarIcon from "./star.svg?react";
 import DollarLineIcon from "./dollar-line.svg?react";
 import TrashBinIcon from "./trash.svg?react";
 import AngleUpIcon from "./angle-up.svg?react";
@@ -80,6 +81,7 @@ export {
   GroupIcon,
   BoxIconLine,
   ShootingStarIcon,
+  StarIcon,
   DollarLineIcon,
   TrashBinIcon,
   AngleUpIcon,

@@ -12,6 +12,7 @@ import CurrencyInput from "@/components/form/input/CurrencyInput";
 import Select from "@/components/form/Select";
 import CategorySelect from "@/components/form/CategorySelect";
 import FieldLabel from "@/components/form/FieldLabel";
+import Switch from "@/components/form/switch/Switch";
 
 interface ProductGeneralInfoStepProps {
   viewOnly?: boolean;
@@ -208,6 +209,19 @@ export function ProductGeneralInfoStep({
           />
         </div>
       </div>
+
+      <Controller
+        name="isFeatured"
+        control={control}
+        render={({ field }) => (
+          <Switch
+            label="Sản phẩm nổi bật"
+            checked={field.value ?? false}
+            onChange={field.onChange}
+            disabled={viewOnly}
+          />
+        )}
+      />
 
       <div>
         <Input

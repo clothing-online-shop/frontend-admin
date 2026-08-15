@@ -17,10 +17,11 @@ import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
- import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
+import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon, StarIcon } from "@/icons";
+import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
 import ProductFilterBar from "@/components/common/ProductFilterBar";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
+import type { ProductSort } from "@/types/products-api.types";
 import DeactivateCollectionsConfirmModal from "./DeactivateCollectionsConfirmModal";
 
 // description lưu dạng HTML từ RichTextEditor — bảng danh sách chỉ cần xem nhanh
@@ -41,7 +42,9 @@ export default function ProductList() {
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
-   const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const [isFeatured, setIsFeatured] = useState<boolean | undefined>(undefined);
+  const [sort, setSort] = useState<ProductSort | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
@@ -64,7 +67,9 @@ export default function ProductList() {
     brandId,
     categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
     status,
-     collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
+    collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
+    isFeatured,
+    sort,
     page,
     limit,
   });
@@ -125,6 +130,21 @@ export default function ProductList() {
     await performToggleLock(product);
   }
 
+  const handleToggleFeatured = useCallback(
+    async (product: ProductListItem) => {
+      try {
+        await updateMutation.mutateAsync({
+          id: product.id,
+          payload: { isFeatured: !product.isFeatured },
+        });
+        toast.success(product.isFeatured ? "Đã bỏ nổi bật" : "Đã gắn cờ nổi bật");
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+      }
+    },
+    [updateMutation, toast],
+  );
+
   const columns = useMemo<DataTableColumn<ProductListItem>[]>(
     () => [
       {
@@ -156,6 +176,20 @@ export default function ProductList() {
             {PRODUCT_STATUS_LABEL[product.status].label}
           </Badge>
         ),
+      },
+      {
+        key: "isFeatured",
+        header: "Nổi bật",
+        align: "center",
+        className: "min-w-32",
+        render: (product) =>
+          product.isFeatured ? (
+            <Badge color="warning" startIcon={<StarIcon className="h-3.5 w-3.5" />}>
+              Nổi bật
+            </Badge>
+          ) : (
+            <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+          ),
       },
       {
         key: "name",
@@ -337,6 +371,24 @@ export default function ProductList() {
                   )}
                 </button>
               </Tooltip>
+              <Tooltip content={product.isFeatured ? "Bỏ nổi bật" : "Gắn cờ nổi bật"}>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    void handleToggleFeatured(product);
+                  }}
+                  disabled={updateMutation.isPending}
+                  className={`transition-colors duration-200 ease-standard disabled:cursor-not-allowed disabled:opacity-40 ${
+                    product.isFeatured
+                      ? "text-warning-500 hover:text-warning-600"
+                      : "text-gray-400 hover:text-brand-500"
+                  }`}
+                  aria-label={product.isFeatured ? "Bỏ nổi bật" : "Gắn cờ nổi bật"}
+                >
+                  <StarIcon className="h-6 w-6" />
+                </button>
+              </Tooltip>
               <Tooltip content="Xóa">
                 <button
                   type="button"
@@ -355,7 +407,14 @@ export default function ProductList() {
         },
       },
     ],
-    [categoryNameById, brandNameById, navigate, handleToggleLock, updateMutation.isPending],
+    [
+      categoryNameById,
+      brandNameById,
+      navigate,
+      handleToggleLock,
+      handleToggleFeatured,
+      updateMutation.isPending,
+    ],
   );
 
   return (
@@ -378,6 +437,16 @@ export default function ProductList() {
             status={status}
             onStatusChange={(value) => {
               setStatus(value);
+              setPage(1);
+            }}
+            isFeatured={isFeatured}
+            onIsFeaturedChange={(value) => {
+              setIsFeatured(value);
+              setPage(1);
+            }}
+            sort={sort}
+            onSortChange={(value) => {
+              setSort(value);
               setPage(1);
             }}
           />
