@@ -111,7 +111,7 @@ export default function ProductFilterBar({
         </div>
       )}
       {onIsFeaturedChange && (
-        <div className="w-44">
+        <div className="w-56">
           <Select
             allowClear
             placeholderColor="gray-700"
