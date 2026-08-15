@@ -40,13 +40,14 @@ export default function InventoryList() {
         <span className="text-sm text-gray-800 dark:text-white/90">{item.productName}</span>
       ),
     },
-    { key: "size", header: "Size", align: "center", render: (item) => item.size },
-    { key: "color", header: "Màu", align: "center", render: (item) => item.color },
-    { key: "sku", header: "SKU", align: "center", render: (item) => item.sku },
+    { key: "size", header: "Size", align: "center", className: "min-w-56", render: (item) => item.size },
+    { key: "color", header: "Màu", align: "center", className: "min-w-56", render: (item) => item.color },
+    { key: "sku", header: "SKU", align: "center", className: "min-w-96", render: (item) => item.sku },
     {
       key: "stock",
       header: "Tồn kho",
       align: "center",
+      className: "min-w-56",
       render: (item) => {
         const badge = getStockLevelBadge(item.stockQuantity, item.lowStockThreshold);
         return (
@@ -63,6 +64,7 @@ export default function InventoryList() {
       key: "actions",
       header: "Thao tác",
       align: "center",
+      className: "min-w-56",
       stickyRight: true,
       render: (item) => (
         <Button variant="outline" onClick={() => setSelectedItem(item)}>

@@ -57,6 +57,7 @@ export default function InventoryHistory() {
       key: "createdAt",
       header: "Thời gian",
       align: "center",
+      className: "min-w-56",
       render: (movement) => formatDateTime(movement.createdAt),
     },
     {
@@ -74,6 +75,7 @@ export default function InventoryHistory() {
       key: "type",
       header: "Loại",
       align: "center",
+      className: "min-w-56",
       render: (movement) => (
         <Badge color={STOCK_MOVEMENT_TYPE_LABEL[movement.type].color}>
           {STOCK_MOVEMENT_TYPE_LABEL[movement.type].label}
@@ -84,6 +86,7 @@ export default function InventoryHistory() {
       key: "quantity",
       header: "Số lượng thay đổi",
       align: "center",
+      className: "min-w-56",
       render: (movement) => (
         <span
           className={
@@ -109,6 +112,7 @@ export default function InventoryHistory() {
       key: "createdBy",
       header: "Người thực hiện",
       align: "center",
+      className: "min-w-56",
       render: (movement) => movement.createdByName,
     },
   ];
