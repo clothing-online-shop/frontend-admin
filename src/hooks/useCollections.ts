@@ -5,11 +5,13 @@ import {
   deleteCollection,
   getCollections,
   updateCollection,
-  type AssignProductsPayload,
-  type CreateCollectionPayload,
-  type GetCollectionsParams,
-  type UpdateCollectionPayload,
-} from "@/lib/collections-api";
+} from "@/lib/api/collections-api";
+import type {
+  AssignProductsPayload,
+  CreateCollectionPayload,
+  GetCollectionsParams,
+  UpdateCollectionPayload,
+} from "@/types/collections-api.types";
 
 const COLLECTIONS_KEY = ["collections"];
 // Khớp PRODUCTS_KEY ở hooks/useProducts.ts — gán sản phẩm cho bộ sưu tập làm đổi field
