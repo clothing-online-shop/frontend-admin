@@ -38,16 +38,6 @@ export async function deleteProduct(id: string): Promise<void> {
   await apiClient.delete(`/products/${id}`);
 }
 
-export async function updateVariantStock(
-  productId: string,
-  variantId: string,
-  stockQuantity: number,
-): Promise<void> {
-  await apiClient.patch(`/products/${productId}/variants/${variantId}/stock`, {
-    stockQuantity,
-  });
-}
-
 export async function assignProductCollections(
   productId: string,
   payload: AssignCollectionsPayload,

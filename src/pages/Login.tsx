@@ -49,6 +49,9 @@ export default function Login() {
 
   const onValid = (values: LoginFormValues) => {
     setServerError(null);
+    // yup.InferType suy ra email/password là string | undefined dù schema đã .required() —
+    // hạn chế của kiểu suy diễn từ yup, không phải field thật sự optional (handleSubmit chỉ
+    // gọi onValid sau khi Yup validate qua, 2 field chắc chắn đã có giá trị).
     mutation.mutate(values as Required<LoginFormValues>);
   };
 

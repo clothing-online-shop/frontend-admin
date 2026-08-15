@@ -173,6 +173,13 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [maxStepReached, setMaxStepReached] = useState(0);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  // Luồng sửa sản phẩm "Lưu" từng bước gọi trigger() chứ không phải handleSubmit(), nên
+  // formState.isSubmitted (RHF chỉ set true qua handleSubmit) không bao giờ true — field lỗi
+  // từ dữ liệu cũ (trước khi có rule validate này) mà user chưa đụng vào sẽ không hiện viền
+  // đỏ/hint dù nút "Lưu" bị disable đúng, khiến user không hiểu vì sao không lưu được. Cờ này
+  // bổ sung thêm 1 điều kiện hiện lỗi nữa cho riêng bước đang xem, không đụng semantics
+  // isDirty/isSubmitted sẵn có (xem lib/form.ts).
+  const [currentStepSaveFailed, setCurrentStepSaveFailed] = useState(false);
 
   const methods = useForm<ProductFormValues>({
     resolver: yupResolver(productSchema),
@@ -203,6 +210,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     // trống — trigger 1 lần khi đổi bước để nút "Tiếp theo"/"Lưu" phản ánh đúng trạng
     // thái ngay từ đầu, không cần đợi user gõ phím mới thấy disable.
     void trigger(currentStepFields);
+    setCurrentStepSaveFailed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
@@ -311,7 +319,11 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     if (!product) return;
     const fields = STEPS[currentStep].fields;
     const valid = fields.length === 0 ? true : await trigger(fields);
-    if (!valid) return;
+    if (!valid) {
+      setCurrentStepSaveFailed(true);
+      return;
+    }
+    setCurrentStepSaveFailed(false);
 
     const values = castCurrentValues();
 
@@ -387,9 +399,15 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
               step component — chỉ CKEditor (contenteditable, không phải form control chuẩn)
               cần tự truyền prop disabled riêng, xem ProductGeneralInfoStep. */}
           <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
-            {currentStep === 0 && <ProductGeneralInfoStep viewOnly={viewOnly} />}
-            {currentStep === 1 && <ProductVariantsStep viewOnly={viewOnly} />}
-            {currentStep === 2 && <ProductImagesStep viewOnly={viewOnly} />}
+            {currentStep === 0 && (
+              <ProductGeneralInfoStep viewOnly={viewOnly} saveAttempted={currentStepSaveFailed} />
+            )}
+            {currentStep === 1 && (
+              <ProductVariantsStep viewOnly={viewOnly} saveAttempted={currentStepSaveFailed} />
+            )}
+            {currentStep === 2 && (
+              <ProductImagesStep viewOnly={viewOnly} saveAttempted={currentStepSaveFailed} />
+            )}
             {currentStep === COLLECTIONS_STEP_INDEX && (
               <ProductCollectionsStep viewOnly={viewOnly} />
             )}

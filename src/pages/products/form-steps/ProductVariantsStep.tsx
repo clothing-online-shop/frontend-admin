@@ -10,6 +10,9 @@ import { visibleFieldError } from "@/lib/form";
 
 interface ProductVariantsStepProps {
   viewOnly?: boolean;
+  // true khi user vừa bấm "Lưu" ở bước này (luồng sửa) và validate thất bại — xem
+  // ProductGeneralInfoStep.tsx để biết lý do cần cờ này thay vì chỉ dùng isSubmitted.
+  saveAttempted?: boolean;
 }
 
 // Độ rộng dùng chung giữa hàng tiêu đề và từng hàng input — đổi ở 1 chỗ là khớp lại
@@ -22,15 +25,19 @@ const COLUMN_WIDTH = {
   stock: "w-24",
 };
 
-export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepProps) {
+export function ProductVariantsStep({
+  viewOnly = false,
+  saveAttempted = false,
+}: ProductVariantsStepProps) {
   const {
     register,
     control,
     getValues,
     setValue,
     trigger,
-    formState: { errors, dirtyFields, isSubmitted },
+    formState: { errors, dirtyFields, isSubmitted: isSubmittedFromForm },
   } = useFormContext<ProductFormValues>();
+  const isSubmitted = isSubmittedFromForm || saveAttempted;
   const { fields, append, remove } = useFieldArray({ control, name: "variants" });
 
   function suggestSku(index: number) {
@@ -51,28 +58,29 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
   return (
     <ComponentCard title="Biến thể (size / màu)" required={true}>
       <div className="flex flex-col gap-3">
-        {variantsError && <p className="text-base text-form-error">{variantsError}</p>}
+        {variantsError && <p className="text-xs text-form-error">{variantsError}</p>}
 
-        <p className="text-base text-gray-700 font-bold dark:text-gray-500">
+        <p className="text-xs text-gray-700 font-bold dark:text-gray-500">
           Bỏ trống SKU để tự sinh theo tên sản phẩm + size + màu. Bỏ trống Giá bán để dùng giá
-          gốc của sản phẩm.
+          gốc của sản phẩm. Tồn kho chỉ nhập được lúc thêm biến thể mới — biến thể đã có, vào
+          trang Tồn kho để nhập/xuất/điều chỉnh (luôn có lịch sử, không sửa trực tiếp ở đây).
         </p>
 
         {fields.length > 0 && (
           <div className="flex items-center gap-3 px-1">
-            <span className={`${COLUMN_WIDTH.size} text-base font-medium text-gray-700 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.size} text-xs font-medium text-gray-700 dark:text-gray-400`}>
               Size <span className="text-error-500">*</span>
             </span>
-            <span className={`${COLUMN_WIDTH.color} text-base font-medium text-gray-700 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.color} text-xs font-medium text-gray-700 dark:text-gray-400`}>
               Màu sắc <span className="text-error-500">*</span>
             </span>
-            <span className={`${COLUMN_WIDTH.sku} text-base font-medium text-gray-700 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.sku} text-xs font-medium text-gray-700 dark:text-gray-400`}>
               SKU
             </span>
-            <span className={`${COLUMN_WIDTH.price} text-base font-medium text-gray-700 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.price} text-xs font-medium text-gray-700 dark:text-gray-400`}>
               Giá bán
             </span>
-            <span className={`${COLUMN_WIDTH.stock} text-base font-medium text-gray-700 dark:text-gray-400`}>
+            <span className={`${COLUMN_WIDTH.stock} text-xs font-medium text-gray-700 dark:text-gray-400`}>
               Tồn kho
             </span>
           </div>
@@ -83,6 +91,10 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
           const colorField = register(`variants.${index}.color`);
           const skuField = register(`variants.${index}.sku`);
           const rowLabel = `biến thể dòng ${index + 1}`;
+          // Có id => biến thể đã lưu ở BE — BE giờ bỏ qua stockQuantity gửi kèm khi sửa
+          // biến thể đã có (xem products.service.ts syncVariants()), khoá input ở đây cho
+          // khớp, tránh admin tưởng sửa được nhưng lưu xong tồn kho vẫn không đổi.
+          const isExistingVariant = !!getValues(`variants.${index}.id`);
 
           return (
             <div key={field.id} className="flex flex-wrap items-end gap-3">
@@ -169,7 +181,12 @@ export function ProductVariantsStep({ viewOnly = false }: ProductVariantsStepPro
                   type="number"
                   min="0"
                   placeholder="0"
-                  aria-label={`Tồn kho ${rowLabel}`}
+                  aria-label={
+                    isExistingVariant
+                      ? `Tồn kho ${rowLabel} (chỉ xem — sửa tại trang Tồn kho)`
+                      : `Tồn kho ${rowLabel}`
+                  }
+                  disabled={isExistingVariant}
                   {...register(`variants.${index}.stockQuantity`)}
                 />
               </div>

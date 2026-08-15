@@ -10,15 +10,22 @@ import { visibleFieldError } from "@/lib/form";
 
 interface ProductImagesStepProps {
   viewOnly?: boolean;
+  // true khi user vừa bấm "Lưu" ở bước này (luồng sửa) và validate thất bại — xem
+  // ProductGeneralInfoStep.tsx để biết lý do cần cờ này thay vì chỉ dùng isSubmitted.
+  saveAttempted?: boolean;
 }
 
-export function ProductImagesStep({ viewOnly = false }: ProductImagesStepProps) {
+export function ProductImagesStep({
+  viewOnly = false,
+  saveAttempted = false,
+}: ProductImagesStepProps) {
   const {
     control,
     getValues,
     setValue,
-    formState: { errors, dirtyFields, isSubmitted },
+    formState: { errors, dirtyFields, isSubmitted: isSubmittedFromForm },
   } = useFormContext<ProductFormValues>();
+  const isSubmitted = isSubmittedFromForm || saveAttempted;
 
   const images = useWatch({ control, name: "images" }) ?? [];
   const variants = useWatch({ control, name: "variants" }) ?? [];
