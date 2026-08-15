@@ -48,7 +48,9 @@ function collectSubtreeIds(node: CategoryNode, out: Set<string>): void {
   node.children.forEach((child) => collectSubtreeIds(child, out));
 }
 
-function findNode(roots: CategoryNode[], id: string): CategoryNode | null {
+// Dùng chung ở mọi nơi cần tra 1 node theo id trong cây CategoryNode (CategorySelect.tsx,
+// CategoryList.tsx) — trước đây mỗi nơi tự viết lại đúng vòng lặp DFS này.
+export function findNode(roots: CategoryNode[], id: string): CategoryNode | null {
   for (const node of roots) {
     if (node.id === id) return node;
     const found = findNode(node.children, id);

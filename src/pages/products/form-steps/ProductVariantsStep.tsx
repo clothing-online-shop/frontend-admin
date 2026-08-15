@@ -55,6 +55,30 @@ export function ProductVariantsStep({
     isSubmitted,
   );
 
+  // size/color dùng chung 1 kiểu wiring: onChange tự trigger("variants") lại (rule
+  // "no-duplicate-variants" gắn trên field mảng cha, không tự re-validate theo field con —
+  // xem comment gốc trước đây ở onChange của size), onBlur tự gợi ý SKU, error tra theo
+  // đúng field. Trước đây lặp lại y hệt cho từng field, chỉ khác mỗi field key.
+  function variantFieldProps(index: number, key: "size" | "color") {
+    const field = register(`variants.${index}.${key}`);
+    return {
+      ...field,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        field.onChange(e);
+        void trigger("variants");
+      },
+      onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+        field.onBlur(e);
+        suggestSku(index);
+      },
+      error: !!visibleFieldError(
+        errors.variants?.[index]?.[key]?.message,
+        dirtyFields.variants?.[index]?.[key],
+        isSubmitted,
+      ),
+    };
+  }
+
   return (
     <ComponentCard title="Biến thể (size / màu)" required={true}>
       <div className="flex flex-col gap-3">
@@ -87,8 +111,6 @@ export function ProductVariantsStep({
         )}
 
         {fields.map((field, index) => {
-          const sizeField = register(`variants.${index}.size`);
-          const colorField = register(`variants.${index}.color`);
           const skuField = register(`variants.${index}.sku`);
           const rowLabel = `biến thể dòng ${index + 1}`;
           // Có id => biến thể đã lưu ở BE — BE giờ bỏ qua stockQuantity gửi kèm khi sửa
@@ -102,50 +124,14 @@ export function ProductVariantsStep({
                 <Input
                   placeholder="M"
                   aria-label={`Size ${rowLabel}`}
-                  {...sizeField}
-                  onChange={(e) => {
-                    sizeField.onChange(e);
-                    // Rule "no-duplicate-variants" ở product.schema.ts gắn trên field
-                    // "variants" (mảng), không phải "variants.N.size" — RHF mode "onChange"
-                    // chỉ tự re-validate đúng field vừa đổi, không tự lan sang field cha
-                    // dạng mảng nên lỗi trùng lặp không tự mất dù đã sửa đúng. Gọi trigger()
-                    // tường minh để yêu cầu RHF chạy lại đúng rule đó (không phải tự viết
-                    // validate mới, vẫn dùng lại Yup schema).
-                    void trigger("variants");
-                  }}
-                  onBlur={(e) => {
-                    sizeField.onBlur(e);
-                    suggestSku(index);
-                  }}
-                  error={
-                    !!visibleFieldError(
-                      errors.variants?.[index]?.size?.message,
-                      dirtyFields.variants?.[index]?.size,
-                      isSubmitted,
-                    )
-                  }
+                  {...variantFieldProps(index, "size")}
                 />
               </div>
               <div className={COLUMN_WIDTH.color}>
                 <Input
                   placeholder="Đen"
                   aria-label={`Màu sắc ${rowLabel}`}
-                  {...colorField}
-                  onChange={(e) => {
-                    colorField.onChange(e);
-                    void trigger("variants");
-                  }}
-                  onBlur={(e) => {
-                    colorField.onBlur(e);
-                    suggestSku(index);
-                  }}
-                  error={
-                    !!visibleFieldError(
-                      errors.variants?.[index]?.color?.message,
-                      dirtyFields.variants?.[index]?.color,
-                      isSubmitted,
-                    )
-                  }
+                  {...variantFieldProps(index, "color")}
                 />
               </div>
               <div className={COLUMN_WIDTH.sku}>

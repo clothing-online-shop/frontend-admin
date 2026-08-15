@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { StockMovement, StockMovementType } from "@/types/shared-types";
 import { useStockHistory } from "@/hooks/useInventory";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -42,11 +42,15 @@ export default function InventoryHistory() {
   // trang này bằng cách so khớp phía client trên trang dữ liệu đang có, chấp nhận chỉ lọc
   // trong phạm vi 1 trang thay vì toàn bộ lịch sử (đủ dùng, tránh phải thêm search vào BE
   // cho 1 tính năng phụ chưa ai yêu cầu rõ — YAGNI).
-  const filteredRows = (data?.data ?? []).filter((movement) => {
-    if (!search) return true;
-    const haystack = `${movement.productName} ${movement.sku}`.toLowerCase();
-    return haystack.includes(search.toLowerCase());
-  });
+  const filteredRows = useMemo(
+    () =>
+      (data?.data ?? []).filter((movement) => {
+        if (!search) return true;
+        const haystack = `${movement.productName} ${movement.sku}`.toLowerCase();
+        return haystack.includes(search.toLowerCase());
+      }),
+    [data, search],
+  );
 
   const columns: DataTableColumn<StockMovement>[] = [
     {

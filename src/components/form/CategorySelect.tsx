@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import type { CategoryNode } from "@/types/shared-types";
+import { findNode } from "@/lib/categoryTree";
 import { useCategoryTree } from "@/hooks/useCategories";
 import { useSelect } from "@/hooks/useSelect";
 import { useMountTransition } from "@/hooks/useMountTransition";
@@ -35,15 +37,6 @@ function flattenTree(nodes: CategoryNode[], depth = 0): FlatEntry[] {
   ]);
 }
 
-function findNode(nodes: CategoryNode[], id: string): CategoryNode | null {
-  for (const node of nodes) {
-    if (node.id === id) return node;
-    const found = findNode(node.children, id);
-    if (found) return found;
-  }
-  return null;
-}
-
 // Chọn 1 danh mục — dùng cho cả "Danh mục" của sản phẩm (ProductGeneralInfoStep.tsx) lẫn
 // "Danh mục cha" khi thêm/sửa danh mục (CategoryFormModal.tsx). Thay pattern cũ "— " lặp
 // theo depth (khó đọc, trông như lỗi hiển thị) bằng thụt lề thật + icon + độ đậm chữ phân
@@ -66,9 +59,15 @@ export default function CategorySelect({
   excludeId,
 }: CategorySelectProps) {
   const { data: tree } = useCategoryTree();
-  const roots = tree ?? [];
-  const entries = flattenTree(roots).filter(({ node }) => node.id !== excludeId);
-  const selectedNode = value ? findNode(roots, value) : null;
+  const roots = useMemo(() => tree ?? [], [tree]);
+  // Component này nằm trong Controller của react-hook-form (mode "onChange") nên re-render
+  // ở gần như mọi keystroke của các field khác cùng form — nếu không memo, mỗi lần đó đều
+  // duyệt lại toàn bộ cây danh mục chỉ để vẽ lại 1 dropdown đang đóng.
+  const entries = useMemo(
+    () => flattenTree(roots).filter(({ node }) => node.id !== excludeId),
+    [roots, excludeId],
+  );
+  const selectedNode = useMemo(() => (value ? findNode(roots, value) : null), [roots, value]);
 
   const { isOpen, containerRef, toggle, close } = useSelect();
   const { shouldRender: shouldRenderPanel, isVisible: isPanelVisible } = useMountTransition(isOpen);

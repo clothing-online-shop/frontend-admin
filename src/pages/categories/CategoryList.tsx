@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { CategoryNode } from "@/types/shared-types";
+import { findNode } from "@/lib/categoryTree";
 import {
   useCategoryTree,
   useDeleteCategory,
@@ -37,15 +38,6 @@ function cloneTree(nodes: CategoryTreeNode[]): CategoryTreeNode[] {
     ...node,
     children: node.children ? cloneTree(node.children) : undefined,
   }));
-}
-
-function findNodeById(nodes: CategoryNode[], id: string): CategoryNode | null {
-  for (const node of nodes) {
-    if (node.id === id) return node;
-    const found = findNodeById(node.children, id);
-    if (found) return found;
-  }
-  return null;
 }
 
 // Giữ lại danh mục cha khi chỉ có danh mục con khớp tìm kiếm, để không mất
@@ -131,7 +123,7 @@ export default function CategoryList() {
     if (data) setTreeData(toTreeData(data));
   }, [data]);
 
-  const editingNode = data && editingId ? findNodeById(data, editingId) : null;
+  const editingNode = data && editingId ? findNode(data, editingId) : null;
   const filteredTreeData = filterTreeByName(treeData, search);
 
   function handleAdd() {

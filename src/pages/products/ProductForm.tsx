@@ -17,7 +17,7 @@ import type {
 import { getErrorMessage } from "@/lib/error";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
-import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import DeactivateCollectionsConfirmModal from "./DeactivateCollectionsConfirmModal";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { productSchema, type ProductFormValues } from "@/schemas/product.schema";
@@ -464,21 +464,11 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
         </div>
       </div>
 
-      <ConfirmModal
+      <DeactivateCollectionsConfirmModal
         open={confirmDeactivate}
+        collections={product?.collections ?? []}
         onClose={() => setConfirmDeactivate(false)}
         onConfirm={handleConfirmDeactivate}
-        title="Thông báo"
-        description={
-          product
-            ? `Sản phẩm đang thuộc bộ sưu tập: ${product.collections
-                .map((c) => c.name)
-                .join(", ")} — đổi trạng thái sẽ tự động gỡ sản phẩm khỏi các bộ sưu tập này. Bạn có chắc chắn muốn tiếp tục?`
-            : ""
-        }
-        confirmText="Đồng ý"
-        cancelText="Hủy"
-        danger
       />
     </FormProvider>
   );

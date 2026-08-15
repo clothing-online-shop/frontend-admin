@@ -16,18 +16,20 @@ interface UseCategoryCheckboxTreeResult {
 /**
  * Logic cây checkbox 3 trạng thái cho danh mục. Tự giữ state "thô" nội bộ (Set id đã
  * từng bấm trực tiếp ở đúng node đó — xem computeCategoryTreeStates.ts vì sao cần giữ
- * riêng, không suy hoàn toàn từ dưới lên) — CHỈ khởi tạo 1 lần từ `initialValue` (giống
+ * riêng, không suy hoàn toàn từ dưới lên) — CHỈ khởi tạo 1 lần từ `defaultValue` (giống
  * input uncontrolled với defaultValue), không đồng bộ lại mỗi khi prop đổi. Lý do: mỗi
  * lần toggle đều gọi `onChange` với danh sách id "sạch" (chỉ node thực sự checked) để nơi
  * gọi dùng cho API lọc sản phẩm — nếu đồng bộ lại state thô từ giá trị "sạch" đó mỗi lần
  * render thì cờ riêng của node cha đang indeterminate sẽ bị xoá mất ngay sau click đầu.
+ * Nơi gọi muốn đổi `defaultValue` từ ngoài (vd nút "Xoá bộ lọc") phải tự remount component
+ * bọc hook này (`key` đổi theo giá trị mới), không chỉ đổi prop — hook sẽ không tự nhận.
  */
 export function useCategoryCheckboxTree(
   tree: CategoryNode[],
-  initialValue: string[],
+  defaultValue: string[],
   onChange: (ids: string[]) => void,
 ): UseCategoryCheckboxTreeResult {
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set(initialValue));
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set(defaultValue));
 
   const states = useMemo(
     () => computeCategoryTreeStates(tree, checkedIds),

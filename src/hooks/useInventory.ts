@@ -38,7 +38,11 @@ export function useUpdateLowStockThreshold() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (value: number) => updateLowStockThreshold(value),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] }),
+    // Chỉ đổi ngưỡng cảnh báo — không đụng gì tới danh sách/lịch sử kho, invalidate đúng
+    // key "settings" thay vì cả prefix [INVENTORY_KEY] (sẽ kéo theo refetch thừa cả 2 query
+    // phân trang kia).
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "settings"] }),
   });
 }
 
@@ -48,7 +52,10 @@ export function useImportStock() {
     mutationFn: ({ variantId, payload }: { variantId: string; payload: ImportStockPayload }) =>
       importStock(variantId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] });
+      // Đổi tồn kho — chỉ đụng danh sách tồn kho + lịch sử, không đụng "settings" (ngưỡng
+      // cảnh báo không đổi khi nhập/xuất/điều chỉnh).
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "list"] });
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "history"] });
       queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
     },
   });
@@ -60,7 +67,8 @@ export function useAdjustStock() {
     mutationFn: ({ variantId, payload }: { variantId: string; payload: AdjustStockPayload }) =>
       adjustStock(variantId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "list"] });
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "history"] });
       queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
     },
   });

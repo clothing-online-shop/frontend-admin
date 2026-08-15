@@ -1,4 +1,5 @@
 import FieldLabel from "@/components/form/FieldLabel";
+import { formatThousands } from "@/lib/format";
 
 interface CurrencyInputProps {
   id?: string;
@@ -23,10 +24,6 @@ interface CurrencyInputProps {
   className?: string;
 }
 
-function formatThousands(digits: string): string {
-  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
 export default function CurrencyInput({
   id,
   label,
@@ -41,7 +38,7 @@ export default function CurrencyInput({
   hint,
   className = "",
 }: CurrencyInputProps) {
-  const displayValue = value !== undefined && !Number.isNaN(value) ? formatThousands(String(value)) : "";
+  const displayValue = value !== undefined && !Number.isNaN(value) ? formatThousands(value) : "";
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "");

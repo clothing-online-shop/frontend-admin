@@ -6,7 +6,7 @@ import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { formatDate } from "@/lib/format";
-import { BANNER_STATUS_LABEL, BANNER_STATUS_COLOR } from "@/lib/bannerStatus";
+import { BANNER_STATUS_LABEL } from "@/lib/bannerStatus";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Badge from "@/components/ui/badge/Badge";
@@ -113,8 +113,8 @@ export default function BannerList() {
         header: "Trạng thái",
         align: "center",
         render: (banner) => (
-          <Badge color={BANNER_STATUS_COLOR[banner.status]}>
-            {BANNER_STATUS_LABEL[banner.status]}
+          <Badge color={BANNER_STATUS_LABEL[banner.status].color}>
+            {BANNER_STATUS_LABEL[banner.status].label}
           </Badge>
         ),
       },

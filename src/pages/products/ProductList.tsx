@@ -21,6 +21,7 @@ import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } f
  import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
 import ProductFilterBar from "@/components/common/ProductFilterBar";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
+import DeactivateCollectionsConfirmModal from "./DeactivateCollectionsConfirmModal";
 
 // description lưu dạng HTML từ RichTextEditor — bảng danh sách chỉ cần xem nhanh
 // phần chữ, không render HTML thật (tránh vỡ layout/XSS nếu dùng dangerouslySetInnerHTML).
@@ -443,21 +444,11 @@ export default function ProductList() {
         danger
       />
 
-      <ConfirmModal
+      <DeactivateCollectionsConfirmModal
         open={deactivateTarget !== null}
+        collections={deactivateTarget?.collections ?? []}
         onClose={() => setDeactivateTarget(null)}
         onConfirm={handleConfirmDeactivate}
-        title="Thông báo"
-        description={
-          deactivateTarget
-            ? `Sản phẩm đang thuộc bộ sưu tập: ${deactivateTarget.collections
-                .map((c) => c.name)
-                .join(", ")} — khóa sản phẩm sẽ tự động gỡ khỏi các bộ sưu tập này. Bạn có chắc chắn muốn tiếp tục?`
-            : ""
-        }
-        confirmText="Đồng ý"
-        cancelText="Hủy"
-        danger
       />
     </div>
   );
