@@ -12,6 +12,7 @@ import {
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
+import FieldLabel from "@/components/form/FieldLabel";
 import Spinner from "@/components/ui/spinner/Spinner";
 import SegmentedControl from "@/components/common/SegmentedControl";
 
@@ -119,13 +120,11 @@ export default function StockMovementModal({ open, onClose, item }: StockMovemen
 
         {(mode === "IMPORT" || mode === "EXPORT") && (
           <div className="mb-4">
-            <label
+            <FieldLabel
               htmlFor="sm-quantity"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              {mode === "IMPORT" ? "Số lượng nhập" : "Số lượng xuất"}{" "}
-              <span className="text-error-500">*</span>
-            </label>
+              label={mode === "IMPORT" ? "Số lượng nhập" : "Số lượng xuất"}
+              required
+            />
             <Input
               id="sm-quantity"
               type="number"
@@ -138,12 +137,7 @@ export default function StockMovementModal({ open, onClose, item }: StockMovemen
 
         {mode === "ADJUSTMENT" && (
           <div className="mb-4">
-            <label
-              htmlFor="sm-actual"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Số tồn thực tế <span className="text-error-500">*</span>
-            </label>
+            <FieldLabel htmlFor="sm-actual" label="Số tồn thực tế" required />
             <Input
               id="sm-actual"
               type="number"
@@ -162,22 +156,12 @@ export default function StockMovementModal({ open, onClose, item }: StockMovemen
 
         {mode === "IMPORT" ? (
           <div className="mb-2">
-            <label
-              htmlFor="sm-note"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Ghi chú
-            </label>
+            <FieldLabel htmlFor="sm-note" label="Ghi chú" />
             <Input id="sm-note" {...register("note")} />
           </div>
         ) : (
           <div className="mb-2">
-            <label
-              htmlFor="sm-reason"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Lý do <span className="text-error-500">*</span>
-            </label>
+            <FieldLabel htmlFor="sm-reason" label="Lý do" required />
             <Input
               id="sm-reason"
               {...register("reason")}

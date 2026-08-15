@@ -76,7 +76,7 @@ export default function BrandList() {
         key: "name",
         header: "Tên",
         align: "center",
-        className: "min-w-96",
+        className: "min-w-72",
         render: (brand) => (
           <span className="text-sm text-gray-800 dark:text-white/90">{brand.name}</span>
         ),
@@ -85,7 +85,7 @@ export default function BrandList() {
         key: "origin",
         header: "Xuất xứ",
         align: "center",
-        className: "min-w-40",
+        className: "min-w-72",
         render: (brand) => (
           <span className="text-sm text-gray-700 dark:text-gray-300">{brand.origin ?? "—"}</span>
         ),

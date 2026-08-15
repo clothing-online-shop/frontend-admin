@@ -30,8 +30,12 @@ src/
 ├── lib/
 │   ├── api/               # api-client.ts + <feature>-api.ts — chỉ hàm gọi backend, không
 │   │                      #   khai type ở đây (xem types/ ở trên)
-│   ├── error.ts, format.ts, slug.ts, roles.ts, permissions.ts
-└── store/                 # zustand store (auth-store.ts...)
+│   ├── error.ts, format.ts, slug.ts, roles.ts, permissions.ts, pagination.ts, form.ts,
+│   │   errorCodes.ts, categoryTree.ts — và các file <feature>Status.ts (bannerStatus.ts,
+│   │   collectionStatus.ts, inventoryStatus.ts, productStatus.ts: map trạng thái →
+│   │   {label, color} dùng chung giữa badge và filter dropdown của từng feature). Danh
+│   │   sách này chỉ là ví dụ, không cần cập nhật CLAUDE.md mỗi khi thêm file mới ở lib/.
+└── store/                 # zustand store (auth-store.ts, breadcrumb-store.ts...)
 ```
 
 - Thêm page mới → tạo file trong `pages/<feature>/`, khai báo route trong `routes/index.tsx`, không tự tạo router riêng lẻ trong component.
@@ -56,7 +60,7 @@ src/
 
 ## Phân quyền
 
-- `PrivateRoute` (`routes/PrivateRoute.tsx`) chặn theo `user.role !== 'ADMIN'`. Khi thêm role mới (vd nhân viên kho, marketing — xem mục 4.3 kế hoạch dự án), mở rộng điều kiện ở đây, không kiểm tra role rải rác trong từng page.
+- `PrivateRoute` (`routes/PrivateRoute.tsx`) chặn qua `isAdminPanelRole(user.role)` (`lib/roles.ts`), không phải so sánh cứng `=== 'ADMIN'` — không kiểm tra role rải rác trong từng page. `AdminRole` hiện gồm `ADMIN`/`WAREHOUSE_STAFF`/`MARKETING`, nhưng 2 role sau là **mock ở FE** — backend hiện chỉ thật sự phát hành `CUSTOMER`/`ADMIN` (xem comment trong `roles.ts`), nên trên thực tế chỉ `ADMIN` đăng nhập được cho tới khi BE trả các role này qua `user.role`.
 - Ẩn/hiện menu item trong `AdminLayout` theo role khi có nhiều role — không chỉ dựa vào chặn route, tránh hiển thị mục admin không dùng được.
 
 ## Breadcrumb
@@ -112,6 +116,7 @@ src/
 ## Bắt đầu tính năng mới
 
 - Trước khi code: `git checkout develop && git pull` để lấy code mới nhất, sau đó tạo branch mới từ `develop` với tên phù hợp tính năng đang làm (`feature/<mo-ta-ngan>`, `fix/<mo-ta-ngan>`) — không code thẳng trên `develop`.
+- Trước khi viết 1 hàm/component mới: rà lại codebase xem đã có sẵn cái làm việc tương tự chưa (grep trong `lib/`, `hooks/`, `components/common/`, `components/form/`) — có thì dùng lại, không viết mới. Trong lúc code, nếu thấy 1 hàm/component sắp viết ra nhiều khả năng còn dùng lại ở màn khác (không phải chỉ đoán, mà thấy rõ lý do) thì viết thẳng vào `lib/`/`hooks/`/`components/common/` ngay từ đầu, không đợi phát hiện trùng lặp rồi mới refactor sau (xem thêm rule "logic lặp lại ≥ 2 nơi" ở mục Clean code).
 - Sau khi code xong, trước khi báo hoàn thành/mở PR: chủ động tự review lại toàn bộ diff theo đúng quy ước trong `CLAUDE.md` này và `README.md` của repo — không chỉ dựa vào lint/build pass.
 
 ## Trước khi mở PR

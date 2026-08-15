@@ -66,6 +66,7 @@ export default function CollectionList() {
         key: "banner",
         header: "Banner",
         align: "center",
+        className: "min-w-40",
         render: (collection) =>
           collection.banner ? (
             // Chỉ cố định chiều cao, chiều rộng auto theo đúng tỉ lệ ảnh banner thật
@@ -80,6 +81,8 @@ export default function CollectionList() {
       {
         key: "name",
         header: "Tên",
+        align: "center",
+        className: "min-w-72",
         render: (collection) => (
           <span className="text-sm text-gray-800 dark:text-white/90">{collection.name}</span>
         ),
@@ -88,6 +91,7 @@ export default function CollectionList() {
         key: "time",
         header: "Thời gian",
         align: "center",
+        className: "min-w-56",
         render: (collection) => (
           <div className="flex items-center justify-center gap-2">
             <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -100,6 +104,7 @@ export default function CollectionList() {
         key: "status",
         header: "Trạng thái",
         align: "center",
+        className: "min-w-56",
         render: (collection) => (
           <Badge color={COLLECTION_STATUS_COLOR[collection.status]}>
             {COLLECTION_STATUS_LABEL[collection.status]}
@@ -110,7 +115,7 @@ export default function CollectionList() {
         key: "products",
         header: "Sản phẩm",
         align: "center",
-        className: "min-w-90",
+        className: "min-w-120",
         render: (collection) =>
           collection.products.length > 0 ? (
             <div className="flex flex-wrap justify-center gap-1.5">
