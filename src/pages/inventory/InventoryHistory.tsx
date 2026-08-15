@@ -58,7 +58,7 @@ export default function InventoryHistory() {
     {
       key: "product",
       header: "Sản phẩm / Biến thể",
-      align: "left",
+      align: "center",
       className: "min-w-56",
       render: (movement) => (
         <span className="text-sm text-gray-800 dark:text-white/90">
@@ -95,7 +95,7 @@ export default function InventoryHistory() {
     {
       key: "note",
       header: "Lý do / Ghi chú",
-      align: "left",
+      align: "center",
       className: "min-w-56",
       render: (movement) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">{movement.note ?? "—"}</span>

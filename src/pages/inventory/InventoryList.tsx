@@ -34,7 +34,7 @@ export default function InventoryList() {
     {
       key: "product",
       header: "Sản phẩm",
-      align: "left",
+      align: "center",
       className: "min-w-56",
       render: (item) => (
         <span className="text-sm text-gray-800 dark:text-white/90">{item.productName}</span>
@@ -95,8 +95,8 @@ export default function InventoryList() {
             }}
           />
         </div>
-        <Button variant="outline" onClick={() => navigate("/inventory/history")}>
-          Lịch sử
+        <Button variant="primary" onClick={() => navigate("/inventory/history")}>
+          Lịch sử kho hàng
         </Button>
       </div>
 
