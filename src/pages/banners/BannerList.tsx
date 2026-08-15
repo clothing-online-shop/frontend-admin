@@ -72,129 +72,136 @@ export default function BannerList() {
 
   const columns: DataTableColumn<Banner>[] = [
     {
-        key: "image",
-        header: "Ảnh",
-        align: "center",
-        render: (banner) => (
-          <img src={banner.imageUrl} className="mx-auto h-20 w-auto rounded-md" alt="" />
-        ),
-      },
-      {
-        key: "title",
-        header: "Tiêu đề",
-        render: (banner) => (
-          <span className="text-sm text-gray-800 dark:text-white/90">{banner.title}</span>
-        ),
-      },
-      {
-        key: "linkUrl",
-        header: "Link đích",
-        render: (banner) =>
-          banner.linkUrl ? (
-            <span className="text-sm break-all text-gray-700 dark:text-gray-300">
-              {banner.linkUrl}
-            </span>
-          ) : (
-            <span className="text-sm text-gray-400">—</span>
-          ),
-      },
-      {
-        key: "time",
-        header: "Thời gian",
-        align: "center",
-        render: (banner) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            {formatDate(banner.startDate)} – {formatDate(banner.endDate)}
+      key: "image",
+      header: "Ảnh",
+      align: "center",
+      className: "min-w-40",
+      render: (banner) => (
+        <img src={banner.imageUrl} className="mx-auto h-20 w-auto rounded-md" alt="" />
+      ),
+    },
+    {
+      key: "title",
+      header: "Tiêu đề",
+      align: "center",
+      className: "min-w-72",
+      render: (banner) => (
+        <span className="text-sm text-gray-800 dark:text-white/90">{banner.title}</span>
+      ),
+    },
+    {
+      key: "linkUrl",
+      header: "Link đích",
+      align: "center",
+      className: "min-w-72",
+      render: (banner) =>
+        banner.linkUrl ? (
+          <span className="text-sm break-all text-gray-700 dark:text-gray-300">
+            {banner.linkUrl}
           </span>
+        ) : (
+          <span className="text-sm text-gray-400">—</span>
         ),
-      },
-      {
-        key: "status",
-        header: "Trạng thái",
-        align: "center",
-        render: (banner) => (
-          <Badge color={BANNER_STATUS_LABEL[banner.status].color}>
-            {BANNER_STATUS_LABEL[banner.status].label}
-          </Badge>
-        ),
-      },
-      {
-        key: "order",
-        header: "Thứ tự",
-        align: "center",
-        render: (banner) => {
-          const index = banners.findIndex((item) => item.id === banner.id);
-          return (
-            <div className="flex items-center justify-center gap-1">
-              <button
-                type="button"
-                disabled={index <= 0}
-                onClick={() => handleMove(index, -1)}
-                className="flex h-8 w-8 items-center justify-center text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-30"
-                aria-label="Đưa banner lên trên"
-              >
-                <AngleUpIcon className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                disabled={index === -1 || index >= banners.length - 1}
-                onClick={() => handleMove(index, 1)}
-                className="flex h-8 w-8 items-center justify-center text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-30"
-                aria-label="Đưa banner xuống dưới"
-              >
-                <AngleDownIcon className="h-5 w-5" />
-              </button>
-            </div>
-          );
-        },
-      },
-      {
-        key: "actions",
-        header: "Thao tác",
-        className: "min-w-24",
-        stickyRight: true,
-        render: (banner) => (
-          <div className="flex items-center justify-center gap-3">
-            <Tooltip content="Sửa">
-              <button
-                type="button"
-                onClick={() => openEdit(banner)}
-                className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-                aria-label="Sửa banner"
-              >
-                <PencilIcon className="h-6 w-6" />
-              </button>
-            </Tooltip>
+    },
+    {
+      key: "time",
+      header: "Thời gian",
+      align: "center",
+      className: "min-w-60",
+
+      render: (banner) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">
+          {formatDate(banner.startDate)} – {formatDate(banner.endDate)}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "Trạng thái",
+      align: "center",
+      className: "min-w-40",
+
+      render: (banner) => (
+        <Badge color={BANNER_STATUS_LABEL[banner.status].color}>
+          {BANNER_STATUS_LABEL[banner.status].label}
+        </Badge>
+      ),
+    },
+    {
+      key: "order",
+      header: "Thứ tự",
+      align: "center",
+      className: "min-w-40",
+
+      render: (banner) => {
+        const index = banners.findIndex((item) => item.id === banner.id);
+        return (
+          <div className="flex items-center justify-center gap-1">
             <button
               type="button"
-              onClick={() => setDeleteTarget(banner)}
-              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
-              aria-label="Xóa banner"
+              disabled={index <= 0}
+              onClick={() => handleMove(index, -1)}
+              className="flex h-8 w-8 items-center justify-center text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Đưa banner lên trên"
             >
-              <TrashBinIcon className="h-6 w-6" />
+              <AngleUpIcon className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              disabled={index === -1 || index >= banners.length - 1}
+              onClick={() => handleMove(index, 1)}
+              className="flex h-8 w-8 items-center justify-center text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Đưa banner xuống dưới"
+            >
+              <AngleDownIcon className="h-5 w-5" />
             </button>
           </div>
-        ),
+        );
       },
+    },
+    {
+      key: "actions",
+      header: "Thao tác",
+      className: "min-w-24",
+      stickyRight: true,
+      render: (banner) => (
+        <div className="flex items-center justify-center gap-3">
+          <Tooltip content="Sửa">
+            <button
+              type="button"
+              onClick={() => openEdit(banner)}
+              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+              aria-label="Sửa banner"
+            >
+              <PencilIcon className="h-6 w-6" />
+            </button>
+          </Tooltip>
+          <button
+            type="button"
+            onClick={() => setDeleteTarget(banner)}
+            className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
+            aria-label="Xóa banner"
+          >
+            <TrashBinIcon className="h-6 w-6" />
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
     <div className="flex h-full flex-col">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
-          Banner trang chủ
-        </h3>
+        <div className="w-96">
+          <Input
+            placeholder="Tìm theo tiêu đề banner"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </div>
         <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
           Thêm banner
         </Button>
-      </div>
-
-      <div className="mb-4 w-65">
-        <Input
-          placeholder="Tìm theo tiêu đề banner"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
       </div>
 
       <div className="flex flex-1 flex-col rounded-2xl bg-white">
