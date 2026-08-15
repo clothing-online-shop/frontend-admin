@@ -127,6 +127,9 @@ export default function InventoryHistory() {
             options={TYPE_OPTIONS}
             value={type}
             onChange={(value) => {
+              // Select dùng chung chỉ nhận option.value dạng string — type thật vẫn là
+              // StockMovementType, ép qua lại đúng ở ranh giới UI này (khớp pattern
+              // ProductFilterBar.tsx dùng cho status).
               setType(value as StockMovementType | undefined);
               setPage(1);
             }}

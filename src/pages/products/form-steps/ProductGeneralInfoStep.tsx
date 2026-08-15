@@ -15,15 +15,23 @@ import FieldLabel from "@/components/form/FieldLabel";
 
 interface ProductGeneralInfoStepProps {
   viewOnly?: boolean;
+  // true khi user vừa bấm "Lưu" ở bước này (luồng sửa) và validate thất bại — ORed vào
+  // isSubmitted để hiện lỗi field dù chưa dirty, vì handleSaveStep() dùng trigger() nên
+  // formState.isSubmitted của RHF không tự bật (chỉ handleSubmit() mới bật). Xem ProductForm.tsx.
+  saveAttempted?: boolean;
 }
 
-export function ProductGeneralInfoStep({ viewOnly = false }: ProductGeneralInfoStepProps) {
+export function ProductGeneralInfoStep({
+  viewOnly = false,
+  saveAttempted = false,
+}: ProductGeneralInfoStepProps) {
   const {
     register,
     control,
     setValue,
-    formState: { errors, dirtyFields, isSubmitted },
+    formState: { errors, dirtyFields, isSubmitted: isSubmittedFromForm },
   } = useFormContext<ProductFormValues>();
+  const isSubmitted = isSubmittedFromForm || saveAttempted;
 
   // Chỉ đồng bộ slug theo đúng thao tác gõ tên (onChange thật của input), không
   // watch("name") + useEffect — vì reset() lúc load sản phẩm để sửa cũng đổi giá trị

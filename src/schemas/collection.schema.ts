@@ -8,7 +8,7 @@ export const collectionSchema = yup.object({
   endDate: yup
     .string()
     .required("Vui lòng chọn ngày kết thúc.")
-    .test("after-start", "Ngày kết thúc phải sau ngày bắt đầu", function (value) {
+    .test("after-start", "Ngày kết thúc phải sau ngày bắt đầu.", function (value) {
       const { startDate } = this.parent as { startDate?: string };
       return !startDate || !value || value >= startDate;
     }),

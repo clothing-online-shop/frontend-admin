@@ -15,6 +15,10 @@ import type {
 } from "@/types/inventory-api.types";
 
 const INVENTORY_KEY = "inventory";
+// Khớp PRODUCTS_KEY ở hooks/useProducts.ts — nhập/điều chỉnh kho đổi stockQuantity đọc
+// được từ cả ProductList (cột "Tồn kho") lẫn ProductForm, thiếu vế này 2 màn đó vẫn hiện
+// số cũ tới khi tự F5 (xem cùng pattern ở useCollections.ts useAssignCollectionProducts).
+const PRODUCTS_KEY = "products";
 
 export function useInventory(params: ListInventoryParams) {
   return useQuery({
@@ -43,7 +47,10 @@ export function useImportStock() {
   return useMutation({
     mutationFn: ({ variantId, payload }: { variantId: string; payload: ImportStockPayload }) =>
       importStock(variantId, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
+    },
   });
 }
 
@@ -52,7 +59,10 @@ export function useAdjustStock() {
   return useMutation({
     mutationFn: ({ variantId, payload }: { variantId: string; payload: AdjustStockPayload }) =>
       adjustStock(variantId, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
+    },
   });
 }
 
