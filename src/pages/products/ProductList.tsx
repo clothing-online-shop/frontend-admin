@@ -13,15 +13,16 @@ import Badge from "@/components/ui/badge/Badge";
 import Pagination from "@/components/ui/pagination/Pagination";
 import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
-import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon, LockIcon, LockOpenIcon, EyeIcon } from "@/icons";
- import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
+import { PlusIcon, StarIcon } from "@/icons";
+import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
 import ProductFilterBar from "@/components/common/ProductFilterBar";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
+import type { ProductSort } from "@/types/products-api.types";
 import DeactivateCollectionsConfirmModal from "./DeactivateCollectionsConfirmModal";
+import ProductRowActions from "./ProductRowActions";
 
 // description lưu dạng HTML từ RichTextEditor — bảng danh sách chỉ cần xem nhanh
 // phần chữ, không render HTML thật (tránh vỡ layout/XSS nếu dùng dangerouslySetInnerHTML).
@@ -41,7 +42,9 @@ export default function ProductList() {
   const [brandId, setBrandId] = useState<string | undefined>(undefined);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [status, setStatus] = useState<ProductStatus | undefined>(undefined);
-   const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const [isFeatured, setIsFeatured] = useState<boolean | undefined>(undefined);
+  const [sort, setSort] = useState<ProductSort | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
@@ -64,7 +67,9 @@ export default function ProductList() {
     brandId,
     categoryIds: categoryIds.length > 0 ? categoryIds.join(",") : undefined,
     status,
-     collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
+    collectionIds: collectionIds.length > 0 ? collectionIds.join(",") : undefined,
+    isFeatured,
+    sort,
     page,
     limit,
   });
@@ -125,6 +130,21 @@ export default function ProductList() {
     await performToggleLock(product);
   }
 
+  const handleToggleFeatured = useCallback(
+    async (product: ProductListItem) => {
+      try {
+        await updateMutation.mutateAsync({
+          id: product.id,
+          payload: { isFeatured: !product.isFeatured },
+        });
+        toast.success(product.isFeatured ? "Đã bỏ nổi bật" : "Đã gắn cờ nổi bật");
+      } catch (error) {
+        toast.error(getErrorMessage(error));
+      }
+    },
+    [updateMutation, toast],
+  );
+
   const columns = useMemo<DataTableColumn<ProductListItem>[]>(
     () => [
       {
@@ -156,6 +176,20 @@ export default function ProductList() {
             {PRODUCT_STATUS_LABEL[product.status].label}
           </Badge>
         ),
+      },
+      {
+        key: "isFeatured",
+        header: "Nổi bật",
+        align: "center",
+        className: "min-w-56",
+        render: (product) =>
+          product.isFeatured ? (
+            <Badge color="warning" startIcon={<StarIcon className="h-3.5 w-3.5" />}>
+              Nổi bật
+            </Badge>
+          ) : (
+            <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+          ),
       },
       {
         key: "name",
@@ -284,117 +318,29 @@ export default function ProductList() {
         align: "center",
         className: "min-w-24",
         stickyRight: true,
-        render: (product) => {
-          const isDraft = product.status === ProductStatus.DRAFT;
-          const lockLabel = isDraft
-            ? "Sửa sản phẩm để xuất bản"
-            : product.status === ProductStatus.ACTIVE
-              ? "Khóa"
-              : "Mở khóa";
-          return (
-            <div className="flex items-center justify-center gap-3">
-              <Tooltip content="Xem">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/products/${product.slug}/view`);
-                  }}
-                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-                  aria-label="Xem sản phẩm"
-                >
-                  <EyeIcon className="h-6 w-6" />
-                </button>
-              </Tooltip>
-              <Tooltip content="Chỉnh sửa">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/products/${product.slug}/edit`);
-                  }}
-                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-                  aria-label="Sửa sản phẩm"
-                >
-                  <PencilIcon className="h-6 w-6" />
-                </button>
-              </Tooltip>
-              <Tooltip content={lockLabel}>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToggleLock(product);
-                  }}
-                  disabled={isDraft || updateMutation.isPending}
-                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400"
-                  aria-label={lockLabel}
-                >
-                  {product.status === ProductStatus.ACTIVE ? (
-                    <LockOpenIcon className="h-6 w-6" />
-                  ) : (
-                    <LockIcon className="h-6 w-6" />
-                  )}
-                </button>
-              </Tooltip>
-              <Tooltip content="Xóa">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteTarget(product);
-                  }}
-                  className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
-                  aria-label="Xóa sản phẩm"
-                >
-                  <TrashBinIcon className="h-6 w-6" />
-                </button>
-              </Tooltip>
-            </div>
-          );
-        },
+        render: (product) => (
+          <ProductRowActions
+            product={product}
+            isUpdating={updateMutation.isPending}
+            onToggleLock={handleToggleLock}
+            onToggleFeatured={(p) => void handleToggleFeatured(p)}
+            onDelete={setDeleteTarget}
+          />
+        ),
       },
     ],
-    [categoryNameById, brandNameById, navigate, handleToggleLock, updateMutation.isPending],
+    [
+      categoryNameById,
+      brandNameById,
+      handleToggleLock,
+      handleToggleFeatured,
+      updateMutation.isPending,
+    ],
   );
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-wrap items-start gap-3">
-          <ProductFilterBar
-            searchInput={searchInput}
-            onSearchInputChange={setSearchInput}
-            brandId={brandId}
-            onBrandIdChange={(value) => {
-              setBrandId(value);
-              setPage(1);
-            }}
-            categoryIds={categoryIds}
-            onCategoryIdsChange={(ids) => {
-              setCategoryIds(ids);
-              setPage(1);
-            }}
-            status={status}
-            onStatusChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-          />
-          <div className="w-48">
-            <MultiSelectFilterDropdown
-              label="Bộ sưu tập"
-              options={collectionOptions}
-              isLoading={isLoadingCollections}
-              emptyMessage="Chưa có bộ sưu tập nào."
-              value={collectionIds}
-              onApply={(ids) => {
-                setCollectionIds(ids);
-                setPage(1);
-              }}
-            />
-          </div>
-        </div>
+      <div className="mb-4 flex justify-end">
         <Button
           variant="primary"
           startIcon={<PlusIcon className="h-6 w-6" />}
@@ -402,6 +348,51 @@ export default function ProductList() {
         >
           Thêm sản phẩm
         </Button>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-start gap-3">
+        <ProductFilterBar
+          searchInput={searchInput}
+          onSearchInputChange={setSearchInput}
+          brandId={brandId}
+          onBrandIdChange={(value) => {
+            setBrandId(value);
+            setPage(1);
+          }}
+          categoryIds={categoryIds}
+          onCategoryIdsChange={(ids) => {
+            setCategoryIds(ids);
+            setPage(1);
+          }}
+          status={status}
+          onStatusChange={(value) => {
+            setStatus(value);
+            setPage(1);
+          }}
+          isFeatured={isFeatured}
+          onIsFeaturedChange={(value) => {
+            setIsFeatured(value);
+            setPage(1);
+          }}
+          sort={sort}
+          onSortChange={(value) => {
+            setSort(value);
+            setPage(1);
+          }}
+        />
+        <div className="w-48">
+          <MultiSelectFilterDropdown
+            label="Bộ sưu tập"
+            options={collectionOptions}
+            isLoading={isLoadingCollections}
+            emptyMessage="Chưa có bộ sưu tập nào."
+            value={collectionIds}
+            onApply={(ids) => {
+              setCollectionIds(ids);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
 
       <div className="rounded-2xl bg-white">

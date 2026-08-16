@@ -40,6 +40,7 @@ const STEPS: { label: string; fields: (keyof ProductFormValues)[] }[] = [
       "basePrice",
       "salePrice",
       "status",
+      "isFeatured",
     ],
   },
   { label: "Biến thể", fields: ["variants"] },
@@ -63,6 +64,7 @@ const EMPTY_VALUES: ProductFormValues = {
   basePrice: undefined as unknown as number,
   salePrice: undefined,
   status: ProductStatus.DRAFT,
+  isFeatured: false,
   thumbnail: [],
   thumbnailPublicId: undefined,
   images: [],
@@ -103,6 +105,7 @@ function buildCreatePayload(values: ProductFormValues): CreateProductPayload {
     basePrice: values.basePrice,
     salePrice: values.salePrice,
     status: values.status,
+    isFeatured: values.isFeatured,
     thumbnail: values.thumbnail[0],
     thumbnailPublicId: values.thumbnailPublicId,
     images: values.images,
@@ -129,6 +132,7 @@ function buildGeneralPayload(values: ProductFormValues): UpdateProductPayload {
     // "không đổi" (undefined bị JSON.stringify loại khỏi payload, PATCH sẽ giữ nguyên giá cũ).
     salePrice: values.salePrice ?? null,
     status: values.status,
+    isFeatured: values.isFeatured,
   };
 }
 
@@ -227,6 +231,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
       basePrice: product.basePrice,
       salePrice: product.salePrice ?? undefined,
       status: product.status,
+      isFeatured: product.isFeatured,
       thumbnail: product.thumbnail ? [product.thumbnail] : [],
       thumbnailPublicId: product.thumbnailPublicId ?? undefined,
       images: product.images ?? [],

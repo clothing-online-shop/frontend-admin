@@ -38,6 +38,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
+      // Panel hay đặt trong hàng bảng có onClick riêng (vd điều hướng khi click row) —
+      // chặn bubble ở đây để click chọn 1 item trong dropdown không vô tình kích hoạt
+      // luôn sự kiện click của phần tử cha bên dưới nó.
+      onClick={(e) => e.stopPropagation()}
       className={`absolute z-40  right-0 mt-2  rounded-xl border border-gray-200 bg-white  shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark ${className}`}
     >
       {children}

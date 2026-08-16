@@ -1,5 +1,10 @@
 import type { ProductStatus } from "@/types/shared-types";
 
+// Khớp PRODUCT_SORT_VALUES ở BE (list-products-query.dto.ts) — best_selling tính theo
+// tổng số lượng bán 30 ngày gần nhất (chỉ đơn COMPLETED), không phải field cố định trên
+// sản phẩm nên không lưu trong ProductListItem, chỉ dùng để truyền tham số sort.
+export type ProductSort = "newest" | "price_asc" | "price_desc" | "best_selling";
+
 export interface ListProductsAdminParams {
   category?: string;
   // Lọc theo nhiều danh mục cùng lúc (cây checkbox 3 trạng thái ở ProductFilterBar đã tự
@@ -11,6 +16,8 @@ export interface ListProductsAdminParams {
   // Có thể truyền nhiều id cách nhau bởi dấu phẩy — khớp convention size/color ở BE.
   collectionIds?: string;
   status?: ProductStatus;
+  isFeatured?: boolean;
+  sort?: ProductSort;
   page?: number;
   limit?: number;
 }
@@ -37,6 +44,7 @@ export interface CreateProductPayload {
   basePrice: number;
   salePrice?: number;
   status?: ProductStatus;
+  isFeatured?: boolean;
   thumbnail?: string;
   // Cloudinary publicId song song với thumbnail/images — không hiển thị lên UI, chỉ để
   // BE dọn ảnh cũ trên Cloudinary khi thay/xóa ảnh.

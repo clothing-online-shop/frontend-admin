@@ -1,10 +1,23 @@
 import { useMemo } from "react";
 import { ProductStatus } from "@/types/shared-types";
+import type { ProductSort } from "@/types/products-api.types";
 import { useBrands } from "@/hooks/useBrands";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import CategoryTreeSelect from "@/components/form/CategoryTreeSelect";
+
+const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
+  { value: "newest", label: "Mới nhất" },
+  { value: "price_asc", label: "Giá tăng dần" },
+  { value: "price_desc", label: "Giá giảm dần" },
+  { value: "best_selling", label: "Bán chạy nhất (30 ngày)" },
+];
+
+const FEATURED_OPTIONS = [
+  { value: "true", label: "Nổi bật" },
+  { value: "false", label: "Không nổi bật" },
+];
 
 interface ProductFilterBarProps {
   searchInput: string;
@@ -19,6 +32,13 @@ interface ProductFilterBarProps {
   // AssignProductsModal chỉ cho gán sản phẩm đang mở bán, không cần cho admin tự đổi sang
   // trạng thái khác). Mặc định true (giữ nguyên hành vi cũ cho ProductList.tsx).
   showStatusFilter?: boolean;
+  // "Nổi bật"/"Sắp xếp" chỉ cần ở màn danh sách chính (ProductList.tsx) — AssignProductsModal
+  // (chọn sản phẩm gán vào bộ sưu tập) không truyền 2 cặp prop này nên tự ẩn, không bắt
+  // buộc mọi nơi dùng ProductFilterBar phải quan tâm 2 bộ lọc này.
+  isFeatured?: boolean | undefined;
+  onIsFeaturedChange?: (value: boolean | undefined) => void;
+  sort?: ProductSort | undefined;
+  onSortChange?: (value: ProductSort | undefined) => void;
   className?: string;
 }
 
@@ -37,6 +57,10 @@ export default function ProductFilterBar({
   status,
   onStatusChange,
   showStatusFilter = true,
+  isFeatured,
+  onIsFeaturedChange,
+  sort,
+  onSortChange,
   className = "",
 }: ProductFilterBarProps) {
   const { data: brands } = useBrands();
@@ -83,6 +107,30 @@ export default function ProductFilterBar({
               value: String(value),
               label: PRODUCT_STATUS_LABEL[value].label,
             }))}
+          />
+        </div>
+      )}
+      {onIsFeaturedChange && (
+        <div className="w-56">
+          <Select
+            allowClear
+            placeholderColor="gray-700"
+            placeholder="Nổi bật"
+            value={isFeatured !== undefined ? String(isFeatured) : undefined}
+            onChange={(value) => onIsFeaturedChange(value !== undefined ? value === "true" : undefined)}
+            options={FEATURED_OPTIONS}
+          />
+        </div>
+      )}
+      {onSortChange && (
+        <div className="w-56">
+          <Select
+            allowClear
+            placeholderColor="gray-700"
+            placeholder="Sắp xếp"
+            value={sort}
+            onChange={(value) => onSortChange(value as ProductSort | undefined)}
+            options={SORT_OPTIONS}
           />
         </div>
       )}
