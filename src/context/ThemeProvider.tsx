@@ -8,13 +8,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    // Cố định mặc định light, không tự bắt theo prefers-color-scheme của hệ điều hành —
+    // trang quản trị nội bộ, luôn vào light trừ khi người dùng tự bấm đổi (lưu lại ở dưới).
     const savedTheme = localStorage.getItem("theme") as Theme | null;
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
     if (savedTheme) {
       setTheme(savedTheme);
-    } else if (systemPrefersDark) {
-      setTheme("dark");
     }
 
     setIsInitialized(true);
