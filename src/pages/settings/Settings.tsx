@@ -10,6 +10,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
+import GhnLocationsCard from "./GhnLocationsCard";
 
 const settingsSchema = yup.object({
   lowStockThreshold: yup
@@ -52,36 +53,40 @@ export default function Settings() {
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Cấu hình</h3>
-      <ComponentCard title="Tồn kho" className="mt-4 max-w-md">
-        {isLoading ? (
-          <Spinner className="text-brand-500" />
-        ) : (
-          <form onSubmit={handleSubmit(onValid)}>
-            <label
-              htmlFor="low-stock-threshold"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Ngưỡng cảnh báo tồn kho sắp hết
-            </label>
-            <Input
-              id="low-stock-threshold"
-              type="number"
-              {...register("lowStockThreshold", { valueAsNumber: true })}
-              error={!!errors.lowStockThreshold}
-              hint={errors.lowStockThreshold?.message}
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              className="mt-4"
-              disabled={updateMutation.isPending}
-              startIcon={updateMutation.isPending ? <Spinner size="sm" /> : undefined}
-            >
-              Lưu
-            </Button>
-          </form>
-        )}
-      </ComponentCard>
+      <div className="mt-4 flex flex-wrap items-start gap-4">
+        <ComponentCard title="Tồn kho" className="w-full max-w-md">
+          {isLoading ? (
+            <Spinner className="text-brand-500" />
+          ) : (
+            <form onSubmit={handleSubmit(onValid)}>
+              <label
+                htmlFor="low-stock-threshold"
+                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+              >
+                Ngưỡng cảnh báo tồn kho sắp hết
+              </label>
+              <Input
+                id="low-stock-threshold"
+                type="number"
+                {...register("lowStockThreshold", { valueAsNumber: true })}
+                error={!!errors.lowStockThreshold}
+                hint={errors.lowStockThreshold?.message}
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                className="mt-4"
+                disabled={updateMutation.isPending}
+                startIcon={updateMutation.isPending ? <Spinner size="sm" /> : undefined}
+              >
+                Lưu
+              </Button>
+            </form>
+          )}
+        </ComponentCard>
+
+        <GhnLocationsCard />
+      </div>
     </div>
   );
 }

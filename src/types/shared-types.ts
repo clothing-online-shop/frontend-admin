@@ -202,3 +202,31 @@ export interface PaginatedResult<T> {
     totalPages: number;
   };
 }
+
+// Danh mục hành chính đồng bộ từ GHN (xem trang Cấu hình) — ghnId/ghnCode giữ nguyên mã
+// gốc của GHN, không dùng để hiển thị, chỉ để khớp lại khi tạo đơn vận chuyển sau này.
+export interface Province {
+  id: string;
+  ghnId: number;
+  name: string;
+}
+
+export interface District {
+  id: string;
+  ghnId: number;
+  provinceId: string;
+  name: string;
+}
+
+export interface Ward {
+  id: string;
+  ghnCode: string;
+  districtId: string;
+  name: string;
+}
+
+export interface SyncLocationsResult {
+  provinces: number;
+  districts: number;
+  wards: number;
+}
