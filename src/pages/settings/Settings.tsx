@@ -54,38 +54,40 @@ export default function Settings() {
   return (
     <div>
       <h3 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Cấu hình</h3>
-      <ComponentCard title="Tồn kho" className="mt-4 max-w-md">
-        {isLoading ? (
-          <Spinner className="text-brand-500" />
-        ) : (
-          <form onSubmit={handleSubmit(onValid)}>
-            <label
-              htmlFor="low-stock-threshold"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Ngưỡng cảnh báo tồn kho sắp hết
-            </label>
-            <Input
-              id="low-stock-threshold"
-              type="number"
-              {...register("lowStockThreshold", { valueAsNumber: true })}
-              error={!!errors.lowStockThreshold}
-              hint={errors.lowStockThreshold?.message}
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              className="mt-4"
-              disabled={updateMutation.isPending}
-              startIcon={updateMutation.isPending ? <Spinner size="sm" /> : undefined}
-            >
-              Lưu
-            </Button>
-          </form>
-        )}
-      </ComponentCard>
+      <div className="mt-4 flex flex-wrap items-start gap-4">
+        <ComponentCard title="Tồn kho" className="w-full max-w-md">
+          {isLoading ? (
+            <Spinner className="text-brand-500" />
+          ) : (
+            <form onSubmit={handleSubmit(onValid)}>
+              <label
+                htmlFor="low-stock-threshold"
+                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+              >
+                Ngưỡng cảnh báo tồn kho sắp hết
+              </label>
+              <Input
+                id="low-stock-threshold"
+                type="number"
+                {...register("lowStockThreshold", { valueAsNumber: true })}
+                error={!!errors.lowStockThreshold}
+                hint={errors.lowStockThreshold?.message}
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                className="mt-4"
+                disabled={updateMutation.isPending}
+                startIcon={updateMutation.isPending ? <Spinner size="sm" /> : undefined}
+              >
+                Lưu
+              </Button>
+            </form>
+          )}
+        </ComponentCard>
 
-      <GhnLocationsCard />
+        <GhnLocationsCard />
+      </div>
     </div>
   );
 }
@@ -119,7 +121,7 @@ function GhnLocationsCard() {
     <ComponentCard
       title="Danh mục hành chính (GHN)"
       desc="Tỉnh/Quận/Phường dùng cho địa chỉ giao hàng — đồng bộ trực tiếp từ GHN, không nhập tay."
-      className="mt-4 max-w-lg"
+      className="w-full max-w-3xl"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-gray-600 dark:text-gray-400">
