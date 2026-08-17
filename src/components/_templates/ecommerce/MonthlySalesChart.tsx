@@ -3,7 +3,7 @@ import type { ApexOptions } from "apexcharts";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "@/icons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function MonthlySalesChart() {
   const options: ApexOptions = {
@@ -92,6 +92,7 @@ export default function MonthlySalesChart() {
     },
   ];
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownAnchorRef = useRef<HTMLDivElement>(null);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -106,13 +107,14 @@ export default function MonthlySalesChart() {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
           Monthly Sales
         </h3>
-        <div className="relative inline-block">
+        <div ref={dropdownAnchorRef} className="relative inline-block">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
           </button>
           <Dropdown
             isOpen={isOpen}
             onClose={closeDropdown}
+            anchorRef={dropdownAnchorRef}
             className="w-40 p-2"
           >
             <DropdownItem

@@ -14,8 +14,12 @@ const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
   { value: "best_selling", label: "Bán chạy nhất (30 ngày)" },
 ];
 
-const FEATURED_OPTIONS = [
-  { value: "true", label: "Nổi bật" },
+// Export để ProductList.tsx dùng chung cho label ở cột/badge "Nổi bật" trong bảng, tránh
+// hardcode lặp lại chữ "Nổi bật" ở 2 nơi rồi lệch nhau khi đổi wording.
+export const FEATURED_LABEL = "Nổi bật";
+
+const FEATURED_OPTIONS: { value: "true" | "false"; label: string }[] = [
+  { value: "true", label: FEATURED_LABEL },
   { value: "false", label: "Không nổi bật" },
 ];
 

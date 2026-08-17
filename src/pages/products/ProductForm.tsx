@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useWatch, FormProvider, type FieldErrors } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -202,7 +202,16 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     [currentStepFields, formState.errors],
   );
 
-  const { data: product, isLoading: isLoadingProduct } = useProductDetail(editingSlug);
+  const {
+    data: product,
+    isLoading: isLoadingProduct,
+    isFetching: isFetchingProduct,
+  } = useProductDetail(editingSlug);
+  // Đánh dấu id sản phẩm đã hydrate vào form — phân biệt "chưa hydrate lần nào" (phải đợi
+  // isFetchingProduct xong rồi mới nạp, tránh nạp nhầm data cache cũ nếu bị invalidate từ
+  // nơi khác trước khi vào form, vd bấm khoá nhanh ở ProductList.tsx) với "đã hydrate rồi,
+  // các lần refetch sau do chính step trong form này PATCH thì bỏ qua" (xem effect bên dưới).
+  const hydratedProductIdRef = useRef<string | undefined>(undefined);
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
   const assignCollectionsMutation = useAssignProductCollections();
@@ -220,6 +229,15 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
 
   useEffect(() => {
     if (!product) return;
+    // Cache có thể đang stale (bị invalidateQueries từ hành động ở nơi khác, vd khoá
+    // nhanh 1 click ở ProductList.tsx trước khi vào form sửa) — đợi refetch nền chạy xong
+    // rồi mới hydrate, không lấy tạm data cache cũ để nạp.
+    if (isFetchingProduct) return;
+    // Đã hydrate cho đúng id này rồi thì bỏ qua — tránh trường hợp PATCH 1 step trong form
+    // (xem handleSaveStep()) làm product đổi reference dù cùng id, hydrate lại sẽ ghi đè
+    // mất dữ liệu đang gõ dở ở step khác chưa lưu (xem comment gốc dưới reset()).
+    if (hydratedProductIdRef.current === product.id) return;
+    hydratedProductIdRef.current = product.id;
     reset({
       name: product.name,
       slug: product.slug,
@@ -254,12 +272,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
     // liệu sản phẩm thật vừa load (vd sản phẩm cũ tạo trước khi field bắt buộc này tồn
     // tại) thay vì mặc định coi là hợp lệ.
     void trigger(STEPS[0].fields);
-    // Chỉ hydrate lại khi ĐỔI sản phẩm (id đổi) — không phải mỗi lần refetch nội dung.
-    // Mọi mutation đều invalidateQueries, PATCH 1 step xong sẽ làm `product` đổi
-    // reference dù cùng id; nếu effect chạy lại theo reference, reset() sẽ ghi đè mất
-    // dữ liệu đang gõ dở ở step khác chưa lưu.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product?.id, reset, trigger]);
+  }, [product, isFetchingProduct, reset, trigger]);
 
   function goToStep(index: number) {
     if (index <= maxStepReached) setCurrentStep(index);

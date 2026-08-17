@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { MoreDotIcon } from "@/icons";
@@ -6,6 +6,7 @@ import CountryMap from "@/components/_templates/ecommerce/CountryMap";
 
 export default function DemographicCard() {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownAnchorRef = useRef<HTMLDivElement>(null);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -25,13 +26,14 @@ export default function DemographicCard() {
             Number of customer based on country
           </p>
         </div>
-        <div className="relative inline-block">
+        <div ref={dropdownAnchorRef} className="relative inline-block">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
           </button>
           <Dropdown
             isOpen={isOpen}
             onClose={closeDropdown}
+            anchorRef={dropdownAnchorRef}
             className="w-40 p-2"
           >
             <DropdownItem

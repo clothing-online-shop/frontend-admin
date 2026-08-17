@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useHoverVisible } from "@/hooks/useHoverVisible";
 
@@ -31,6 +31,20 @@ export default function Tooltip({ content, children }: TooltipProps) {
     }
     show();
   }
+
+  // Vị trí chỉ tính 1 lần lúc hover/focus (position: fixed theo toạ độ đã chụp) — nếu
+  // cuộn trang hoặc cuộn ngang bảng (overflow-x-auto) trong lúc đang hiện, tooltip sẽ
+  // trôi lệch khỏi trigger. Đơn giản nhất là tự ẩn khi có scroll/resize thay vì tính lại
+  // toạ độ liên tục.
+  useEffect(() => {
+    if (!isVisible) return;
+    window.addEventListener("scroll", hide, { capture: true });
+    window.addEventListener("resize", hide);
+    return () => {
+      window.removeEventListener("scroll", hide, { capture: true });
+      window.removeEventListener("resize", hide);
+    };
+  }, [isVisible, hide]);
 
   return (
     <span

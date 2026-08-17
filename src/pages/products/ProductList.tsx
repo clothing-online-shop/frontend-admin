@@ -18,7 +18,7 @@ import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, StarIcon } from "@/icons";
 import MultiSelectFilterDropdown from "@/components/common/MultiSelectFilterDropdown";
-import ProductFilterBar from "@/components/common/ProductFilterBar";
+import ProductFilterBar, { FEATURED_LABEL } from "@/components/common/ProductFilterBar";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 import type { ProductSort } from "@/types/products-api.types";
 import DeactivateCollectionsConfirmModal from "./DeactivateCollectionsConfirmModal";
@@ -49,6 +49,10 @@ export default function ProductList() {
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<ProductListItem | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<ProductListItem | null>(null);
+  // updateMutation dùng chung cho Khóa/Mở khóa lẫn Nổi bật của MỌI dòng — chỉ dựa vào
+  // updateMutation.isPending sẽ disable nút ở tất cả các dòng khác trong lúc 1 dòng đang
+  // xử lý. Theo dõi riêng id đang chờ để chỉ disable đúng dòng đó.
+  const [pendingProductId, setPendingProductId] = useState<string | null>(null);
 
   // Options cho dropdown lọc đã chuyển vào ProductFilterBar (tự fetch category/brand
   // riêng, react-query cache chung nên không tốn thêm request) — ở đây chỉ cần map tên
@@ -95,6 +99,7 @@ export default function ProductList() {
     async (product: ProductListItem) => {
       const nextStatus =
         product.status === ProductStatus.ACTIVE ? ProductStatus.INACTIVE : ProductStatus.ACTIVE;
+      setPendingProductId(product.id);
       try {
         await updateMutation.mutateAsync({ id: product.id, payload: { status: nextStatus } });
         toast.success(
@@ -102,6 +107,8 @@ export default function ProductList() {
         );
       } catch (error) {
         toast.error(getErrorMessage(error));
+      } finally {
+        setPendingProductId(null);
       }
     },
     [updateMutation, toast],
@@ -132,6 +139,7 @@ export default function ProductList() {
 
   const handleToggleFeatured = useCallback(
     async (product: ProductListItem) => {
+      setPendingProductId(product.id);
       try {
         await updateMutation.mutateAsync({
           id: product.id,
@@ -140,6 +148,8 @@ export default function ProductList() {
         toast.success(product.isFeatured ? "Đã bỏ nổi bật" : "Đã gắn cờ nổi bật");
       } catch (error) {
         toast.error(getErrorMessage(error));
+      } finally {
+        setPendingProductId(null);
       }
     },
     [updateMutation, toast],
@@ -185,7 +195,7 @@ export default function ProductList() {
         render: (product) =>
           product.isFeatured ? (
             <Badge color="warning" startIcon={<StarIcon className="h-3.5 w-3.5" />}>
-              Nổi bật
+              {FEATURED_LABEL}
             </Badge>
           ) : (
             <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
@@ -321,7 +331,7 @@ export default function ProductList() {
         render: (product) => (
           <ProductRowActions
             product={product}
-            isUpdating={updateMutation.isPending}
+            isUpdating={pendingProductId === product.id}
             onToggleLock={handleToggleLock}
             onToggleFeatured={(p) => void handleToggleFeatured(p)}
             onDelete={setDeleteTarget}
@@ -329,13 +339,7 @@ export default function ProductList() {
         ),
       },
     ],
-    [
-      categoryNameById,
-      brandNameById,
-      handleToggleLock,
-      handleToggleFeatured,
-      updateMutation.isPending,
-    ],
+    [categoryNameById, brandNameById, handleToggleLock, handleToggleFeatured, pendingProductId],
   );
 
   return (
