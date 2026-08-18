@@ -1,11 +1,28 @@
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import { createPortal } from "react-dom";
 
 interface DropdownProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
   className?: string;
+  // Phần tử để canh panel theo (góc dưới-phải) — trước đây panel nằm absolute ngay
+  // trong trigger nên tự canh theo layout cha, nhưng trigger hay ở trong bảng có
+  // overflow-x-auto (xem ui/table/index.tsx) khiến panel bị clip khi tràn khỏi vùng
+  // scroll đó. Portal ra <body> + position: fixed tính theo toạ độ của anchorRef tránh
+  // được việc này, giống cách Tooltip.tsx đã fix.
+  anchorRef: RefObject<HTMLElement | null>;
+  // Cho phép nơi gọi giữ dropdown mở khi rê chuột từ trigger sang panel (hover-intent) —
+  // vd ProductRowActions.tsx mở menu ngay khi hover "..." thay vì chỉ click, panel phải tự
+  // "biết" đang bị hover để không đóng theo hẹn giờ mất-hover của trigger.
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+}
+
+interface Position {
+  top: number;
+  right: number;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
@@ -13,15 +30,33 @@ export const Dropdown: React.FC<DropdownProps> = ({
   onClose,
   children,
   className = "",
+  anchorRef,
+  onMouseEnter,
+  onMouseLeave,
 }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<Position | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const rect = anchorRef.current?.getBoundingClientRect();
+    if (rect) {
+      setPosition({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    }
+  }, [isOpen, anchorRef]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      // Check theo anchorRef của CHÍNH dropdown này (bao cả trigger lẫn panel), không phải
+      // check class ".dropdown-toggle" chung chung — mọi nút "..." trong bảng đều dùng
+      // chung class đó, nên trước đây bấm sang nút "..." của dòng khác bị hiểu nhầm là
+      // "đang bấm trigger của chính mình", khiến dropdown đang mở không đóng lại (2 dòng
+      // cùng hiện menu 1 lúc).
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest(".dropdown-toggle")
+        !dropdownRef.current.contains(target) &&
+        !anchorRef.current?.contains(target)
       ) {
         onClose();
       }
@@ -31,20 +66,39 @@ export const Dropdown: React.FC<DropdownProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [onClose]);
+  }, [onClose, anchorRef]);
 
-  if (!isOpen) return null;
+  // Toạ độ chỉ tính 1 lần lúc mở (position: fixed theo giá trị đã chụp) — nếu cuộn trang
+  // hoặc cuộn ngang bảng (overflow-x-auto) trong lúc đang mở, panel sẽ trôi lệch khỏi
+  // trigger. Cùng cách Tooltip.tsx xử lý: tự đóng khi có scroll/resize thay vì tính lại
+  // toạ độ liên tục.
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("scroll", onClose, { capture: true });
+    window.addEventListener("resize", onClose);
+    return () => {
+      window.removeEventListener("scroll", onClose, { capture: true });
+      window.removeEventListener("resize", onClose);
+    };
+  }, [isOpen, onClose]);
 
-  return (
+  if (!isOpen || !position) return null;
+
+  return createPortal(
     <div
       ref={dropdownRef}
       // Panel hay đặt trong hàng bảng có onClick riêng (vd điều hướng khi click row) —
-      // chặn bubble ở đây để click chọn 1 item trong dropdown không vô tình kích hoạt
-      // luôn sự kiện click của phần tử cha bên dưới nó.
+      // dù đã portal ra <body>, sự kiện click vẫn bubble theo cây component React (không
+      // theo cây DOM thật), nên vẫn cần chặn ở đây để click chọn 1 item trong dropdown
+      // không vô tình kích hoạt luôn sự kiện click của phần tử cha logic bên trên nó.
       onClick={(e) => e.stopPropagation()}
-      className={`absolute z-40  right-0 mt-2  rounded-xl border border-gray-200 bg-white  shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark ${className}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      style={{ top: position.top, right: position.right }}
+      className={`fixed w-50 z-40 rounded-xl border border-gray-200 bg-white shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark ${className}`}
     >
       {children}
-    </div>
+    </div>,
+    document.body,
   );
 };
