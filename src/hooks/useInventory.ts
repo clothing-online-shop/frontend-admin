@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   adjustStock,
   getInventory,
@@ -46,18 +46,21 @@ export function useUpdateLowStockThreshold() {
   });
 }
 
+// Đổi tồn kho (nhập/xuất/điều chỉnh) — chỉ đụng danh sách tồn kho + lịch sử + số liệu sản
+// phẩm, không đụng "settings" (ngưỡng cảnh báo không đổi theo). Dùng chung cho
+// useImportStock/useAdjustStock để sửa 1 chỗ là đủ, không phải nhớ sửa cả 2 hook.
+function invalidateStockQueries(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "list"] });
+  queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "history"] });
+  queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
+}
+
 export function useImportStock() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ variantId, payload }: { variantId: string; payload: ImportStockPayload }) =>
       importStock(variantId, payload),
-    onSuccess: () => {
-      // Đổi tồn kho — chỉ đụng danh sách tồn kho + lịch sử, không đụng "settings" (ngưỡng
-      // cảnh báo không đổi khi nhập/xuất/điều chỉnh).
-      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "list"] });
-      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "history"] });
-      queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
-    },
+    onSuccess: () => invalidateStockQueries(queryClient),
   });
 }
 
@@ -66,11 +69,7 @@ export function useAdjustStock() {
   return useMutation({
     mutationFn: ({ variantId, payload }: { variantId: string; payload: AdjustStockPayload }) =>
       adjustStock(variantId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "list"] });
-      queryClient.invalidateQueries({ queryKey: [INVENTORY_KEY, "history"] });
-      queryClient.invalidateQueries({ queryKey: [PRODUCTS_KEY] });
-    },
+    onSuccess: () => invalidateStockQueries(queryClient),
   });
 }
 
