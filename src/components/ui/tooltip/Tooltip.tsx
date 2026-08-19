@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useHoverVisible } from "@/hooks/useHoverVisible";
+import { useAnchoredRect } from "@/hooks/useAnchoredRect";
 
 interface TooltipProps {
   content: string;
@@ -22,37 +23,18 @@ interface Position {
 export default function Tooltip({ content, children }: TooltipProps) {
   const { isVisible, show, hide } = useHoverVisible();
   const triggerRef = useRef<HTMLSpanElement>(null);
-  const [position, setPosition] = useState<Position | null>(null);
-
-  function handleShow() {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (rect) {
-      setPosition({ top: rect.top, left: rect.left + rect.width / 2 });
-    }
-    show();
-  }
-
-  // Vị trí chỉ tính 1 lần lúc hover/focus (position: fixed theo toạ độ đã chụp) — nếu
-  // cuộn trang hoặc cuộn ngang bảng (overflow-x-auto) trong lúc đang hiện, tooltip sẽ
-  // trôi lệch khỏi trigger. Đơn giản nhất là tự ẩn khi có scroll/resize thay vì tính lại
-  // toạ độ liên tục.
-  useEffect(() => {
-    if (!isVisible) return;
-    window.addEventListener("scroll", hide, { capture: true });
-    window.addEventListener("resize", hide);
-    return () => {
-      window.removeEventListener("scroll", hide, { capture: true });
-      window.removeEventListener("resize", hide);
-    };
-  }, [isVisible, hide]);
+  const rect = useAnchoredRect(triggerRef, isVisible, hide);
+  const position: Position | null = rect
+    ? { top: rect.top, left: rect.left + rect.width / 2 }
+    : null;
 
   return (
     <span
       ref={triggerRef}
       className="inline-flex"
-      onMouseEnter={handleShow}
+      onMouseEnter={show}
       onMouseLeave={hide}
-      onFocus={handleShow}
+      onFocus={show}
       onBlur={hide}
     >
       {children}

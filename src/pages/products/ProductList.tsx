@@ -233,24 +233,24 @@ export default function ProductList() {
         ),
       },
       {
-  key: "collections",
-  header: "Bộ sưu tập",
-  align: "center",
-  className: "min-w-90",
-  render: (product) =>
-    product.collections.length > 0 ? (
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {product.collections.map((collection) => (
-          <Badge key={collection.id} color="light">
-            {collection.name}
-          </Badge>
-        ))}
-      </div>
-    ) : (
-      <div className="flex justify-center">
-        <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
-      </div>
-    ),  
+        key: "collections",
+        header: "Bộ sưu tập",
+        align: "center",
+        className: "min-w-90",
+        render: (product) =>
+          product.collections.length > 0 ? (
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {product.collections.map((collection) => (
+                <Badge key={collection.id} color="light">
+                  {collection.name}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+            </div>
+          ),
       },
       {
         key: "price",

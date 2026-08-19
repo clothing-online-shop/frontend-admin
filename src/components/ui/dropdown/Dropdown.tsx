@@ -1,6 +1,7 @@
 import type React from "react";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
+import { useAnchoredRect } from "@/hooks/useAnchoredRect";
 
 interface DropdownProps {
   isOpen: boolean;
@@ -35,15 +36,10 @@ export const Dropdown: React.FC<DropdownProps> = ({
   onMouseLeave,
 }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<Position | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const rect = anchorRef.current?.getBoundingClientRect();
-    if (rect) {
-      setPosition({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
-    }
-  }, [isOpen, anchorRef]);
+  const rect = useAnchoredRect(anchorRef, isOpen, onClose);
+  const position: Position | null = rect
+    ? { top: rect.bottom + 8, right: window.innerWidth - rect.right }
+    : null;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -67,20 +63,6 @@ export const Dropdown: React.FC<DropdownProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [onClose, anchorRef]);
-
-  // Toạ độ chỉ tính 1 lần lúc mở (position: fixed theo giá trị đã chụp) — nếu cuộn trang
-  // hoặc cuộn ngang bảng (overflow-x-auto) trong lúc đang mở, panel sẽ trôi lệch khỏi
-  // trigger. Cùng cách Tooltip.tsx xử lý: tự đóng khi có scroll/resize thay vì tính lại
-  // toạ độ liên tục.
-  useEffect(() => {
-    if (!isOpen) return;
-    window.addEventListener("scroll", onClose, { capture: true });
-    window.addEventListener("resize", onClose);
-    return () => {
-      window.removeEventListener("scroll", onClose, { capture: true });
-      window.removeEventListener("resize", onClose);
-    };
-  }, [isOpen, onClose]);
 
   if (!isOpen || !position) return null;
 

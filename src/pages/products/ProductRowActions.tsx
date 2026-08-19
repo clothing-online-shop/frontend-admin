@@ -68,9 +68,14 @@ export default function ProductRowActions({
   // assertActiveIfFeatured() ở products.service.ts), không bao giờ chặn TẮT cờ. Nếu disable
   // cả 2 chiều theo status, 1 sản phẩm lỡ vừa INACTIVE vừa isFeatured=true (dữ liệu cũ/race)
   // sẽ kẹt cứng không ai bỏ nổi bật được nữa vì nút bị disable luôn.
-  const isLockDisabled = isDraft || isUpdating;
-  const isFeaturedDisabled =
-    isUpdating || (!product.isFeatured && product.status !== ProductStatus.ACTIVE);
+  // Tách riêng "disabled vì status" khỏi "disabled vì đang có mutation chạy" — dòng
+  // inactiveReason phía dưới chỉ mô tả lý do status, nếu gộp chung isUpdating vào thì 1 sản
+  // phẩm ACTIVE đang cập nhật dở sẽ hiện nhầm "Sản phẩm đang ngừng kinh doanh".
+  const isLockDisabledByStatus = isDraft;
+  const isFeaturedDisabledByStatus =
+    !product.isFeatured && product.status !== ProductStatus.ACTIVE;
+  const isLockDisabled = isLockDisabledByStatus || isUpdating;
+  const isFeaturedDisabled = isFeaturedDisabledByStatus || isUpdating;
   const lockLabel = product.status === ProductStatus.ACTIVE ? "Khóa" : "Mở khóa";
   const featuredLabel = product.isFeatured ? "Bỏ nổi bật" : "Gắn cờ nổi bật";
   // Lý do 1 action bị disable vì status — hiện thành dòng phụ nhỏ dưới label thay vì đổi
@@ -152,7 +157,9 @@ export default function ProductRowActions({
           )}
           <span className="flex flex-col">
             {lockLabel}
-            {isLockDisabled && <span className="text-xs font-normal">{inactiveReason}</span>}
+            {isLockDisabledByStatus && (
+              <span className="text-xs font-normal">{inactiveReason}</span>
+            )}
           </span>
         </DropdownItem>
         <DropdownItem
@@ -167,7 +174,9 @@ export default function ProductRowActions({
           <StarIcon className="h-4 w-4 shrink-0" />
           <span className="flex flex-col">
             {featuredLabel}
-            {isFeaturedDisabled && <span className="text-xs font-normal">{inactiveReason}</span>}
+            {isFeaturedDisabledByStatus && (
+              <span className="text-xs font-normal">{inactiveReason}</span>
+            )}
           </span>
         </DropdownItem>
         <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
