@@ -13,6 +13,7 @@ import OrderList from "@/pages/orders/OrderList";
 import InventoryList from "@/pages/inventory/InventoryList";
 import InventoryHistory from "@/pages/inventory/InventoryHistory";
 import CustomerList from "@/pages/customers/CustomerList";
+import CustomerDetail from "@/pages/customers/CustomerDetail";
 import ContentList from "@/pages/cms-content/ContentList";
 import Settings from "@/pages/settings/Settings";
 
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
           { path: "/inventory", element: <InventoryList /> },
           { path: "/inventory/history", element: <InventoryHistory /> },
           { path: "/customers", element: <CustomerList /> },
+          { path: "/customers/:id", element: <CustomerDetail /> },
           { path: "/cms-content", element: <ContentList /> },
           { path: "/settings", element: <Settings /> },
         ],
