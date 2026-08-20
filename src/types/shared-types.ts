@@ -22,6 +22,58 @@ export interface AuthUser {
   updatedAt: string;
 }
 
+export const UserStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+  BANNED: "BANNED",
+} as const;
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
+
+export const OrderStatus = {
+  PENDING: "PENDING",
+  CONFIRMED: "CONFIRMED",
+  SHIPPING: "SHIPPING",
+  COMPLETED: "COMPLETED",
+  CANCELLED: "CANCELLED",
+} as const;
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
+
+export const PaymentStatus = {
+  UNPAID: "UNPAID",
+  PAID: "PAID",
+  REFUNDED: "REFUNDED",
+  FAILED: "FAILED",
+} as const;
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
+
+export interface Customer {
+  id: string;
+  email: string;
+  phone: string | null;
+  fullName: string;
+  role: "CUSTOMER" | "ADMIN";
+  status: UserStatus;
+  emailVerifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  totalOrders: number;
+  totalSpent: number;
+}
+
+export interface CustomerOrderSummary {
+  id: string;
+  orderCode: string;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  totalAmount: number;
+  createdAt: string;
+  itemCount: number;
+}
+
+export interface CustomerDetail extends Customer {
+  orders: CustomerOrderSummary[];
+}
+
 export interface LoginPayload {
   email: string;
   password: string;
