@@ -15,14 +15,14 @@ export const ProductErrorCode = {
 
 // PRODUCT_VARIANT_NOT_FOUND, PRODUCT_VARIANT_DELETE_BLOCKED_IN_USE, PRODUCT_VARIANT_DUPLICATE
 // cố ý không map — message BE chèn id/sku/size/màu động, giữ nguyên message gốc.
-// PRODUCT_COLLECTION_ENDED cố ý không map — BE dùng chung 1 code cho 2 message khác nhau
-// tùy hành động (gán vs gỡ), map cứng 1 câu sẽ sai ngữ cảnh cho trường hợp còn lại.
+// PRODUCT_COLLECTION_ENDED, PRODUCT_NOT_IN_COLLECTION cố ý không map — BE dùng chung 1 code
+// cho 2 message khác nhau tùy phía gọi (products.service.ts vs collections.service.ts), map
+// cứng 1 câu sẽ sai ngữ cảnh cho trường hợp còn lại.
 export const PRODUCT_ERROR_MESSAGE: Partial<
   Record<(typeof ProductErrorCode)[keyof typeof ProductErrorCode], string>
 > = {
   [ProductErrorCode.PRODUCT_NOT_FOUND]: "Không tìm thấy sản phẩm.",
   [ProductErrorCode.PRODUCT_CATEGORY_ID_REQUIRED]: "Vui lòng chọn danh mục cho sản phẩm.",
-  [ProductErrorCode.PRODUCT_NOT_IN_COLLECTION]: "Sản phẩm không thuộc bộ sưu tập này.",
   [ProductErrorCode.PRODUCT_COLLECTION_NOT_FOUND]:
     "Có bộ sưu tập không tồn tại trong danh sách gán.",
   [ProductErrorCode.PRODUCT_CATEGORY_NOT_FOUND]: "Danh mục không tồn tại.",
