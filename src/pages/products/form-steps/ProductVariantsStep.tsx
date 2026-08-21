@@ -89,6 +89,8 @@ export function ProductVariantsStep({
           Bỏ trống SKU để tự sinh theo tên sản phẩm + size + màu. Bỏ trống Giá bán để dùng giá
           gốc của sản phẩm. Tồn kho chỉ nhập được lúc thêm biến thể mới — biến thể đã có, vào
           trang Tồn kho để nhập/xuất/điều chỉnh (luôn có lịch sử, không sửa trực tiếp ở đây).
+          Khối lượng bắt buộc khi thêm biến thể mới — biến thể đã có, bỏ trống để giữ nguyên
+          khối lượng cũ.
         </p>
 
         {fields.length > 0 && (
@@ -109,7 +111,7 @@ export function ProductVariantsStep({
               Tồn kho
             </span>
             <span className={`${COLUMN_WIDTH.weight} text-xs font-medium text-gray-700 dark:text-gray-400`}>
-              Khối lượng (g) <span className="text-error-500">*</span>
+              Khối lượng (g)
             </span>
           </div>
         )}

@@ -31,7 +31,9 @@ src/
 │   ├── api/               # api-client.ts + <feature>-api.ts — chỉ hàm gọi backend, không
 │   │                      #   khai type ở đây (xem types/ ở trên)
 │   ├── error.ts, format.ts, slug.ts, roles.ts, permissions.ts, pagination.ts, form.ts,
-│   │   errorCodes.ts, categoryTree.ts — và các file <feature>Status.ts (bannerStatus.ts,
+│   │   errorCodes/ (1 file/domain — category.ts, product.ts, auth.ts... + index.ts gộp
+│   │   lại, xem file nào trong thư mục đó khi thêm/sửa code lỗi của đúng module), categoryTree.ts
+│   │   — và các file <feature>Status.ts (bannerStatus.ts,
 │   │   collectionStatus.ts, inventoryStatus.ts, productStatus.ts: map trạng thái →
 │   │   {label, color} dùng chung giữa badge và filter dropdown của từng feature). Danh
 │   │   sách này chỉ là ví dụ, không cần cập nhật CLAUDE.md mỗi khi thêm file mới ở lib/.
