@@ -71,7 +71,9 @@ const EMPTY_VALUES: ProductFormValues = {
   imagePublicIds: [],
   metaTitle: "",
   metaDescription: "",
-  variants: [{ size: "", color: "", sku: "", price: undefined, stockQuantity: 0, imageUrl: undefined }],
+  variants: [
+    { size: "", color: "", sku: "", price: undefined, stockQuantity: 0, weight: undefined, imageUrl: undefined },
+  ],
   collectionIds: [],
 };
 
@@ -85,6 +87,7 @@ function buildVariantsPayload(variants: ProductFormValues["variants"]): ProductV
       sku: v.sku || undefined,
       price: v.price,
       stockQuantity: v.stockQuantity ?? 0,
+      weight: v.weight,
       // null (không phải undefined) khi trống — undefined bị JSON.stringify loại khỏi
       // payload, PATCH sẽ hiểu nhầm thành "giữ nguyên ảnh cũ" thay vì "đã gỡ ảnh".
       imageUrl: v.imageUrl || null,
@@ -263,6 +266,7 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
         sku: v.sku,
         price: v.price,
         stockQuantity: v.stockQuantity,
+        weight: v.weight,
         imageUrl: v.imageUrl ?? undefined,
       })),
       collectionIds: product.collections.map((c) => c.id),
