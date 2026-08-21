@@ -23,6 +23,7 @@ const COLUMN_WIDTH = {
   sku: "w-52",
   price: "w-36",
   stock: "w-24",
+  weight: "w-28",
 };
 
 export function ProductVariantsStep({
@@ -107,6 +108,9 @@ export function ProductVariantsStep({
             <span className={`${COLUMN_WIDTH.stock} text-xs font-medium text-gray-700 dark:text-gray-400`}>
               Tồn kho
             </span>
+            <span className={`${COLUMN_WIDTH.weight} text-xs font-medium text-gray-700 dark:text-gray-400`}>
+              Khối lượng (g) <span className="text-error-500">*</span>
+            </span>
           </div>
         )}
 
@@ -176,6 +180,25 @@ export function ProductVariantsStep({
                   {...register(`variants.${index}.stockQuantity`)}
                 />
               </div>
+              <div className={COLUMN_WIDTH.weight}>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="300"
+                  aria-label={`Khối lượng ${rowLabel}`}
+                  {...register(`variants.${index}.weight`)}
+                  error={!!visibleFieldError(
+                    errors.variants?.[index]?.weight?.message,
+                    dirtyFields.variants?.[index]?.weight,
+                    isSubmitted,
+                  )}
+                  hint={visibleFieldError(
+                    errors.variants?.[index]?.weight?.message,
+                    dirtyFields.variants?.[index]?.weight,
+                    isSubmitted,
+                  )}
+                />
+              </div>
               {!viewOnly && (
                 <Button
                   type="button"
@@ -198,7 +221,16 @@ export function ProductVariantsStep({
             type="button"
             variant="outline"
             startIcon={<PlusIcon className="h-6 w-6" />}
-            onClick={() => append({ size: "", color: "", sku: "", price: undefined, stockQuantity: 0 })}
+            onClick={() =>
+              append({
+                size: "",
+                color: "",
+                sku: "",
+                price: undefined,
+                stockQuantity: 0,
+                weight: undefined,
+              })
+            }
             className="self-start"
           >
             Thêm biến thể
