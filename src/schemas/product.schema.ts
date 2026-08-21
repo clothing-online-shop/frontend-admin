@@ -17,6 +17,19 @@ const productVariantSchema = yup.object({
     .integer()
     .min(0)
     .default(0),
+  // Bắt buộc khi thêm biến thể mới (không có id) — khớp @ValidateIf ở BE
+  // (product-variant.dto.ts); biến thể đã có (có id) thì tùy chọn, bỏ trống nghĩa là giữ
+  // nguyên khối lượng cũ.
+  weight: yup
+    .number()
+    .transform((value, original) => (original === "" ? undefined : value))
+    .integer("Khối lượng phải là số nguyên.")
+    .min(1, "Khối lượng phải lớn hơn 0.")
+    .when("id", {
+      is: (id: string | undefined) => !id,
+      then: (schema) => schema.required("Nhập khối lượng."),
+      otherwise: (schema) => schema.optional(),
+    }),
   // Ảnh đại diện cho MÀU của biến thể này — lấy từ 1 ảnh đã có trong "Ảnh chi tiết sản
   // phẩm" (không upload riêng), dùng để FE storefront focus đúng ảnh khi khách chọn màu.
   imageUrl: yup.string().optional(),

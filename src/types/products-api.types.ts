@@ -29,6 +29,9 @@ export interface ProductVariantPayload {
   sku?: string;
   price?: number;
   stockQuantity?: number;
+  // Khối lượng (gram) — BE bắt buộc khi thêm biến thể mới (không có id), tùy chọn khi sửa
+  // biến thể đã có (xem product-variant.dto.ts bên backend-cms).
+  weight?: number;
   // Bỏ trống field này = giữ nguyên ảnh hiện có; gửi null = gỡ ảnh khỏi biến thể.
   imageUrl?: string | null;
 }

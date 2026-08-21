@@ -218,6 +218,7 @@ export interface ProductVariant {
   sku: string;
   price: number;
   stockQuantity: number;
+  weight: number;
   imageUrl: string | null;
 }
 
