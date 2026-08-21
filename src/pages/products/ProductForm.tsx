@@ -266,7 +266,10 @@ export default function ProductForm({ viewOnly = false }: ProductFormProps) {
         sku: v.sku,
         price: v.price,
         stockQuantity: v.stockQuantity,
-        weight: v.weight,
+        // null (chưa nhập, dữ liệu cũ trước khi có field này) phải coalesce về undefined —
+        // yup cast null thành NaN trước khi custom transform kịp xử lý (original !== ''),
+        // NaN thì luôn fail type-check dù field đang optional() cho biến thể đã có.
+        weight: v.weight ?? undefined,
         imageUrl: v.imageUrl ?? undefined,
       })),
       collectionIds: product.collections.map((c) => c.id),

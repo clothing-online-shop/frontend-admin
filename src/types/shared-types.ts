@@ -218,7 +218,9 @@ export interface ProductVariant {
   sku: string;
   price: number;
   stockQuantity: number;
-  weight: number;
+  // null = chưa nhập (dữ liệu cũ trước khi có field này, hoặc DB cho phép null) — khớp
+  // `weight Int?` ở Prisma schema (backend-cms).
+  weight: number | null;
   imageUrl: string | null;
 }
 
