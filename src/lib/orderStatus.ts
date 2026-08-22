@@ -9,6 +9,8 @@ export const ORDER_STATUS_LABEL: Record<
 > = {
   PENDING: { label: "Chờ xác nhận", color: "warning" },
   CONFIRMED: { label: "Đã xác nhận", color: "info" },
+  PACKING: { label: "Đang đóng gói", color: "info" },
+  HANDED_OVER: { label: "Đã bàn giao vận chuyển", color: "info" },
   SHIPPING: { label: "Đang giao", color: "info" },
   COMPLETED: { label: "Hoàn tất", color: "success" },
   CANCELLED: { label: "Đã hủy", color: "light" },
@@ -44,7 +46,9 @@ export const PAYMENT_METHOD_LABEL: Record<
 // giá trị không hợp lệ do 2 bên lệch nhau).
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
-  CONFIRMED: ["SHIPPING", "CANCELLED"],
+  CONFIRMED: ["PACKING", "CANCELLED"],
+  PACKING: ["HANDED_OVER", "CANCELLED"],
+  HANDED_OVER: ["SHIPPING", "CANCELLED"],
   SHIPPING: ["COMPLETED", "CANCELLED"],
   COMPLETED: [],
   CANCELLED: [],
@@ -70,6 +74,11 @@ export const ORDER_STATUS_ACTION: Partial<
   >
 > = {
   CONFIRMED: { buttonLabel: "Xác nhận đơn", confirmTitle: "Xác nhận đơn hàng" },
+  PACKING: { buttonLabel: "Đóng gói đơn", confirmTitle: "Đóng gói đơn hàng" },
+  HANDED_OVER: {
+    buttonLabel: "Bàn giao vận chuyển",
+    confirmTitle: "Bàn giao đơn cho vận chuyển",
+  },
   SHIPPING: { buttonLabel: "Bắt đầu giao", confirmTitle: "Bắt đầu giao hàng" },
   COMPLETED: {
     buttonLabel: "Hoàn tất đơn",
