@@ -133,7 +133,7 @@ export default function OrderDetail() {
     {
       key: "note",
       header: "Ghi chú",
-      align: "left",
+      align: "center",
       className: "min-w-56",
       render: (h) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">{h.note ?? "—"}</span>

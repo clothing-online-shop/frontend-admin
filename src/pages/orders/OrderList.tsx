@@ -43,6 +43,17 @@ const DATE_PRESETS = [
   { label: "30 ngày qua", days: 30 },
 ] as const;
 
+// Ghi đè hover mặc định của Button variant="outline" (chỉ đổi nền xám nhạt) — riêng nhóm
+// nút preset/xóa lọc ngày này cần nổi bật hơn (chữ trắng, nền + viền cam thương hiệu) vì
+// đứng cạnh nhau thành 1 cụm thao tác nhanh, không phải nút phụ đơn lẻ.
+// hover:!bg-brand-500 (không phải hover:bg-brand-500) — Button variant="outline" đã tự
+// định nghĩa hover:bg-gray-50, cùng thuộc tính nên đứng sau trong class list KHÔNG chắc
+// thắng (phụ thuộc thứ tự Tailwind sinh CSS, không phải thứ tự viết trong JSX) — xem
+// ProductImagesStep.tsx/ProductVariantsStep.tsx đã dùng đúng pattern !important này để
+// ghi đè hover mặc định của Button.
+const DATE_FILTER_BUTTON_HOVER =
+  "hover:!bg-brand-500 hover:text-white hover:ring-brand-500 dark:hover:!bg-brand-500 dark:hover:text-white dark:hover:ring-brand-500";
+
 export default function OrderList() {
   const navigate = useNavigate();
   useBreadcrumb([{ label: "Đơn hàng" }]);
@@ -83,7 +94,7 @@ export default function OrderList() {
     {
       key: "orderCode",
       header: "Mã đơn",
-      align: "left",
+      align: "center",
       className: "min-w-40",
       render: (order) => (
         <span className="text-sm font-medium text-gray-800 dark:text-white/90">
@@ -94,7 +105,7 @@ export default function OrderList() {
     {
       key: "customerName",
       header: "Khách hàng",
-      align: "left",
+      align: "center",
       className: "min-w-48",
       render: (order) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">{order.customerName}</span>
@@ -113,8 +124,8 @@ export default function OrderList() {
     {
       key: "cancelReason",
       header: "Lý do hủy",
-      align: "left",
-      className: "min-w-56",
+      align: "center",
+      className: "min-w-72",
       render: (order) => (
         <span className="line-clamp-2 max-w-xs text-sm text-gray-700 dark:text-gray-300">
           {order.cancelReason ?? "—"}
@@ -166,7 +177,7 @@ export default function OrderList() {
     {
       key: "shippingAddress",
       header: "Địa chỉ giao",
-      align: "left",
+      align: "center",
       className: "min-w-96",
       render: (order) => (
         <span className="line-clamp-2 max-w-md text-sm text-gray-700 dark:text-gray-300">
@@ -291,6 +302,7 @@ export default function OrderList() {
             type="button"
             size="sm"
             variant="outline"
+            className={DATE_FILTER_BUTTON_HOVER}
             onClick={() => applyDatePreset(preset.days)}
           >
             {preset.label}
@@ -300,6 +312,7 @@ export default function OrderList() {
           type="button"
           size="sm"
           variant="outline"
+          className={DATE_FILTER_BUTTON_HOVER}
           disabled={!from && !to}
           onClick={clearDateFilter}
         >
