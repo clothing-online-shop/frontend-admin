@@ -77,14 +77,14 @@ export default function OrderDetail() {
     {
       key: "priceAtPurchase",
       header: "Đơn giá",
-      align: "center",
+      align: "right",
       className: "min-w-32",
       render: (item) => formatPrice(item.priceAtPurchase),
     },
     {
       key: "lineTotal",
       header: "Thành tiền",
-      align: "center",
+      align: "right",
       className: "min-w-32",
       render: (item) => (
         <span className="font-semibold text-primary/80 dark:text-primary">
@@ -186,7 +186,18 @@ export default function OrderDetail() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ComponentCard title="Khách hàng">
           <div className="grid grid-cols-1 gap-y-3">
-            <Field label="Họ tên" value={order.customer.fullName} />
+            <Field
+              label="Họ tên"
+              value={
+                <button
+                  type="button"
+                  onClick={() => navigate(`/customers/${order.customer.id}`)}
+                  className="text-brand-500 hover:underline"
+                >
+                  {order.customer.fullName}
+                </button>
+              }
+            />
             <Field label="Email" value={order.customer.email} />
             <Field label="Số điện thoại" value={order.customer.phone ?? "—"} />
           </div>

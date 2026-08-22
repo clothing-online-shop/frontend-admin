@@ -56,10 +56,30 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 // CANCELLED nằm trong danh sách đó, không cần dropdown chọn tay như trước. CANCELLED bắt
 // buộc nhập lý do (noteRequired) — các bước tiến bình thường thì không.
 export const ORDER_STATUS_ACTION: Partial<
-  Record<OrderStatus, { buttonLabel: string; confirmTitle: string; noteRequired?: boolean }>
+  Record<
+    OrderStatus,
+    {
+      buttonLabel: string;
+      confirmTitle: string;
+      noteRequired?: boolean;
+      // Tác dụng phụ tự động ở BE mà admin cần biết TRƯỚC khi xác nhận (hoàn kho, tự đổi
+      // paymentStatus...) — không hiển thị thì admin bấm xong mới ngỡ ngàng vì sao tồn kho/
+      // trạng thái thanh toán tự đổi.
+      sideEffectNote?: string;
+    }
+  >
 > = {
   CONFIRMED: { buttonLabel: "Xác nhận đơn", confirmTitle: "Xác nhận đơn hàng" },
   SHIPPING: { buttonLabel: "Bắt đầu giao", confirmTitle: "Bắt đầu giao hàng" },
-  COMPLETED: { buttonLabel: "Hoàn tất đơn", confirmTitle: "Hoàn tất đơn hàng" },
-  CANCELLED: { buttonLabel: "Hủy đơn", confirmTitle: "Hủy đơn hàng", noteRequired: true },
+  COMPLETED: {
+    buttonLabel: "Hoàn tất đơn",
+    confirmTitle: "Hoàn tất đơn hàng",
+    sideEffectNote: "Đơn thanh toán COD sẽ tự động chuyển sang trạng thái Đã thanh toán.",
+  },
+  CANCELLED: {
+    buttonLabel: "Hủy đơn",
+    confirmTitle: "Hủy đơn hàng",
+    noteRequired: true,
+    sideEffectNote: "Tồn kho của các sản phẩm trong đơn sẽ được tự động hoàn lại.",
+  },
 };

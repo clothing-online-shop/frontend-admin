@@ -14,6 +14,7 @@ import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import DatePicker from "@/components/form/DatePicker";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
+import Button from "@/components/ui/button/Button";
 import { EyeIcon } from "@/icons";
 
 const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABEL).map(([value, { label }]) => ({
@@ -26,6 +27,22 @@ const PAYMENT_METHOD_OPTIONS = Object.entries(PAYMENT_METHOD_LABEL).map(([value,
   label,
 }));
 
+// "YYYY-MM-DD" theo giờ LOCAL (không dùng toISOString — quy về UTC sẽ lệch ngày với chọn
+// tay trên lịch quanh nửa đêm giờ VN). Khớp định dạng flatpickr dateFormat "Y-m-d" đang
+// dùng cho 2 DatePicker bên dưới.
+function toDateOnlyString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+const DATE_PRESETS = [
+  { label: "Hôm nay", days: 1 },
+  { label: "7 ngày qua", days: 7 },
+  { label: "30 ngày qua", days: 30 },
+] as const;
+
 export default function OrderList() {
   const navigate = useNavigate();
   useBreadcrumb([{ label: "Đơn hàng" }]);
@@ -36,6 +53,21 @@ export default function OrderList() {
   const [from, setFrom] = useState<string | undefined>(undefined);
   const [to, setTo] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
+
+  function applyDatePreset(days: number) {
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(start.getDate() - (days - 1));
+    setFrom(`${toDateOnlyString(start)}T00:00:00.000`);
+    setTo(`${toDateOnlyString(today)}T23:59:59.999`);
+    setPage(1);
+  }
+
+  function clearDateFilter() {
+    setFrom(undefined);
+    setTo(undefined);
+    setPage(1);
+  }
 
   const { data, isLoading } = useOrdersAdmin({
     search: search || undefined,
@@ -60,6 +92,15 @@ export default function OrderList() {
       ),
     },
     {
+      key: "customerName",
+      header: "Khách hàng",
+      align: "left",
+      className: "min-w-48",
+      render: (order) => (
+        <span className="text-sm text-gray-700 dark:text-gray-300">{order.customerName}</span>
+      ),
+    },
+    {
       key: "status",
       header: "Trạng thái đơn",
       align: "center",
@@ -68,6 +109,17 @@ export default function OrderList() {
         const badge = ORDER_STATUS_LABEL[order.status];
         return <Badge color={badge.color}>{badge.label}</Badge>;
       },
+    },
+    {
+      key: "cancelReason",
+      header: "Lý do hủy",
+      align: "left",
+      className: "min-w-56",
+      render: (order) => (
+        <span className="line-clamp-2 max-w-xs text-sm text-gray-700 dark:text-gray-300">
+          {order.cancelReason ?? "—"}
+        </span>
+      ),
     },
     {
       key: "paymentStatus",
@@ -161,7 +213,12 @@ export default function OrderList() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      {/* Tách riêng 2 hàng (thay vì gộp chung 1 flex-wrap) — hàng bộ lọc chính có SỐ LƯỢNG
+          phần tử cố định, không bao giờ đổi theo state, nên không bao giờ bị dồn dịch layout
+          của toàn bộ thanh lọc. Hàng preset ngày để riêng bên dưới, "Xóa lọc ngày" LUÔN render
+          (chỉ disable khi chưa lọc) thay vì ẩn/hiện — tránh đổi độ rộng hàng này gây giật/nhảy
+          UI mỗi lần chọn/xoá khoảng ngày (bug đã gặp thực tế khi để chung 1 hàng). */}
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <div className="w-80">
           <Input
             placeholder="Tìm theo mã đơn hoặc SĐT khách"
@@ -202,6 +259,7 @@ export default function OrderList() {
           <DatePicker
             id="orders-from"
             placeholder="Từ ngày"
+            selectedDate={from ? new Date(from) : null}
             onChange={(_dates, dateStr) => {
               // BE so sánh createdAt bằng new Date() trực tiếp — chuỗi "YYYY-MM-DD" thuần
               // parse ra 00:00 UTC (07:00 giờ VN), phải gửi rõ mốc đầu ngày local.
@@ -214,6 +272,7 @@ export default function OrderList() {
           <DatePicker
             id="orders-to"
             placeholder="Đến ngày"
+            selectedDate={to ? new Date(to) : null}
             onChange={(_dates, dateStr) => {
               // Tương tự from — không đẩy tới cuối ngày sẽ cắt mất toàn bộ đơn tạo trong
               // đúng ngày được chọn (BE toInclusiveEndOfDay() xử lý chuỗi ngày thuần, nhưng
@@ -223,6 +282,29 @@ export default function OrderList() {
             }}
           />
         </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {DATE_PRESETS.map((preset) => (
+          <Button
+            key={preset.label}
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => applyDatePreset(preset.days)}
+          >
+            {preset.label}
+          </Button>
+        ))}
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={!from && !to}
+          onClick={clearDateFilter}
+        >
+          Xóa lọc ngày
+        </Button>
       </div>
 
       <div className="rounded-2xl bg-white dark:bg-white/[0.03]">

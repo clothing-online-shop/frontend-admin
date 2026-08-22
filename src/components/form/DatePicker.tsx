@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.css";
 import type { Hook, DateOption } from "flatpickr/dist/types/options";
@@ -19,6 +19,11 @@ interface DatePickerProps {
   placeholder?: string;
   error?: boolean;
   hint?: string;
+  // Đặt lại ngày hiển thị TỪ BÊN NGOÀI (vd bấm nút preset "7 ngày qua" ở OrderList.tsx)
+  // — khác defaultDate (chỉ set 1 lần lúc mount), prop này đồng bộ lại input mỗi lần đổi,
+  // kể cả về null (xoá lựa chọn). Không dùng thì bỏ qua prop này, hành vi giữ nguyên như
+  // cũ (chỉ gõ tay qua lịch).
+  selectedDate?: DateOption | null;
 }
 
 export default function DatePicker({
@@ -32,7 +37,12 @@ export default function DatePicker({
   placeholder,
   error = false,
   hint,
+  selectedDate,
 }: DatePickerProps) {
+  // flatpickr() trả Instance | Instance[] (trường hợp Instance[] chỉ xảy ra khi selector
+  // khớp nhiều phần tử DOM — ở đây luôn truyền đúng 1 `#id` nên thực tế luôn là Instance).
+  const instanceRef = useRef<Exclude<ReturnType<typeof flatpickr>, unknown[]> | null>(null);
+
   useEffect(() => {
     const flatPickr = flatpickr(`#${id}`, {
       mode: mode || "single",
@@ -46,13 +56,24 @@ export default function DatePicker({
       clickOpens: !disabled,
       onChange,
     });
+    instanceRef.current = Array.isArray(flatPickr) ? null : flatPickr;
 
     return () => {
       if (!Array.isArray(flatPickr)) {
         flatPickr.destroy();
       }
+      instanceRef.current = null;
     };
   }, [mode, onChange, id, defaultDate, minDate, disabled]);
+
+  // Đồng bộ NGƯỢC (state ngoài → lịch) khi selectedDate đổi — vd bấm nút preset ngày.
+  // selectedDate === undefined nghĩa là nơi gọi không dùng cơ chế này, bỏ qua hoàn toàn để
+  // không đổi hành vi các DatePicker hiện có. triggerChange: false để không gọi lại
+  // onChange (đồng bộ ngược, gọi lại sẽ tạo vòng lặp cập nhật vô ích).
+  useEffect(() => {
+    if (selectedDate === undefined) return;
+    instanceRef.current?.setDate(selectedDate ?? [], false);
+  }, [selectedDate]);
 
   return (
     <div>

@@ -80,6 +80,10 @@ export interface CustomerDetail extends Customer {
 export interface OrderListItem extends CustomerOrderSummary {
   paymentMethod: string;
   shippingAddress: string;
+  customerName: string;
+  // Lý do hủy (note của lần đổi trạng thái sang CANCELLED gần nhất) — null nếu đơn chưa
+  // từng bị hủy.
+  cancelReason: string | null;
 }
 
 export interface OrderItemDetail {
