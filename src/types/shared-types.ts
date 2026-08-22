@@ -74,6 +74,14 @@ export interface CustomerDetail extends Customer {
   orders: CustomerOrderSummary[];
 }
 
+// Dòng dữ liệu cho GET /orders (màn Quản lý đơn hàng, OrderList.tsx) — superset của
+// CustomerOrderSummary (thêm paymentMethod + shippingAddress mà API danh sách đơn trả
+// về nhưng API chi tiết khách hàng không cần) để không định nghĩa lại 7 field đã trùng.
+export interface OrderListItem extends CustomerOrderSummary {
+  paymentMethod: string;
+  shippingAddress: string;
+}
+
 export interface LoginPayload {
   email: string;
   password: string;

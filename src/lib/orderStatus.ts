@@ -23,3 +23,17 @@ export const PAYMENT_STATUS_LABEL: Record<
   REFUNDED: { label: "Đã hoàn tiền", color: "light" },
   FAILED: { label: "Thất bại", color: "error" },
 };
+
+// Khớp enum PaymentProvider (COD/VNPAY/MOMO/STRIPE) — Order.paymentMethod ở BE lưu dạng
+// string tự do (không ràng buộc enum khi đọc), nên map lookup theo string, giá trị lạ
+// không khớp thì OrderList.tsx tự fallback hiển thị nguyên chuỗi gốc. Nhãn giữ nhất quán
+// với paymentMethodLabel() trong email xác nhận đơn (backend-user).
+export const PAYMENT_METHOD_LABEL: Record<
+  string,
+  { label: string; color: "success" | "warning" | "error" | "info" | "light" }
+> = {
+  COD: { label: "Thanh toán khi nhận hàng (COD)", color: "light" },
+  VNPAY: { label: "Chuyển khoản qua VNPay", color: "info" },
+  MOMO: { label: "Ví MoMo", color: "warning" },
+  STRIPE: { label: "Thẻ quốc tế (Stripe)", color: "success" },
+};
