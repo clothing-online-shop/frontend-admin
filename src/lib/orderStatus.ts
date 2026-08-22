@@ -39,13 +39,27 @@ export const PAYMENT_METHOD_LABEL: Record<
 };
 
 // Mirror đúng luật chuyển trạng thái ở backend-cms (ORDER_STATUS_TRANSITIONS trong
-// orders.service.ts) — chỉ để lọc option hiển thị trong dropdown đổi trạng thái
-// (UpdateOrderStatusModal), không thay thế validate thật: BE vẫn là nguồn chặn cuối cùng
-// (trả 400 nếu FE lỡ gửi 1 giá trị không hợp lệ do 2 bên lệch nhau).
+// orders.service.ts) — chỉ để quyết định nút thao tác nào hiện ra trên OrderDetail.tsx,
+// không thay thế validate thật: BE vẫn là nguồn chặn cuối cùng (trả 400 nếu FE lỡ gửi 1
+// giá trị không hợp lệ do 2 bên lệch nhau).
 export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
   CONFIRMED: ["SHIPPING", "CANCELLED"],
   SHIPPING: ["COMPLETED", "CANCELLED"],
   COMPLETED: [],
   CANCELLED: [],
+};
+
+// Nhãn cho nút thao tác + dialog xác nhận theo TỪNG TRẠNG THÁI ĐÍCH (không phải trạng thái
+// hiện tại) — OrderDetail.tsx tự suy ra "bước tiếp theo" (status khác CANCELLED trong
+// ORDER_STATUS_TRANSITIONS[trạng thái hiện tại]) để hiện nút chính, và "Hủy đơn" nếu
+// CANCELLED nằm trong danh sách đó, không cần dropdown chọn tay như trước. CANCELLED bắt
+// buộc nhập lý do (noteRequired) — các bước tiến bình thường thì không.
+export const ORDER_STATUS_ACTION: Partial<
+  Record<OrderStatus, { buttonLabel: string; confirmTitle: string; noteRequired?: boolean }>
+> = {
+  CONFIRMED: { buttonLabel: "Xác nhận đơn", confirmTitle: "Xác nhận đơn hàng" },
+  SHIPPING: { buttonLabel: "Bắt đầu giao", confirmTitle: "Bắt đầu giao hàng" },
+  COMPLETED: { buttonLabel: "Hoàn tất đơn", confirmTitle: "Hoàn tất đơn hàng" },
+  CANCELLED: { buttonLabel: "Hủy đơn", confirmTitle: "Hủy đơn hàng", noteRequired: true },
 };

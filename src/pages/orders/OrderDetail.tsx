@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import type { OrderItemDetail, OrderStatusHistoryEntry } from "@/types/shared-types";
+import type { OrderItemDetail, OrderStatus, OrderStatusHistoryEntry } from "@/types/shared-types";
 import { useOrderDetail } from "@/hooks/useOrders";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { formatDateTime, formatPrice } from "@/lib/format";
-import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orderStatus";
+import {
+  ORDER_STATUS_ACTION,
+  ORDER_STATUS_LABEL,
+  ORDER_STATUS_TRANSITIONS,
+  PAYMENT_METHOD_LABEL,
+  PAYMENT_STATUS_LABEL,
+} from "@/lib/orderStatus";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import ComponentCard from "@/components/common/ComponentCard";
 import UpdateOrderStatusModal from "@/components/common/UpdateOrderStatusModal";
@@ -16,7 +22,7 @@ export default function OrderDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: order, isLoading, isError } = useOrderDetail(id);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [targetStatus, setTargetStatus] = useState<OrderStatus | null>(null);
 
   useBreadcrumb([
     { label: "Đơn hàng", href: "/orders" },
@@ -41,6 +47,13 @@ export default function OrderDetail() {
   const statusBadge = ORDER_STATUS_LABEL[order.status];
   const paymentStatusBadge = PAYMENT_STATUS_LABEL[order.paymentStatus];
   const paymentMethodBadge = PAYMENT_METHOD_LABEL[order.paymentMethod];
+
+  // Bước tiếp theo trong luồng chính (khác CANCELLED) — PENDING → "Xác nhận đơn",
+  // CONFIRMED → "Bắt đầu giao", SHIPPING → "Hoàn tất đơn". null nếu đơn đã ở trạng thái
+  // cuối (COMPLETED/CANCELLED), không hiện nút nào cả.
+  const nextStatuses = ORDER_STATUS_TRANSITIONS[order.status];
+  const forwardStatus = nextStatuses.find((status) => status !== "CANCELLED") ?? null;
+  const canCancel = nextStatuses.includes("CANCELLED");
 
   const itemColumns: DataTableColumn<OrderItemDetail>[] = [
     {
@@ -149,9 +162,24 @@ export default function OrderDetail() {
               }
             />
           </div>
-          <Button variant="outline" onClick={() => setIsStatusModalOpen(true)}>
-            Đổi trạng thái
-          </Button>
+          {(forwardStatus || canCancel) && (
+            <div className="flex gap-3">
+              {canCancel && (
+                <Button
+                  variant="outline"
+                  className="text-error-500 ring-1 ring-inset ring-error-300 hover:bg-error-50 dark:ring-error-800/50 dark:hover:bg-error-500/10"
+                  onClick={() => setTargetStatus("CANCELLED")}
+                >
+                  Hủy đơn
+                </Button>
+              )}
+              {forwardStatus && (
+                <Button variant="primary" onClick={() => setTargetStatus(forwardStatus)}>
+                  {ORDER_STATUS_ACTION[forwardStatus]?.buttonLabel}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </ComponentCard>
 
@@ -213,9 +241,10 @@ export default function OrderDetail() {
       </div>
 
       <UpdateOrderStatusModal
-        open={isStatusModalOpen}
-        onClose={() => setIsStatusModalOpen(false)}
-        order={{ id: order.id, orderCode: order.orderCode, status: order.status }}
+        open={targetStatus !== null}
+        onClose={() => setTargetStatus(null)}
+        order={{ id: order.id, orderCode: order.orderCode }}
+        targetStatus={targetStatus}
       />
     </div>
   );

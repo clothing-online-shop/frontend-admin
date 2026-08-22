@@ -14,8 +14,7 @@ import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
 import DatePicker from "@/components/form/DatePicker";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
-import UpdateOrderStatusModal from "@/components/common/UpdateOrderStatusModal";
-import { EyeIcon, PencilIcon } from "@/icons";
+import { EyeIcon } from "@/icons";
 
 const STATUS_OPTIONS = Object.entries(ORDER_STATUS_LABEL).map(([value, { label }]) => ({
   value,
@@ -37,7 +36,6 @@ export default function OrderList() {
   const [from, setFrom] = useState<string | undefined>(undefined);
   const [to, setTo] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const [statusModalOrder, setStatusModalOrder] = useState<OrderListItem | null>(null);
 
   const { data, isLoading } = useOrdersAdmin({
     search: search || undefined,
@@ -156,19 +154,6 @@ export default function OrderList() {
               <EyeIcon className="h-6 w-6" />
             </button>
           </Tooltip>
-          <Tooltip content="Đổi trạng thái">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setStatusModalOrder(order);
-              }}
-              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
-              aria-label="Đổi trạng thái đơn hàng"
-            >
-              <PencilIcon className="h-6 w-6" />
-            </button>
-          </Tooltip>
         </div>
       ),
     },
@@ -258,12 +243,6 @@ export default function OrderList() {
           />
         </div>
       </div>
-
-      <UpdateOrderStatusModal
-        open={statusModalOrder !== null}
-        onClose={() => setStatusModalOrder(null)}
-        order={statusModalOrder}
-      />
     </div>
   );
 }
