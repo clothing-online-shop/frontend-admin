@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import type { OrderStatus } from "@/types/shared-types";
 import { useUpdateOrderStatus } from "@/hooks/useOrders";
@@ -12,7 +12,7 @@ import {
 } from "@/schemas/order-status.schema";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
-import Input from "@/components/form/input/InputField";
+import TextArea from "@/components/form/input/TextArea";
 import FieldLabel from "@/components/form/FieldLabel";
 import Spinner from "@/components/ui/spinner/Spinner";
 
@@ -42,7 +42,7 @@ export default function UpdateOrderStatusModal({
   );
 
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -87,11 +87,18 @@ export default function UpdateOrderStatusModal({
             label="Lý do / Ghi chú"
             required={action.noteRequired}
           />
-          <Input
-            id="order-status-note"
-            {...register("note")}
-            error={!!errors.note}
-            hint={errors.note?.message}
+          <Controller
+            name="note"
+            control={control}
+            render={({ field }) => (
+              <TextArea
+                id="order-status-note"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={!!errors.note}
+                hint={errors.note?.message}
+              />
+            )}
           />
         </div>
 
