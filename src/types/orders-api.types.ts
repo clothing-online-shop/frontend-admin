@@ -9,3 +9,8 @@ export interface ListOrdersParams {
   page?: number;
   limit?: number;
 }
+
+export interface UpdateOrderStatusPayload {
+  status: OrderStatus;
+  note?: string;
+}

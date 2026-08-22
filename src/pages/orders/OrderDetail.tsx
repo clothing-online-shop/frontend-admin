@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { OrderItemDetail, OrderStatusHistoryEntry } from "@/types/shared-types";
 import { useOrderDetail } from "@/hooks/useOrders";
@@ -6,6 +7,7 @@ import { formatDateTime, formatPrice } from "@/lib/format";
 import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orderStatus";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import ComponentCard from "@/components/common/ComponentCard";
+import UpdateOrderStatusModal from "@/components/common/UpdateOrderStatusModal";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
@@ -14,6 +16,7 @@ export default function OrderDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: order, isLoading, isError } = useOrderDetail(id);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
   useBreadcrumb([
     { label: "Đơn hàng", href: "/orders" },
@@ -128,19 +131,27 @@ export default function OrderDetail() {
   return (
     <div className="space-y-6">
       <ComponentCard title="Thông tin đơn hàng">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Field label="Mã đơn" value={order.orderCode} />
-          <Field label="Trạng thái" value={<Badge color={statusBadge.color}>{statusBadge.label}</Badge>} />
-          <Field label="Ngày đặt" value={formatDateTime(order.createdAt)} />
-          <Field label="Cập nhật gần nhất" value={formatDateTime(order.updatedAt)} />
-          <Field
-            label="Tổng tiền"
-            value={
-              <span className="font-semibold text-gray-800 dark:text-white/90">
-                {formatPrice(order.totalAmount)}
-              </span>
-            }
-          />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Mã đơn" value={order.orderCode} />
+            <Field
+              label="Trạng thái"
+              value={<Badge color={statusBadge.color}>{statusBadge.label}</Badge>}
+            />
+            <Field label="Ngày đặt" value={formatDateTime(order.createdAt)} />
+            <Field label="Cập nhật gần nhất" value={formatDateTime(order.updatedAt)} />
+            <Field
+              label="Tổng tiền"
+              value={
+                <span className="font-semibold text-gray-800 dark:text-white/90">
+                  {formatPrice(order.totalAmount)}
+                </span>
+              }
+            />
+          </div>
+          <Button variant="outline" onClick={() => setIsStatusModalOpen(true)}>
+            Đổi trạng thái
+          </Button>
         </div>
       </ComponentCard>
 
@@ -200,6 +211,12 @@ export default function OrderDetail() {
           emptyMessage="Chưa có lịch sử trạng thái."
         />
       </div>
+
+      <UpdateOrderStatusModal
+        open={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        order={{ id: order.id, orderCode: order.orderCode, status: order.status }}
+      />
     </div>
   );
 }

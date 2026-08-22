@@ -37,3 +37,15 @@ export const PAYMENT_METHOD_LABEL: Record<
   MOMO: { label: "Ví MoMo", color: "warning" },
   STRIPE: { label: "Thẻ quốc tế (Stripe)", color: "success" },
 };
+
+// Mirror đúng luật chuyển trạng thái ở backend-cms (ORDER_STATUS_TRANSITIONS trong
+// orders.service.ts) — chỉ để lọc option hiển thị trong dropdown đổi trạng thái
+// (UpdateOrderStatusModal), không thay thế validate thật: BE vẫn là nguồn chặn cuối cùng
+// (trả 400 nếu FE lỡ gửi 1 giá trị không hợp lệ do 2 bên lệch nhau).
+export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["SHIPPING", "CANCELLED"],
+  SHIPPING: ["COMPLETED", "CANCELLED"],
+  COMPLETED: [],
+  CANCELLED: [],
+};

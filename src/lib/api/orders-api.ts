@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api/api-client";
 import type { OrderDetail, OrderListItem, PaginatedResult } from "@/types/shared-types";
-import type { ListOrdersParams } from "@/types/orders-api.types";
+import type { ListOrdersParams, UpdateOrderStatusPayload } from "@/types/orders-api.types";
 
 export async function getOrdersAdmin(
   params: ListOrdersParams = {},
@@ -13,5 +13,13 @@ export async function getOrdersAdmin(
 
 export async function getOrderDetail(id: string): Promise<OrderDetail> {
   const { data } = await apiClient.get<OrderDetail>(`/orders/${id}`);
+  return data;
+}
+
+export async function updateOrderStatus(
+  id: string,
+  payload: UpdateOrderStatusPayload,
+): Promise<OrderDetail> {
+  const { data } = await apiClient.patch<OrderDetail>(`/orders/${id}/status`, payload);
   return data;
 }
