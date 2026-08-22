@@ -54,6 +54,13 @@ const DATE_PRESETS = [
 const DATE_FILTER_BUTTON_HOVER =
   "hover:!bg-brand-500 hover:text-white hover:ring-brand-500 dark:hover:!bg-brand-500 dark:hover:text-white dark:hover:ring-brand-500";
 
+// Riêng nút "Xóa lọc ngày" còn disable được (2 nút preset kia thì không) — nút <button
+// disabled> vẫn khớp pseudo-class :hover trên Chromium (chỉ mất :active/click, không mất
+// :hover), nên hover cam ở trên vẫn hiện dù đang disabled/không bấm được. Ép override
+// disabled:hover: (nhiều pseudo-class hơn → specificity cao hơn :hover thường, thắng dù
+// cả 2 đều !important) trả về đúng màu outline mặc định của Button khi đang disabled.
+const DATE_FILTER_CLEAR_BUTTON_HOVER = `${DATE_FILTER_BUTTON_HOVER} disabled:hover:!bg-white disabled:hover:!text-gray-700 disabled:hover:!ring-gray-300 dark:disabled:hover:!bg-gray-800 dark:disabled:hover:!text-gray-400 dark:disabled:hover:!ring-gray-700`;
+
 export default function OrderList() {
   const navigate = useNavigate();
   useBreadcrumb([{ label: "Đơn hàng" }]);
@@ -312,7 +319,7 @@ export default function OrderList() {
           type="button"
           size="sm"
           variant="outline"
-          className={DATE_FILTER_BUTTON_HOVER}
+          className={DATE_FILTER_CLEAR_BUTTON_HOVER}
           disabled={!from && !to}
           onClick={clearDateFilter}
         >
