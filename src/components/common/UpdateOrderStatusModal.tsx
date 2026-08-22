@@ -51,9 +51,13 @@ export default function UpdateOrderStatusModal({
     defaultValues: { note: "" },
   });
 
+  // Chỉ phụ thuộc `open` (không phải `order`/`targetStatus`, dù không dùng trong thân effect)
+  // — OrderDetail.tsx truyền `order` là object literal tạo mới MỖI LẦN RENDER, nếu để trong
+  // dependency thì bất kỳ re-render nào của OrderDetail lúc dialog đang mở (vd react-query tự
+  // refetch khi focus lại tab) cũng làm effect chạy lại, xoá mất lý do admin đang gõ dở.
   useEffect(() => {
     if (open) reset({ note: "" });
-  }, [open, order, targetStatus, reset]);
+  }, [open, reset]);
 
   async function onValid(values: UpdateOrderStatusFormValues) {
     if (!order || !targetStatus) return;
