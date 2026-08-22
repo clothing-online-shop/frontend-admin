@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { OrderStatus, type OrderListItem } from "@/types/shared-types";
 import { useOrdersAdmin } from "@/hooks/useOrders";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -24,6 +25,7 @@ const PAYMENT_METHOD_OPTIONS = Object.entries(PAYMENT_METHOD_LABEL).map(([value,
 }));
 
 export default function OrderList() {
+  const navigate = useNavigate();
   useBreadcrumb([{ label: "Đơn hàng" }]);
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
@@ -202,6 +204,7 @@ export default function OrderList() {
           columns={columns}
           rows={data?.data ?? []}
           rowKey={(order) => order.id}
+          onRowClick={(order) => navigate(`/orders/${order.id}`)}
           isLoading={isLoading}
           emptyMessage="Chưa có đơn hàng nào."
         />

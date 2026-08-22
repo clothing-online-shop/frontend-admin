@@ -82,6 +82,45 @@ export interface OrderListItem extends CustomerOrderSummary {
   shippingAddress: string;
 }
 
+export interface OrderItemDetail {
+  id: string;
+  productVariantId: string;
+  productName: string;
+  variantSku: string;
+  size: string;
+  color: string;
+  thumbnail: string | null;
+  quantity: number;
+  priceAtPurchase: number;
+}
+
+export interface OrderStatusHistoryEntry {
+  id: string;
+  fromStatus: OrderStatus | null;
+  toStatus: OrderStatus;
+  note: string | null;
+  // null = hệ thống tự ghi (vd lúc tạo đơn), khác với "chưa có ai đổi trạng thái".
+  changedByName: string | null;
+  createdAt: string;
+}
+
+// Dòng dữ liệu cho GET /orders/:id (màn chi tiết đơn, OrderDetail.tsx) — không kế thừa
+// OrderListItem vì shape khác hẳn (không có itemCount, thay bằng items[] đầy đủ).
+export interface OrderDetail {
+  id: string;
+  orderCode: string;
+  status: OrderStatus;
+  paymentMethod: string;
+  paymentStatus: PaymentStatus;
+  totalAmount: number;
+  shippingAddress: string;
+  createdAt: string;
+  updatedAt: string;
+  customer: { id: string; fullName: string; email: string; phone: string | null };
+  items: OrderItemDetail[];
+  statusHistories: OrderStatusHistoryEntry[];
+}
+
 export interface LoginPayload {
   email: string;
   password: string;

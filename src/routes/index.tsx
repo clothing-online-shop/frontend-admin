@@ -10,6 +10,7 @@ import BrandList from "@/pages/brands/BrandList";
 import CollectionList from "@/pages/collections/CollectionList";
 import BannerList from "@/pages/banners/BannerList";
 import OrderList from "@/pages/orders/OrderList";
+import OrderDetail from "@/pages/orders/OrderDetail";
 import InventoryList from "@/pages/inventory/InventoryList";
 import InventoryHistory from "@/pages/inventory/InventoryHistory";
 import CustomerList from "@/pages/customers/CustomerList";
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           { path: "/collections", element: <CollectionList /> },
           { path: "/banners", element: <BannerList /> },
           { path: "/orders", element: <OrderList /> },
+          { path: "/orders/:id", element: <OrderDetail /> },
           { path: "/inventory", element: <InventoryList /> },
           { path: "/inventory/history", element: <InventoryHistory /> },
           { path: "/customers", element: <CustomerList /> },
