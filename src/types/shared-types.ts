@@ -221,23 +221,24 @@ export const DiscountType = {
 } as const;
 export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType];
 
+// Chỉ 2 trạng thái — ACTIVE nghĩa là dùng được ngay bây giờ (đang bật + trong thời hạn +
+// chưa hết lượt), mọi lý do khác gộp chung INACTIVE (xem deriveVoucherStatus ở backend-cms).
 export const VoucherStatus = {
   ACTIVE: "ACTIVE",
   INACTIVE: "INACTIVE",
-  UPCOMING: "UPCOMING",
-  EXPIRED: "EXPIRED",
-  OUT_OF_USAGE: "OUT_OF_USAGE",
 } as const;
 export type VoucherStatus = (typeof VoucherStatus)[keyof typeof VoucherStatus];
 
 export interface Voucher {
   id: string;
   code: string;
+  imageUrl: string | null;
+  imagePublicId: string | null;
   discountType: DiscountType;
   discountValue: number;
   maxDiscountAmount: number | null;
   minOrderValue: number;
-  startsAt: string | null;
+  startsAt: string;
   expiresAt: string | null;
   usageLimit: number | null;
   usedCount: number;

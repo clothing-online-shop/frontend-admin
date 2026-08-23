@@ -59,12 +59,19 @@ const Select: React.FC<SelectProps> = ({
           type="button"
           disabled={disabled}
           onClick={toggle}
-          className={`flex h-11 w-full items-center justify-between rounded-lg border bg-transparent px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:outline-hidden dark:bg-gray-900 ${
-            error
-              ? "border-form-error focus:border-form-error"
-              : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
-          } text-gray-800 dark:text-white/90 ${
-            disabled ? "cursor-not-allowed bg-gray-50 dark:bg-white/[0.03]" : ""
+          className={`flex h-11 w-full items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:outline-hidden ${
+            disabled
+              ? // Cùng bảng màu disabled với Input.tsx (bg-gray-100, không phải bg-gray-50 —
+                // quá nhạt, gần như không phân biệt được với nền trắng bình thường). Không có
+                // bg-transparent ở base class phía trên — 2 utility bg-* cùng có mặt trên 1
+                // element sẽ tranh chấp nhau theo thứ tự Tailwind tự sinh CSS (không phải
+                // theo thứ tự viết trong template literal), kết quả không đoán trước được.
+                "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              : `bg-transparent dark:bg-gray-900 ${
+                  error
+                    ? "border-form-error focus:border-form-error"
+                    : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
+                } text-gray-800 dark:text-white/90`
           } ${className}`}
         >
           <span className={`truncate ${

@@ -110,6 +110,7 @@ export function CategoryFormModal({
             <Input
               label="Tên danh mục"
               required
+              disabled={viewOnly}
               placeholder="Ví dụ: Áo nam"
               {...register("name")}
               error={!!errors.name}
@@ -118,7 +119,7 @@ export function CategoryFormModal({
           </div>
 
           <div>
-            <Input label="URL" placeholder="ao-nam" {...register("slug")} />
+            <Input label="URL" disabled={viewOnly} placeholder="ao-nam" {...register("slug")} />
           </div>
 
           <div>

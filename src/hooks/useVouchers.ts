@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createVoucher,
   deleteVoucher,
+  getVoucher,
   getVouchers,
   toggleVoucherActive,
   updateVoucher,
@@ -18,6 +19,14 @@ export function useVouchers(query: ListVouchersQuery) {
   return useQuery({
     queryKey: [...VOUCHERS_KEY, query],
     queryFn: () => getVouchers(query),
+  });
+}
+
+export function useVoucherDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: [...VOUCHERS_KEY, "detail", id],
+    queryFn: () => getVoucher(id!),
+    enabled: Boolean(id),
   });
 }
 

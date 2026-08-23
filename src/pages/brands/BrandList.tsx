@@ -171,6 +171,7 @@ export default function BrandList() {
           isLoading={isLoading}
           emptyMessage="Chưa có thương hiệu nào."
           onRowClick={openView}
+          showIndex
         />
       </div>
 

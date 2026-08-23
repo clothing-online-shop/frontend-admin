@@ -190,6 +190,16 @@ export default function OrderDetail() {
                 </span>
               }
             />
+            {order.voucherCode && (
+              <Field
+                label="Voucher đã áp dụng"
+                value={
+                  <span className="text-sm text-gray-800 dark:text-white/90">
+                    {order.voucherCode} — giảm {formatPrice(order.discountAmount)}
+                  </span>
+                }
+              />
+            )}
           </div>
           {(forwardStatus || canCancel || canConfirmBankTransfer) && (
             <div className="flex gap-3">

@@ -82,12 +82,17 @@ export default function CategorySelect({
           type="button"
           disabled={disabled}
           onClick={toggle}
-          className={`flex h-11 w-full items-center justify-between rounded-lg border bg-transparent px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:outline-hidden dark:bg-gray-900 ${
-            error
-              ? "border-form-error focus:border-form-error"
-              : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
-          } ${
-            disabled ? "cursor-not-allowed bg-gray-50 dark:bg-white/[0.03]" : ""
+          className={`flex h-11 w-full items-center justify-between rounded-lg border px-4 py-2.5 text-left text-sm shadow-theme-xs transition-[border-color,box-shadow] duration-200 ease-standard focus:outline-hidden ${
+            disabled
+              ? // Cùng bảng màu disabled với Input.tsx/Select.tsx (bg-gray-100, không phải
+                // bg-gray-50 — quá nhạt). Không đặt bg-transparent ở base class (nhánh dưới)
+                // để tránh 2 utility bg-* cùng có mặt trên 1 element tranh chấp nhau.
+                "cursor-not-allowed border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+              : `bg-transparent dark:bg-gray-900 ${
+                  error
+                    ? "border-form-error focus:border-form-error"
+                    : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
+                }`
           } ${
             !selectedNode
               ? placeholderColor === "gray-700"

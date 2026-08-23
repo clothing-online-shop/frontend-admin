@@ -60,6 +60,7 @@ export function ProductGeneralInfoStep({
         <Input
           label="Tên sản phẩm"
           required
+          disabled={viewOnly}
           placeholder="Ví dụ: Áo sơ mi nam trắng"
           {...nameField}
           onChange={(e) => {
@@ -94,6 +95,7 @@ export function ProductGeneralInfoStep({
           <Input
             label="Chất liệu"
             required
+            disabled={viewOnly}
             placeholder="Ví dụ: Cotton 100%"
             {...register("material")}
             error={!!visibleFieldError(errors.material?.message, dirtyFields.material, isSubmitted)}
@@ -103,6 +105,7 @@ export function ProductGeneralInfoStep({
         <div className="flex-1">
           <Input
             label="Hướng dẫn bảo quản"
+            disabled={viewOnly}
             placeholder="Ví dụ: Giặt tay, không dùng thuốc tẩy"
             {...register("careInstructions")}
           />
@@ -227,6 +230,7 @@ export function ProductGeneralInfoStep({
         <Input
           label="URL"
           required
+          disabled={viewOnly}
           placeholder="ao-so-mi-nam-trang"
           {...slugField}
           onChange={(e) => {

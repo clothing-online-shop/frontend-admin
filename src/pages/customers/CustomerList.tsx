@@ -131,6 +131,8 @@ export default function CustomerList() {
           isLoading={isLoading}
           emptyMessage="Chưa có khách hàng nào."
           onRowClick={(c) => navigate(`/customers/${c.id}`)}
+          showIndex
+          indexOffset={(page - 1) * DEFAULT_PAGE_SIZE}
         />
         <div className="px-5">
           <Pagination page={page} pageSize={DEFAULT_PAGE_SIZE} total={data?.meta.total ?? 0} onChange={setPage} />

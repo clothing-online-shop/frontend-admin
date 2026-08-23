@@ -17,6 +17,7 @@ import {
   PageIcon,
   PlugInIcon,
   AngleRightIcon,
+  DollarLineIcon,
 } from "@/icons";
 
 interface MenuItem {
@@ -37,6 +38,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
   { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
   { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
+  { key: "/vouchers", icon: DollarLineIcon, label: "Voucher", allow: MARKETING_ROLES },
   { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ALL_ADMIN_ROLES },
   { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
   { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },

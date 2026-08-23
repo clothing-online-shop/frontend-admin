@@ -11,6 +11,11 @@ export async function getVouchers(query: ListVouchersQuery): Promise<Voucher[]> 
   return data;
 }
 
+export async function getVoucher(id: string): Promise<Voucher> {
+  const { data } = await apiClient.get<Voucher>(`/vouchers/${id}`);
+  return data;
+}
+
 export async function createVoucher(payload: CreateVoucherPayload): Promise<Voucher> {
   const { data } = await apiClient.post<Voucher>("/vouchers", payload);
   return data;

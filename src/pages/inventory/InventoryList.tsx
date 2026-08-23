@@ -109,6 +109,8 @@ export default function InventoryList() {
           rowKey={(item) => item.variantId}
           isLoading={isLoading}
           emptyMessage="Chưa có biến thể sản phẩm nào."
+          showIndex
+          indexOffset={(page - 1) * DEFAULT_PAGE_SIZE}
         />
         <div className="px-5">
           <Pagination
