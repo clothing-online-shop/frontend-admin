@@ -31,16 +31,21 @@ function getInitial(name: string | undefined): string {
   return (name?.trim()?.[0] ?? "?").toUpperCase();
 }
 
+// Sắp theo luồng nghiệp vụ, không theo thứ tự thêm tính năng trước/sau: nền tảng danh mục
+// (Danh mục/Thương hiệu phải có trước khi tạo Sản phẩm) → Sản phẩm + Tồn kho (theo sát
+// nhau vì tồn kho gắn trực tiếp vào biến thể sản phẩm) → merchandising/marketing (Bộ sưu
+// tập/Banner/Voucher — đều là công cụ quảng bá, xếp cạnh nhau) → bán hàng (Đơn hàng/Khách
+// hàng) → nội dung chung (CMS) → Cấu hình luôn ở cuối cùng.
 const MENU_ITEMS: MenuItem[] = [
   { key: "/dashboard", icon: PieChartIcon, label: "Trang chủ", allow: ALL_ADMIN_ROLES },
-  { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
-  { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
+  { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
+  { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
   { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
+  { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
   { key: "/vouchers", icon: DollarLineIcon, label: "Voucher", allow: MARKETING_ROLES },
   { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ALL_ADMIN_ROLES },
-  { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
   { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
   { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
   { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
