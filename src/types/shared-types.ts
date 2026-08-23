@@ -86,6 +86,11 @@ export interface OrderListItem extends CustomerOrderSummary {
   // Lý do hủy (note của lần đổi trạng thái sang CANCELLED gần nhất) — null nếu đơn chưa
   // từng bị hủy.
   cancelReason: string | null;
+  // Số tiền voucher đã giảm (0 nếu đơn không dùng voucher) — không đưa lên
+  // CustomerOrderSummary vì GET /customers/:id (nguồn dữ liệu của summary đó) không trả field
+  // này.
+  discountAmount: number;
+  voucherCode: string | null;
 }
 
 export interface OrderItemDetail {
@@ -119,6 +124,8 @@ export interface OrderDetail {
   paymentMethod: string;
   paymentStatus: PaymentStatus;
   totalAmount: number;
+  discountAmount: number;
+  voucherCode: string | null;
   shippingAddress: string;
   createdAt: string;
   updatedAt: string;
@@ -204,6 +211,39 @@ export interface Banner {
   startDate: string;
   endDate: string;
   status: BannerStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const DiscountType = {
+  PERCENTAGE: "PERCENTAGE",
+  FIXED_AMOUNT: "FIXED_AMOUNT",
+} as const;
+export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType];
+
+export const VoucherStatus = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+  UPCOMING: "UPCOMING",
+  EXPIRED: "EXPIRED",
+  OUT_OF_USAGE: "OUT_OF_USAGE",
+} as const;
+export type VoucherStatus = (typeof VoucherStatus)[keyof typeof VoucherStatus];
+
+export interface Voucher {
+  id: string;
+  code: string;
+  discountType: DiscountType;
+  discountValue: number;
+  maxDiscountAmount: number | null;
+  minOrderValue: number;
+  startsAt: string | null;
+  expiresAt: string | null;
+  usageLimit: number | null;
+  usedCount: number;
+  perCustomerLimit: number | null;
+  isActive: boolean;
+  status: VoucherStatus;
   createdAt: string;
   updatedAt: string;
 }
