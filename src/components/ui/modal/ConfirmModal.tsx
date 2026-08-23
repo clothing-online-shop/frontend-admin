@@ -37,10 +37,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   return (
     <Modal isOpen={open} onClose={onClose} className="max-w-md m-4">
-      <div className="p-6">
+      <div className="p-6 sm:pt-3">
         {/* min-h khớp đúng chiều cao nút đóng (X) của Modal dùng chung (h-9.5/sm:h-11, xem
-            ui/modal/index.tsx) — cả 2 cùng bắt đầu từ mép trên (p-6 = top-6 của nút) nên
-            căn giữa theo chiều dọc trong khung cao bằng nhau sẽ thẳng hàng với nhau. */}
+            ui/modal/index.tsx) — cả 2 cùng bắt đầu từ mép trên (top-3/sm:top-3 của nút, xem
+            ui/modal/index.tsx) nên căn giữa theo chiều dọc trong khung cao bằng nhau sẽ
+            thẳng hàng với nhau. sm:pt-3 (không phải sm:p-6 mặc định) để khớp lại — trước đây
+            nút đóng ở sm:top-6 khớp đúng p-6, nhưng đã đổi xuống sm:top-3 (xem index.tsx),
+            nếu không chỉnh lại thì khối tiêu đề bị lệch xuống dưới nút đóng ~12px ở màn ≥sm. */}
         <div className="flex min-h-9.5 items-center pr-12 sm:min-h-11">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">{title}</h3>
         </div>

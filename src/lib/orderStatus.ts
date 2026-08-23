@@ -9,6 +9,8 @@ export const ORDER_STATUS_LABEL: Record<
 > = {
   PENDING: { label: "Chờ xác nhận", color: "warning" },
   CONFIRMED: { label: "Đã xác nhận", color: "info" },
+  PACKING: { label: "Đang đóng gói", color: "info" },
+  HANDED_OVER: { label: "Đã bàn giao vận chuyển", color: "info" },
   SHIPPING: { label: "Đang giao", color: "info" },
   COMPLETED: { label: "Hoàn tất", color: "success" },
   CANCELLED: { label: "Đã hủy", color: "light" },
@@ -22,4 +24,76 @@ export const PAYMENT_STATUS_LABEL: Record<
   PAID: { label: "Đã thanh toán", color: "success" },
   REFUNDED: { label: "Đã hoàn tiền", color: "light" },
   FAILED: { label: "Thất bại", color: "error" },
+};
+
+// Khớp enum PaymentProvider (COD/VNPAY/MOMO/STRIPE) — Order.paymentMethod ở BE lưu dạng
+// string tự do (không ràng buộc enum khi đọc), nên map lookup theo string, giá trị lạ
+// không khớp thì OrderList.tsx tự fallback hiển thị nguyên chuỗi gốc. Nhãn giữ nhất quán
+// với paymentMethodLabel() trong email xác nhận đơn (backend-user).
+export const PAYMENT_METHOD_LABEL: Record<
+  string,
+  { label: string; color: "success" | "warning" | "error" | "info" | "light" }
+> = {
+  COD: { label: "Thanh toán khi nhận hàng (COD)", color: "light" },
+  VNPAY: { label: "Chuyển khoản qua VNPay", color: "info" },
+  MOMO: { label: "Ví MoMo", color: "warning" },
+  STRIPE: { label: "Thẻ quốc tế (Stripe)", color: "success" },
+  BANK_TRANSFER: { label: "Chuyển khoản ngân hàng", color: "info" },
+};
+
+// Mirror đúng luật chuyển trạng thái ở backend-cms (ORDER_STATUS_TRANSITIONS trong
+// orders.service.ts) — chỉ để quyết định nút thao tác nào hiện ra trên OrderDetail.tsx,
+// không thay thế validate thật: BE vẫn là nguồn chặn cuối cùng (trả 400 nếu FE lỡ gửi 1
+// giá trị không hợp lệ do 2 bên lệch nhau).
+export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["PACKING", "CANCELLED"],
+  PACKING: ["HANDED_OVER", "CANCELLED"],
+  HANDED_OVER: ["SHIPPING", "CANCELLED"],
+  SHIPPING: ["COMPLETED", "CANCELLED"],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+// Nhãn cho nút thao tác + dialog xác nhận theo TỪNG TRẠNG THÁI ĐÍCH (không phải trạng thái
+// hiện tại) — OrderDetail.tsx tự suy ra "bước tiếp theo" (status khác CANCELLED trong
+// ORDER_STATUS_TRANSITIONS[trạng thái hiện tại]) để hiện nút chính, và "Hủy đơn" nếu
+// CANCELLED nằm trong danh sách đó, không cần dropdown chọn tay như trước. CANCELLED bắt
+// buộc nhập lý do (noteRequired) — các bước tiến bình thường thì không.
+export const ORDER_STATUS_ACTION: Partial<
+  Record<
+    OrderStatus,
+    {
+      buttonLabel: string;
+      confirmTitle: string;
+      noteRequired?: boolean;
+      // Tác dụng phụ tự động ở BE mà admin cần biết TRƯỚC khi xác nhận (hoàn kho, tự đổi
+      // paymentStatus...) — không hiển thị thì admin bấm xong mới ngỡ ngàng vì sao tồn kho/
+      // trạng thái thanh toán tự đổi.
+      sideEffectNote?: string;
+    }
+  >
+> = {
+  CONFIRMED: { buttonLabel: "Xác nhận đơn", confirmTitle: "Xác nhận đơn hàng" },
+  PACKING: { buttonLabel: "Đóng gói đơn", confirmTitle: "Đóng gói đơn hàng" },
+  HANDED_OVER: {
+    buttonLabel: "Bàn giao vận chuyển",
+    confirmTitle: "Bàn giao đơn cho vận chuyển",
+  },
+  SHIPPING: { buttonLabel: "Bắt đầu giao", confirmTitle: "Bắt đầu giao hàng" },
+  COMPLETED: {
+    buttonLabel: "Hoàn tất đơn",
+    confirmTitle: "Hoàn tất đơn hàng",
+    // Chỉ COD tự đổi paymentStatus khi hoàn tất (xem shouldMarkPaid ở orders.service.ts) —
+    // các phương thức khác (VNPay/chuyển khoản) phải được xác nhận đã thanh toán từ trước,
+    // BE giờ chặn hẳn (400 ORDER_COMPLETE_REQUIRES_PAYMENT) nếu hoàn tất mà chưa thanh toán.
+    sideEffectNote:
+      "Đơn COD sẽ tự động chuyển sang Đã thanh toán. Đơn thanh toán online/chuyển khoản phải đã được xác nhận thanh toán trước, nếu chưa sẽ không hoàn tất được.",
+  },
+  CANCELLED: {
+    buttonLabel: "Hủy đơn",
+    confirmTitle: "Hủy đơn hàng",
+    noteRequired: true,
+    sideEffectNote: "Tồn kho của các sản phẩm trong đơn sẽ được tự động hoàn lại.",
+  },
 };

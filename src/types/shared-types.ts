@@ -32,6 +32,8 @@ export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 export const OrderStatus = {
   PENDING: "PENDING",
   CONFIRMED: "CONFIRMED",
+  PACKING: "PACKING",
+  HANDED_OVER: "HANDED_OVER",
   SHIPPING: "SHIPPING",
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",
@@ -72,6 +74,57 @@ export interface CustomerOrderSummary {
 
 export interface CustomerDetail extends Customer {
   orders: CustomerOrderSummary[];
+}
+
+// Dòng dữ liệu cho GET /orders (màn Quản lý đơn hàng, OrderList.tsx) — superset của
+// CustomerOrderSummary (thêm paymentMethod + shippingAddress mà API danh sách đơn trả
+// về nhưng API chi tiết khách hàng không cần) để không định nghĩa lại 7 field đã trùng.
+export interface OrderListItem extends CustomerOrderSummary {
+  paymentMethod: string;
+  shippingAddress: string;
+  customerName: string;
+  // Lý do hủy (note của lần đổi trạng thái sang CANCELLED gần nhất) — null nếu đơn chưa
+  // từng bị hủy.
+  cancelReason: string | null;
+}
+
+export interface OrderItemDetail {
+  id: string;
+  productVariantId: string;
+  productName: string;
+  variantSku: string;
+  size: string;
+  color: string;
+  thumbnail: string | null;
+  quantity: number;
+  priceAtPurchase: number;
+}
+
+export interface OrderStatusHistoryEntry {
+  id: string;
+  fromStatus: OrderStatus | null;
+  toStatus: OrderStatus;
+  note: string | null;
+  // null = hệ thống tự ghi (vd lúc tạo đơn), khác với "chưa có ai đổi trạng thái".
+  changedByName: string | null;
+  createdAt: string;
+}
+
+// Dòng dữ liệu cho GET /orders/:id (màn chi tiết đơn, OrderDetail.tsx) — không kế thừa
+// OrderListItem vì shape khác hẳn (không có itemCount, thay bằng items[] đầy đủ).
+export interface OrderDetail {
+  id: string;
+  orderCode: string;
+  status: OrderStatus;
+  paymentMethod: string;
+  paymentStatus: PaymentStatus;
+  totalAmount: number;
+  shippingAddress: string;
+  createdAt: string;
+  updatedAt: string;
+  customer: { id: string; fullName: string; email: string; phone: string | null };
+  items: OrderItemDetail[];
+  statusHistories: OrderStatusHistoryEntry[];
 }
 
 export interface LoginPayload {
