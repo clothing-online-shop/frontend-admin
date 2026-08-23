@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getOrderDetail, getOrdersAdmin, updateOrderStatus } from "@/lib/api/orders-api";
+import {
+  confirmBankTransfer,
+  getOrderDetail,
+  getOrdersAdmin,
+  updateOrderStatus,
+} from "@/lib/api/orders-api";
 import type { ListOrdersParams, UpdateOrderStatusPayload } from "@/types/orders-api.types";
 
 const ORDERS_KEY = "orders";
@@ -24,6 +29,14 @@ export function useUpdateOrderStatus() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateOrderStatusPayload }) =>
       updateOrderStatus(id, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [ORDERS_KEY] }),
+  });
+}
+
+export function useConfirmBankTransfer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => confirmBankTransfer(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [ORDERS_KEY] }),
   });
 }

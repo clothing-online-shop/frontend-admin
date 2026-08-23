@@ -62,9 +62,14 @@ export default function UpdateOrderStatusModal({
   async function onValid(values: UpdateOrderStatusFormValues) {
     if (!order || !targetStatus) return;
     try {
+      // Trim thủ công ở đây thay vì trông cậy hết vào schema — nhánh noteRequired=false của
+      // buildUpdateOrderStatusSchema() không transform trim (chỉ nhánh required mới có, để
+      // báo lỗi "chưa nhập" đúng cho input toàn khoảng trắng), nên ghi chú optional gõ toàn
+      // dấu cách vẫn có thể lọt qua validate và bị gửi nguyên lên API/lưu vào lịch sử.
+      const note = values.note?.trim();
       await mutation.mutateAsync({
         id: order.id,
-        payload: { status: targetStatus, note: values.note || undefined },
+        payload: { status: targetStatus, note: note || undefined },
       });
       toast.success(`Đã cập nhật đơn ${order.orderCode}.`);
       onClose();

@@ -1,28 +1,34 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { OrderItemDetail, OrderStatus, OrderStatusHistoryEntry } from "@/types/shared-types";
-import { useOrderDetail } from "@/hooks/useOrders";
+import { useConfirmBankTransfer, useOrderDetail } from "@/hooks/useOrders";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
+import { useToast } from "@/hooks/useToast";
+import { getErrorMessage } from "@/lib/error";
 import { formatDateTime, formatPrice } from "@/lib/format";
 import {
   ORDER_STATUS_ACTION,
   ORDER_STATUS_LABEL,
   ORDER_STATUS_TRANSITIONS,
-  PAYMENT_METHOD_LABEL,
   PAYMENT_STATUS_LABEL,
 } from "@/lib/orderStatus";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import ComponentCard from "@/components/common/ComponentCard";
+import PaymentMethodBadge from "@/components/common/PaymentMethodBadge";
 import UpdateOrderStatusModal from "@/components/common/UpdateOrderStatusModal";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Spinner from "@/components/ui/spinner/Spinner";
 
 export default function OrderDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const { data: order, isLoading, isError } = useOrderDetail(id);
   const [targetStatus, setTargetStatus] = useState<OrderStatus | null>(null);
+  const [confirmingBankTransfer, setConfirmingBankTransfer] = useState(false);
+  const confirmBankTransferMutation = useConfirmBankTransfer();
 
   useBreadcrumb([
     { label: "Đơn hàng", href: "/orders" },
@@ -46,7 +52,6 @@ export default function OrderDetail() {
 
   const statusBadge = ORDER_STATUS_LABEL[order.status];
   const paymentStatusBadge = PAYMENT_STATUS_LABEL[order.paymentStatus];
-  const paymentMethodBadge = PAYMENT_METHOD_LABEL[order.paymentMethod];
 
   // Bước tiếp theo trong luồng chính (khác CANCELLED) — PENDING → "Xác nhận đơn",
   // CONFIRMED → "Bắt đầu giao", SHIPPING → "Hoàn tất đơn". null nếu đơn đã ở trạng thái
@@ -54,6 +59,30 @@ export default function OrderDetail() {
   const nextStatuses = ORDER_STATUS_TRANSITIONS[order.status];
   const forwardStatus = nextStatuses.find((status) => status !== "CANCELLED") ?? null;
   const canCancel = nextStatuses.includes("CANCELLED");
+  // Đơn chuyển khoản chưa thanh toán, chưa hủy/hoàn tất — admin cần chủ động xác nhận đã
+  // nhận tiền (POST .../confirm-bank-transfer ở BE), không có luồng tự động nào khác làm
+  // việc này cho phương thức BANK_TRANSFER (khác VNPay có IPN, COD tự đánh dấu lúc hoàn
+  // tất). Loại cả CANCELLED lẫn COMPLETED — về lý thuyết BE chặn hoàn tất đơn chưa thanh
+  // toán (400 ORDER_COMPLETE_REQUIRES_PAYMENT) nên COMPLETED+UNPAID không nên xảy ra, nhưng
+  // vẫn loại rõ ràng để không hiện nhầm nút "xác nhận thanh toán" trên đơn đã ở trạng thái
+  // cuối (vd dữ liệu cũ trước khi BE thêm ràng buộc này).
+  const canConfirmBankTransfer =
+    order.paymentMethod === "BANK_TRANSFER" &&
+    order.paymentStatus === "UNPAID" &&
+    order.status !== "CANCELLED" &&
+    order.status !== "COMPLETED";
+
+  async function handleConfirmBankTransfer() {
+    try {
+      // order chắc chắn không null tại đây — đã early-return ở đầu component khi !order,
+      // nhưng TS không giữ narrowing đó xuyên qua function declaration khai báo sau đó.
+      await confirmBankTransferMutation.mutateAsync(order!.id);
+      toast.success("Đã xác nhận thanh toán chuyển khoản.");
+      setConfirmingBankTransfer(false);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  }
 
   const itemColumns: DataTableColumn<OrderItemDetail>[] = [
     {
@@ -162,7 +191,7 @@ export default function OrderDetail() {
               }
             />
           </div>
-          {(forwardStatus || canCancel) && (
+          {(forwardStatus || canCancel || canConfirmBankTransfer) && (
             <div className="flex gap-3">
               {canCancel && (
                 <Button
@@ -171,6 +200,11 @@ export default function OrderDetail() {
                   onClick={() => setTargetStatus("CANCELLED")}
                 >
                   Hủy đơn
+                </Button>
+              )}
+              {canConfirmBankTransfer && (
+                <Button variant="outline" onClick={() => setConfirmingBankTransfer(true)}>
+                  Xác nhận đã nhận chuyển khoản
                 </Button>
               )}
               {forwardStatus && (
@@ -207,13 +241,7 @@ export default function OrderDetail() {
           <div className="grid grid-cols-1 gap-y-3 sm:grid-cols-2">
             <Field
               label="Phương thức"
-              value={
-                paymentMethodBadge ? (
-                  <Badge color={paymentMethodBadge.color}>{paymentMethodBadge.label}</Badge>
-                ) : (
-                  order.paymentMethod
-                )
-              }
+              value={<PaymentMethodBadge method={order.paymentMethod} />}
             />
             <Field
               label="Trạng thái thanh toán"
@@ -256,6 +284,14 @@ export default function OrderDetail() {
         onClose={() => setTargetStatus(null)}
         order={{ id: order.id, orderCode: order.orderCode }}
         targetStatus={targetStatus}
+      />
+
+      <ConfirmModal
+        open={confirmingBankTransfer}
+        onClose={() => setConfirmingBankTransfer(false)}
+        onConfirm={handleConfirmBankTransfer}
+        title="Xác nhận đã nhận chuyển khoản"
+        description={`Xác nhận đã nhận đủ tiền chuyển khoản cho đơn ${order.orderCode}? Đơn sẽ chuyển sang trạng thái Đã thanh toán.`}
       />
     </div>
   );

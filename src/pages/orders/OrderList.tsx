@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { OrderStatus, type OrderListItem } from "@/types/shared-types";
 import { useOrdersAdmin } from "@/hooks/useOrders";
@@ -8,6 +8,7 @@ import { formatDateTime, formatPrice } from "@/lib/format";
 import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import { ORDER_STATUS_LABEL, PAYMENT_METHOD_LABEL, PAYMENT_STATUS_LABEL } from "@/lib/orderStatus";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
+import PaymentMethodBadge from "@/components/common/PaymentMethodBadge";
 import Badge from "@/components/ui/badge/Badge";
 import Pagination from "@/components/ui/pagination/Pagination";
 import Input from "@/components/form/input/InputField";
@@ -87,6 +88,25 @@ export default function OrderList() {
     setPage(1);
   }
 
+  // useCallback (không phải arrow function inline) — DatePicker.tsx đưa `onChange` vào deps
+  // của effect khởi tạo flatpickr, closure mới mỗi render (search gõ phím, đổi status...)
+  // sẽ khiến effect đó destroy + tạo lại instance flatpickr không cần thiết, đóng mất lịch
+  // đang mở/gây giật UI dù khoảng ngày lọc không hề đổi.
+  const handleFromChange = useCallback((_dates: Date[], dateStr: string) => {
+    // BE so sánh createdAt bằng new Date() trực tiếp — chuỗi "YYYY-MM-DD" thuần parse ra
+    // 00:00 UTC (07:00 giờ VN), phải gửi rõ mốc đầu ngày local.
+    setFrom(dateStr ? `${dateStr}T00:00:00.000` : undefined);
+    setPage(1);
+  }, []);
+
+  const handleToChange = useCallback((_dates: Date[], dateStr: string) => {
+    // Tương tự from — không đẩy tới cuối ngày sẽ cắt mất toàn bộ đơn tạo trong đúng ngày
+    // được chọn (BE toInclusiveEndOfDay() xử lý chuỗi ngày thuần, nhưng FE gửi kèm giờ thì
+    // giữ nguyên không cộng dồn — xem date.util.ts backend-cms).
+    setTo(dateStr ? `${dateStr}T23:59:59.999` : undefined);
+    setPage(1);
+  }, []);
+
   const { data, isLoading } = useOrdersAdmin({
     search: search || undefined,
     status,
@@ -154,14 +174,7 @@ export default function OrderList() {
       header: "Phương thức",
       align: "center",
       className: "min-w-96",
-      render: (order) => {
-        const badge = PAYMENT_METHOD_LABEL[order.paymentMethod];
-        return badge ? (
-          <Badge color={badge.color}>{badge.label}</Badge>
-        ) : (
-          <span className="text-sm text-gray-500 dark:text-gray-400">{order.paymentMethod}</span>
-        );
-      },
+      render: (order) => <PaymentMethodBadge method={order.paymentMethod} />,
     },
     {
       key: "itemCount",
@@ -278,12 +291,7 @@ export default function OrderList() {
             id="orders-from"
             placeholder="Từ ngày"
             selectedDate={from ? new Date(from) : null}
-            onChange={(_dates, dateStr) => {
-              // BE so sánh createdAt bằng new Date() trực tiếp — chuỗi "YYYY-MM-DD" thuần
-              // parse ra 00:00 UTC (07:00 giờ VN), phải gửi rõ mốc đầu ngày local.
-              setFrom(dateStr ? `${dateStr}T00:00:00.000` : undefined);
-              setPage(1);
-            }}
+            onChange={handleFromChange}
           />
         </div>
         <div className="w-44">
@@ -291,13 +299,7 @@ export default function OrderList() {
             id="orders-to"
             placeholder="Đến ngày"
             selectedDate={to ? new Date(to) : null}
-            onChange={(_dates, dateStr) => {
-              // Tương tự from — không đẩy tới cuối ngày sẽ cắt mất toàn bộ đơn tạo trong
-              // đúng ngày được chọn (BE toInclusiveEndOfDay() xử lý chuỗi ngày thuần, nhưng
-              // FE gửi kèm giờ thì giữ nguyên không cộng dồn — xem date.util.ts backend-cms).
-              setTo(dateStr ? `${dateStr}T23:59:59.999` : undefined);
-              setPage(1);
-            }}
+            onChange={handleToChange}
           />
         </div>
       </div>

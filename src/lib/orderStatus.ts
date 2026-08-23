@@ -38,6 +38,7 @@ export const PAYMENT_METHOD_LABEL: Record<
   VNPAY: { label: "Chuyển khoản qua VNPay", color: "info" },
   MOMO: { label: "Ví MoMo", color: "warning" },
   STRIPE: { label: "Thẻ quốc tế (Stripe)", color: "success" },
+  BANK_TRANSFER: { label: "Chuyển khoản ngân hàng", color: "info" },
 };
 
 // Mirror đúng luật chuyển trạng thái ở backend-cms (ORDER_STATUS_TRANSITIONS trong
@@ -83,7 +84,11 @@ export const ORDER_STATUS_ACTION: Partial<
   COMPLETED: {
     buttonLabel: "Hoàn tất đơn",
     confirmTitle: "Hoàn tất đơn hàng",
-    sideEffectNote: "Đơn thanh toán COD sẽ tự động chuyển sang trạng thái Đã thanh toán.",
+    // Chỉ COD tự đổi paymentStatus khi hoàn tất (xem shouldMarkPaid ở orders.service.ts) —
+    // các phương thức khác (VNPay/chuyển khoản) phải được xác nhận đã thanh toán từ trước,
+    // BE giờ chặn hẳn (400 ORDER_COMPLETE_REQUIRES_PAYMENT) nếu hoàn tất mà chưa thanh toán.
+    sideEffectNote:
+      "Đơn COD sẽ tự động chuyển sang Đã thanh toán. Đơn thanh toán online/chuyển khoản phải đã được xác nhận thanh toán trước, nếu chưa sẽ không hoàn tất được.",
   },
   CANCELLED: {
     buttonLabel: "Hủy đơn",
