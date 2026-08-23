@@ -65,7 +65,10 @@ export default function VoucherList() {
     setTogglingId(voucher.id);
     try {
       await toggleMutation.mutateAsync(voucher.id);
-      toast.success(voucher.isActive ? "Đã tắt voucher." : "Đã bật voucher.");
+      // Khớp đúng từ ngữ với cột "Hoạt động"/badge trạng thái (Đang hoạt động/Không hoạt
+      // động) và message lỗi xóa voucher ở BE ("...hãy vô hiệu hóa thay vì xóa") — trước
+      // đây dùng "bật/tắt", lệch thuật ngữ so với phần còn lại của màn này.
+      toast.success(voucher.isActive ? "Đã vô hiệu hóa voucher." : "Đã kích hoạt voucher.");
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
