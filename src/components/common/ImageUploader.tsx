@@ -85,6 +85,11 @@ export function ImageUploader({
             )}
           </div>
         ))}
+        {readOnly && value.length === 0 && (
+          <div className="flex h-52 w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 text-sm text-gray-400 dark:border-gray-700 dark:text-gray-500">
+            Chưa có ảnh
+          </div>
+        )}
         {!readOnly && value.length < max ? (
           <>
             <input

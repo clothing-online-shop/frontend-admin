@@ -26,6 +26,15 @@ interface DataTableProps<T> {
   // (Sửa/Xóa...) phải tự stopPropagation() ở onClick của chúng để không kích hoạt luôn
   // onRowClick khi bấm nhầm phải nút, xem ProductList.tsx làm mẫu.
   onRowClick?: (row: T) => void;
+  // Tự thêm cột "STT" làm cột đầu tiên, đánh số theo đúng vị trí dòng trong `rows` — tách
+  // vào đây (thay vì mỗi màn tự khai 1 cột STT riêng) vì mọi màn danh sách đều cần y hệt
+  // nhau, tránh lặp lại cùng 1 đoạn code ở ≥ 2 nơi.
+  showIndex?: boolean;
+  // Số thứ tự bắt đầu từ đâu — bắt buộc truyền (page - 1) * limit cho danh sách có phân
+  // trang server-side (ProductList, OrderList...), nếu không STT sẽ tự về lại 1 ở mỗi
+  // trang thay vì đánh số liên tục xuyên suốt toàn bộ danh sách. Bỏ qua (mặc định 0) cho
+  // danh sách không phân trang (BannerList, VoucherList...).
+  indexOffset?: number;
 }
 
 const ALIGN_CLASS: Record<"left" | "center" | "right", string> = {
@@ -57,15 +66,32 @@ export function DataTable<T>({
   isLoading = false,
   emptyMessage = "Không có dữ liệu.",
   onRowClick,
+  showIndex = false,
+  indexOffset = 0,
 }: DataTableProps<T>) {
   const isEmpty = !isLoading && rows.length === 0;
+  // Cột STT ghép vào đầu mảng cột thật — chỉ cần biết vị trí dòng (index), không cần đọc
+  // gì từ row, nên render() ở đây bỏ qua tham số row.
+  const allColumns: DataTableColumn<T>[] = showIndex
+    ? [
+        {
+          key: "__index",
+          header: "STT",
+          align: "center",
+          headerAlign: "center",
+          className: "w-16",
+          render: () => null,
+        },
+        ...columns,
+      ]
+    : columns;
 
   return (
     <div>
       <Table>
         <TableHeader className="border-b border-gray-100 dark:border-gray-800">
           <TableRow>
-            {columns.map((column) => (
+            {allColumns.map((column) => (
               <TableCell
                 key={column.key}
                 isHeader
@@ -78,14 +104,14 @@ export function DataTable<T>({
         </TableHeader>
         {!isLoading && !isEmpty && (
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <TableRow key={rowKey(row)} onClick={onRowClick ? () => onRowClick(row) : undefined}>
-                {columns.map((column) => (
+                {allColumns.map((column) => (
                   <TableCell
                     key={column.key}
                     className={`px-5 py-3 ${ALIGN_CLASS[column.align ?? "left"]} ${column.stickyRight ? STICKY_RIGHT_BODY_CLASS : ""}`}
                   >
-                    {column.render(row)}
+                    {column.key === "__index" ? indexOffset + index + 1 : column.render(row)}
                   </TableCell>
                 ))}
               </TableRow>

@@ -103,6 +103,7 @@ export default function BrandFormModal({
               id="brand-name"
               label="Tên thương hiệu"
               required
+              disabled={viewOnly}
               placeholder="Ví dụ: Uniqlo"
               {...register("name")}
               error={!!errors.name}
@@ -114,6 +115,7 @@ export default function BrandFormModal({
             <Input
               id="brand-origin"
               label="Xuất xứ"
+              disabled={viewOnly}
               placeholder="Ví dụ: Nhật Bản"
               {...register("origin")}
             />
@@ -125,20 +127,23 @@ export default function BrandFormModal({
               name="description"
               control={control}
               render={({ field }) =>
-                // Xem (viewOnly): textarea disabled vẫn chỉ cao 3 dòng nhưng KHÔNG tự xuống
-                // dòng đẹp — mô tả dài tràn ra ngoài, phải cuộn mới đọc hết, nhìn như thừa
-                // khoảng trắng/lỗi hiển thị. Đổi sang đoạn text thường + line-clamp-3, đúng
-                // kiểu rút gọn "..." như cột Mô tả bên danh sách sản phẩm.
+                // Xem (viewOnly): không dùng line-clamp (cắt cụt, không có cách nào đọc hết
+                // phần bị ẩn) — bọc khung border + nền xám giống field disabled khác, giới
+                // hạn chiều cao + overflow-y-auto để cuộn đọc hết mô tả dài, không phải
+                // <textarea> thật nên không dính bug tràn chữ của bản cũ.
                 viewOnly ? (
-                  <p className="line-clamp-3 text-sm text-gray-800 dark:text-white/90">
-                    {field.value || "—"}
-                  </p>
+                  <div className="max-h-52ban overflow-y-auto rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 dark:border-gray-700 dark:bg-gray-800">
+                    <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
+                      {field.value || "—"}
+                    </p>
+                  </div>
                 ) : (
                   <TextArea
                     id="brand-description"
                     placeholder="Giới thiệu ngắn về thương hiệu"
                     value={field.value}
                     onChange={field.onChange}
+                    rows={8}
                   />
                 )
               }

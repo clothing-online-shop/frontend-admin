@@ -13,7 +13,7 @@ import Badge from "@/components/ui/badge/Badge";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
-import { PlusIcon, PencilIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon } from "@/icons";
+import { PlusIcon, PencilIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon, EyeIcon } from "@/icons";
 import BannerFormModal from "./BannerFormModal";
 
 export default function BannerList() {
@@ -23,6 +23,7 @@ export default function BannerList() {
   const search = useDebounce(searchInput, 500);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Banner | null>(null);
+  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
 
   const { data, isLoading } = useBanners(search || undefined);
@@ -32,11 +33,19 @@ export default function BannerList() {
 
   function openCreate() {
     setEditing(null);
+    setViewMode(false);
     setModalOpen(true);
   }
 
   function openEdit(banner: Banner) {
     setEditing(banner);
+    setViewMode(false);
+    setModalOpen(true);
+  }
+
+  function openView(banner: Banner) {
+    setEditing(banner);
+    setViewMode(true);
     setModalOpen(true);
   }
 
@@ -140,7 +149,10 @@ export default function BannerList() {
             <button
               type="button"
               disabled={index <= 0}
-              onClick={() => handleMove(index, -1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMove(index, -1);
+              }}
               className="flex h-8 w-8 items-center justify-center text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Đưa banner lên trên"
             >
@@ -149,7 +161,10 @@ export default function BannerList() {
             <button
               type="button"
               disabled={index === -1 || index >= banners.length - 1}
-              onClick={() => handleMove(index, 1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMove(index, 1);
+              }}
               className="flex h-8 w-8 items-center justify-center text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500 disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Đưa banner xuống dưới"
             >
@@ -166,10 +181,26 @@ export default function BannerList() {
       stickyRight: true,
       render: (banner) => (
         <div className="flex items-center justify-center gap-3">
+          <Tooltip content="Xem">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openView(banner);
+              }}
+              className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
+              aria-label="Xem banner"
+            >
+              <EyeIcon className="h-6 w-6" />
+            </button>
+          </Tooltip>
           <Tooltip content="Sửa">
             <button
               type="button"
-              onClick={() => openEdit(banner)}
+              onClick={(e) => {
+                e.stopPropagation();
+                openEdit(banner);
+              }}
               className="text-gray-400 transition-colors duration-200 ease-standard hover:text-brand-500"
               aria-label="Sửa banner"
             >
@@ -178,7 +209,10 @@ export default function BannerList() {
           </Tooltip>
           <button
             type="button"
-            onClick={() => setDeleteTarget(banner)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDeleteTarget(banner);
+            }}
             className="text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
             aria-label="Xóa banner"
           >
@@ -211,10 +245,17 @@ export default function BannerList() {
           rowKey={(banner) => banner.id}
           isLoading={isLoading}
           emptyMessage="Chưa có banner nào."
+          onRowClick={openView}
+          showIndex
         />
       </div>
 
-      <BannerFormModal open={modalOpen} onClose={() => setModalOpen(false)} editing={editing} />
+      <BannerFormModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        editing={editing}
+        viewOnly={viewMode}
+      />
 
       <ConfirmModal
         open={deleteTarget !== null}

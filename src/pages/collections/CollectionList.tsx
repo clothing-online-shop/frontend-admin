@@ -226,6 +226,7 @@ export default function CollectionList() {
           isLoading={isLoading}
           onRowClick={openView}
           emptyMessage="Chưa có bộ sưu tập nào."
+          showIndex
         />
       </div>
 

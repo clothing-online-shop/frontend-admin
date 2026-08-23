@@ -51,7 +51,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref,
   ) => {
-    let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${endIcon ? "pr-11" : ""} ${className}`;
+    // disabled:* — dự phòng cho trường hợp component chỉ bị vô hiệu hoá qua <fieldset
+    // disabled> bao ngoài (màn xem) mà nơi gọi quên truyền tay prop `disabled` (nhánh JS
+    // if (disabled) bên dưới không tự chạy trong trường hợp đó) — CSS pseudo-class :disabled
+    // vẫn khớp vì input[disabled] là thuộc tính DOM thật do trình duyệt tự set qua fieldset,
+    // không phụ thuộc prop React có được truyền hay không.
+    let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-300 ${endIcon ? "pr-11" : ""} ${className}`;
 
     if (disabled) {
       inputClasses += ` text-gray-700 border-gray-300 bg-gray-100 cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700`;

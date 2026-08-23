@@ -202,6 +202,7 @@ export default function CollectionFormModal({
                 <TextArea
                   id="collection-description"
                   placeholder="Giới thiệu ngắn về bộ sưu tập"
+                  disabled={viewOnly}
                   value={field.value}
                   onChange={field.onChange}
                 />
@@ -217,7 +218,12 @@ export default function CollectionFormModal({
               name="banner"
               control={control}
               render={({ field }) => (
-                <ImageUploader value={field.value} onChange={field.onChange} max={1} />
+                <ImageUploader
+                  value={field.value}
+                  onChange={field.onChange}
+                  max={1}
+                  readOnly={viewOnly}
+                />
               )}
             />
           </div>

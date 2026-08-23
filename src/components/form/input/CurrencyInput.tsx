@@ -45,10 +45,14 @@ export default function CurrencyInput({
     onChange(digits === "" ? undefined : Number(digits));
   }
 
-  let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${className}`;
+  // disabled:* — dự phòng khi input chỉ bị vô hiệu hoá qua <fieldset disabled> bao ngoài
+  // (màn xem) mà không truyền tay prop `disabled`, giống InputField.tsx.
+  let inputClasses = ` h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden transition-[border-color,box-shadow] duration-200 ease-standard disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-300 ${className}`;
 
   if (disabled) {
-    inputClasses += ` text-gray-800 border-gray-300 cursor-not-allowed dark:text-white/90 dark:border-gray-700`;
+    // Trước đây thiếu hẳn bg-gray-100/dark:bg-gray-800 — disabled nhìn như input bình
+    // thường (không có nền xám phân biệt), khớp lỗi đã sửa ở InputField.tsx.
+    inputClasses += ` text-gray-700 bg-gray-100 border-gray-300 cursor-not-allowed dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700`;
   } else if (error) {
     inputClasses += `  border-error-500 focus:border-error-300 dark:text-error-400 dark:border-error-500 dark:focus:border-error-800`;
   } else {

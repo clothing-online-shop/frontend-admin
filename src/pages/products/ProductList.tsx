@@ -407,6 +407,8 @@ export default function ProductList() {
           isLoading={isLoading}
           emptyMessage="Chưa có sản phẩm nào."
           onRowClick={(product) => navigate(`/products/${product.slug}/view`)}
+          showIndex
+          indexOffset={(page - 1) * limit}
         />
         <div className="px-5">
           <Pagination

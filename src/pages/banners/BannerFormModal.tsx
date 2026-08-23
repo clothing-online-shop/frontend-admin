@@ -18,6 +18,7 @@ interface BannerFormModalProps {
   open: boolean;
   onClose: () => void;
   editing: Banner | null;
+  viewOnly?: boolean;
 }
 
 const EMPTY_VALUES: BannerFormValues = {
@@ -34,7 +35,12 @@ function toDateOnly(iso: string): string {
   return iso.slice(0, 10);
 }
 
-export default function BannerFormModal({ open, onClose, editing }: BannerFormModalProps) {
+export default function BannerFormModal({
+  open,
+  onClose,
+  editing,
+  viewOnly = false,
+}: BannerFormModalProps) {
   const toast = useToast();
   const [imagePublicId, setImagePublicId] = useState<string | null>(null);
   const createMutation = useCreateBanner();
@@ -111,14 +117,18 @@ export default function BannerFormModal({ open, onClose, editing }: BannerFormMo
     <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
       <form onSubmit={handleSubmit(onValid)} className="p-6">
         <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          {editing ? "Sửa banner" : "Thêm banner"}
+          {viewOnly ? "Xem banner" : editing ? "Sửa banner" : "Thêm banner"}
         </h3>
 
-        <div className="space-y-4">
+        {/* fieldset disabled tự vô hiệu hoá Input/nút bấm trong ImageUploader khi xem —
+            DatePicker vẫn cần truyền disabled riêng vì flatpickr tự mở lịch bằng JS, không
+            dựa theo input[disabled] của trình duyệt (khớp CollectionFormModal.tsx). */}
+        <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
           <div>
             <Input
               label="Tiêu đề"
               required
+              disabled={viewOnly}
               placeholder="Ví dụ: Sale mùa hè 2026"
               {...register("title")}
               error={!!errors.title}
@@ -129,6 +139,7 @@ export default function BannerFormModal({ open, onClose, editing }: BannerFormMo
           <div>
             <Input
               label="Link đích"
+              disabled={viewOnly}
               placeholder="https://..."
               {...register("linkUrl")}
               error={!!errors.linkUrl}
@@ -146,6 +157,7 @@ export default function BannerFormModal({ open, onClose, editing }: BannerFormMo
                   label="Ngày bắt đầu"
                   placeholder="Chọn ngày bắt đầu"
                   defaultDate={field.value || undefined}
+                  disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 />
               )}
@@ -160,6 +172,7 @@ export default function BannerFormModal({ open, onClose, editing }: BannerFormMo
                   placeholder="Chọn ngày kết thúc"
                   defaultDate={field.value || undefined}
                   minDate={startDateValue || "today"}
+                  disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 />
               )}
@@ -181,26 +194,29 @@ export default function BannerFormModal({ open, onClose, editing }: BannerFormMo
                   value={field.value}
                   onChange={field.onChange}
                   max={1}
+                  readOnly={viewOnly}
                   onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
                 />
               )}
             />
             {errors.image && <p className="text-theme-xs mt-1.5 text-error-500">{errors.image.message}</p>}
           </div>
-        </div>
+        </fieldset>
 
         <div className="mt-6 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
-            Hủy
+            {viewOnly ? "Đóng" : "Hủy"}
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSaving}
-            startIcon={isSaving ? <Spinner size="sm" /> : undefined}
-          >
-            Lưu
-          </Button>
+          {!viewOnly && (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSaving}
+              startIcon={isSaving ? <Spinner size="sm" /> : undefined}
+            >
+              Lưu
+            </Button>
+          )}
         </div>
       </form>
     </Modal>

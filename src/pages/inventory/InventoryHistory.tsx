@@ -177,6 +177,8 @@ export default function InventoryHistory() {
           rowKey={(movement) => movement.id}
           isLoading={isLoading}
           emptyMessage="Chưa có giao dịch kho nào."
+          showIndex
+          indexOffset={(page - 1) * DEFAULT_PAGE_SIZE}
         />
         <div className="px-5">
           <Pagination

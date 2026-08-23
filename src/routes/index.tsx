@@ -9,6 +9,8 @@ import CategoryList from "@/pages/categories/CategoryList";
 import BrandList from "@/pages/brands/BrandList";
 import CollectionList from "@/pages/collections/CollectionList";
 import BannerList from "@/pages/banners/BannerList";
+import VoucherList from "@/pages/vouchers/VoucherList";
+import VoucherForm from "@/pages/vouchers/VoucherForm";
 import OrderList from "@/pages/orders/OrderList";
 import OrderDetail from "@/pages/orders/OrderDetail";
 import InventoryList from "@/pages/inventory/InventoryList";
@@ -36,6 +38,10 @@ export const router = createBrowserRouter([
           { path: "/brands", element: <BrandList /> },
           { path: "/collections", element: <CollectionList /> },
           { path: "/banners", element: <BannerList /> },
+          { path: "/vouchers", element: <VoucherList /> },
+          { path: "/vouchers/new", element: <VoucherForm /> },
+          { path: "/vouchers/:id/edit", element: <VoucherForm /> },
+          { path: "/vouchers/:id", element: <VoucherForm viewOnly /> },
           { path: "/orders", element: <OrderList /> },
           { path: "/orders/:id", element: <OrderDetail /> },
           { path: "/inventory", element: <InventoryList /> },

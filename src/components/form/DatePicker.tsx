@@ -24,6 +24,7 @@ interface DatePickerProps {
   // kể cả về null (xoá lựa chọn). Không dùng thì bỏ qua prop này, hành vi giữ nguyên như
   // cũ (chỉ gõ tay qua lịch).
   selectedDate?: DateOption | null;
+  required?: boolean;
 }
 
 export default function DatePicker({
@@ -38,6 +39,7 @@ export default function DatePicker({
   error = false,
   hint,
   selectedDate,
+  required = false,
 }: DatePickerProps) {
   // flatpickr() trả Instance | Instance[] (trường hợp Instance[] chỉ xảy ra khi selector
   // khớp nhiều phần tử DOM — ở đây luôn truyền đúng 1 `#id` nên thực tế luôn là Instance).
@@ -77,14 +79,14 @@ export default function DatePicker({
 
   return (
     <div>
-      {label && <FieldLabel htmlFor={id} label={label} />}
+      {label && <FieldLabel htmlFor={id} label={label} required={required} />}
 
       <div className="relative">
         <input
           id={id}
           disabled={disabled}
           placeholder={placeholder}
-          className={`h-11 w-full appearance-none rounded-lg border bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 ${
+          className={`h-11 w-full appearance-none rounded-lg border bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-300 ${
             error
               ? "border-form-error focus:border-form-error"
               : "border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:focus:border-brand-800"
