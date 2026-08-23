@@ -223,9 +223,12 @@ export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType];
 
 // Chỉ 2 trạng thái — ACTIVE nghĩa là dùng được ngay bây giờ (đang bật + trong thời hạn +
 // chưa hết lượt), mọi lý do khác gộp chung INACTIVE (xem deriveVoucherStatus ở backend-cms).
+// Lưu dạng số — khớp voucher-status.enum.ts ở backend-cms và quy ước ProductStatus
+// (không phải cột DB nên không bắt buộc, chỉ để nhất quán kiểu dữ liệu giữa các enum
+// trạng thái trong codebase).
 export const VoucherStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
+  INACTIVE: 0,
+  ACTIVE: 1,
 } as const;
 export type VoucherStatus = (typeof VoucherStatus)[keyof typeof VoucherStatus];
 

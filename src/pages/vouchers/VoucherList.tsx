@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DiscountType, type Voucher, type VoucherStatus } from "@/types/shared-types";
+import { DiscountType, VoucherStatus, type Voucher } from "@/types/shared-types";
 import { useDeleteVoucher, useToggleVoucherActive, useVouchers } from "@/hooks/useVouchers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getErrorMessage } from "@/lib/error";
@@ -19,9 +19,11 @@ import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, EyeIcon } from "@/icons";
 
-const STATUS_OPTIONS = Object.entries(VOUCHER_STATUS_LABEL).map(([value, meta]) => ({
-  value,
-  label: meta.label,
+// Select dùng chung chỉ nhận option.value dạng string — status thật (state + query param)
+// vẫn là number, ép qua lại đúng ở ranh giới UI này (giống ProductFilterBar.tsx).
+const STATUS_OPTIONS = Object.values(VoucherStatus).map((value) => ({
+  value: String(value),
+  label: VOUCHER_STATUS_LABEL[value].label,
 }));
 
 function formatDiscountValue(voucher: Voucher): string {
@@ -267,8 +269,10 @@ export default function VoucherList() {
           <div className="w-48">
             <Select
               options={STATUS_OPTIONS}
-              value={status}
-              onChange={(value) => setStatus(value as VoucherStatus | undefined)}
+              value={status !== undefined ? String(status) : undefined}
+              onChange={(value) =>
+                setStatus(value !== undefined ? (Number(value) as VoucherStatus) : undefined)
+              }
               placeholder="Tất cả trạng thái"
               allowClear
               placeholderColor="gray-700"
