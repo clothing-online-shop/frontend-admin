@@ -26,6 +26,7 @@ export default function InventoryHistory() {
   const [from, setFrom] = useState<string | undefined>(undefined);
   const [to, setTo] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
 
   const { data, isLoading } = useStockHistory({
     productId: undefined,
@@ -34,7 +35,7 @@ export default function InventoryHistory() {
     from,
     to,
     page,
-    limit: DEFAULT_PAGE_SIZE,
+    limit,
   });
 
   // API lọc theo productId/SKU không có ô tìm kiếm riêng ở BE (GET /inventory/history chỉ
@@ -178,14 +179,18 @@ export default function InventoryHistory() {
           isLoading={isLoading}
           emptyMessage="Chưa có giao dịch kho nào."
           showIndex
-          indexOffset={(page - 1) * DEFAULT_PAGE_SIZE}
+          indexOffset={(page - 1) * limit}
         />
         <div className="px-5">
           <Pagination
             page={page}
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={limit}
             total={data?.meta.total ?? 0}
             onChange={setPage}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
           />
         </div>
       </div>

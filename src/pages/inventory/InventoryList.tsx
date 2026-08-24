@@ -21,13 +21,14 @@ export default function InventoryList() {
   const search = useDebounce(searchInput, 500);
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   const { data, isLoading } = useInventory({
     search: search || undefined,
     lowStockOnly: lowStockOnly || undefined,
     page,
-    limit: DEFAULT_PAGE_SIZE,
+    limit,
   });
 
   const columns: DataTableColumn<InventoryItem>[] = [
@@ -110,14 +111,18 @@ export default function InventoryList() {
           isLoading={isLoading}
           emptyMessage="Chưa có biến thể sản phẩm nào."
           showIndex
-          indexOffset={(page - 1) * DEFAULT_PAGE_SIZE}
+          indexOffset={(page - 1) * limit}
         />
         <div className="px-5">
           <Pagination
             page={page}
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={limit}
             total={data?.meta.total ?? 0}
             onChange={setPage}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
           />
         </div>
       </div>
