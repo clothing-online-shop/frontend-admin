@@ -7,6 +7,7 @@ import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { formatDate, formatPrice } from "@/lib/format";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import { VOUCHER_STATUS_LABEL } from "@/lib/voucherStatus";
 import { DISCOUNT_TYPE_LABEL, DISCOUNT_TYPE_OPTIONS } from "@/lib/voucherDiscountType";
 import Button from "@/components/ui/button/Button";
@@ -15,6 +16,7 @@ import Select from "@/components/form/Select";
 import Switch from "@/components/form/switch/Switch";
 import Badge from "@/components/ui/badge/Badge";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import Pagination from "@/components/ui/pagination/Pagination";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, EyeIcon } from "@/icons";
@@ -42,11 +44,18 @@ export default function VoucherList() {
   const search = useDebounce(searchInput, 500);
   const [status, setStatus] = useState<VoucherStatus | undefined>();
   const [discountType, setDiscountType] = useState<DiscountType | undefined>();
+  const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<Voucher | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const { data, isLoading } = useVouchers({ search: search || undefined, status, discountType });
-  const vouchers = data ?? [];
+  const { data, isLoading } = useVouchers({
+    search: search || undefined,
+    status,
+    discountType,
+    page,
+    limit: DEFAULT_PAGE_SIZE,
+  });
+  const vouchers = data?.data ?? [];
   const deleteMutation = useDeleteVoucher();
   const toggleMutation = useToggleVoucherActive();
 
@@ -256,14 +265,20 @@ export default function VoucherList() {
             <Input
               placeholder="Tìm theo mã voucher"
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
           <div className="w-48">
             <Select
               options={DISCOUNT_TYPE_OPTIONS}
               value={discountType}
-              onChange={(value) => setDiscountType(value as DiscountType | undefined)}
+              onChange={(value) => {
+                setDiscountType(value as DiscountType | undefined);
+                setPage(1);
+              }}
               placeholder="Loại giảm giá"
               allowClear
               placeholderColor="gray-700"
@@ -273,9 +288,10 @@ export default function VoucherList() {
             <Select
               options={STATUS_OPTIONS}
               value={status !== undefined ? String(status) : undefined}
-              onChange={(value) =>
-                setStatus(value !== undefined ? (Number(value) as VoucherStatus) : undefined)
-              }
+              onChange={(value) => {
+                setStatus(value !== undefined ? (Number(value) as VoucherStatus) : undefined);
+                setPage(1);
+              }}
               placeholder="Tất cả trạng thái"
               allowClear
               placeholderColor="gray-700"
@@ -301,6 +317,14 @@ export default function VoucherList() {
           onRowClick={(voucher) => navigate(`/vouchers/${voucher.id}`)}
           showIndex
         />
+        <div className="px-5">
+          <Pagination
+            page={page}
+            pageSize={DEFAULT_PAGE_SIZE}
+            total={data?.meta.total ?? 0}
+            onChange={setPage}
+          />
+        </div>
       </div>
 
       <ConfirmModal

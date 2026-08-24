@@ -1,13 +1,17 @@
 import { apiClient } from "@/lib/api/api-client";
-import type { Voucher } from "@/types/shared-types";
+import type { PaginatedResult, Voucher } from "@/types/shared-types";
 import type {
   CreateVoucherPayload,
   ListVouchersQuery,
   UpdateVoucherPayload,
 } from "@/types/vouchers-api.types";
 
-export async function getVouchers(query: ListVouchersQuery): Promise<Voucher[]> {
-  const { data } = await apiClient.get<Voucher[]>("/vouchers", { params: query });
+export async function getVouchers(
+  query: ListVouchersQuery,
+): Promise<PaginatedResult<Voucher>> {
+  const { data } = await apiClient.get<PaginatedResult<Voucher>>("/vouchers", {
+    params: query,
+  });
   return data;
 }
 
