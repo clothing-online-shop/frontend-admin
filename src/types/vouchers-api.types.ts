@@ -32,4 +32,6 @@ export interface ListVouchersQuery {
   search?: string;
   status?: VoucherStatus;
   discountType?: DiscountType;
+  page?: number;
+  limit?: number;
 }

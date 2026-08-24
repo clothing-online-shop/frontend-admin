@@ -6,7 +6,13 @@ export const voucherSchema = yup.object({
     .string()
     .trim()
     .required("Vui lòng nhập mã voucher.")
-    .min(3, "Mã voucher phải có ít nhất 3 ký tự."),
+    .min(3, "Mã voucher phải có ít nhất 3 ký tự.")
+    // Chỉ gồm chữ và số, bắt buộc có cả 2 loại — tránh mã kiểu "12345" hay "ABCDE" dễ
+    // đoán/không mang tính định danh chiến dịch.
+    .matches(
+      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]+$/,
+      "Mã voucher chỉ gồm chữ và số, phải có cả chữ và số.",
+    ),
   // Không bắt buộc — voucher tạo nhanh không phải lúc nào cũng có ảnh sẵn.
   image: yup.array().of(yup.string().required()).default([]),
   discountType: yup
