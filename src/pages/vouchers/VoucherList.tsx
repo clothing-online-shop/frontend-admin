@@ -149,10 +149,10 @@ export default function VoucherList() {
       key: "totalUsage",
       header: "Tổng lượt dùng",
       align: "center",
-      className: "min-w-28",
+      className: "min-w-40",
       render: (voucher) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">
-          {voucher.usedCount}/{voucher.usageLimit ?? "∞"}
+          {voucher.usedCount}/{voucher.usageLimit ?? "Không giới hạn"}
         </span>
       ),
     },
@@ -160,10 +160,10 @@ export default function VoucherList() {
       key: "perCustomerLimit",
       header: "Lượt dùng/khách",
       align: "center",
-      className: "min-w-28",
+      className: "min-w-40",
       render: (voucher) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">
-          {voucher.perCustomerLimit ?? "∞"}
+          {voucher.perCustomerLimit ?? "Không giới hạn"}
         </span>
       ),
     },
