@@ -15,6 +15,7 @@ import { ImageUploader } from "@/components/common/ImageUploader";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import CurrencyInput from "@/components/form/input/CurrencyInput";
+import PercentInput from "@/components/form/input/PercentInput";
 import Select from "@/components/form/Select";
 import DatePicker from "@/components/form/DatePicker";
 import Switch from "@/components/form/switch/Switch";
@@ -216,29 +217,19 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                 control={control}
                 render={({ field }) =>
                   discountType === DiscountType.PERCENTAGE ? (
-                    <Input
-                      type="text"
-                      inputMode="numeric"
+                    <PercentInput
                       label="Giá trị giảm (%)"
                       required
                       disabled={viewOnly}
                       placeholder="10"
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        // Tối đa 3 chữ số lúc gõ (đủ biểu diễn 0-999) — chặn onBlur bên dưới
-                        // mới ép về đúng khoảng 0-100, ở đây chỉ giới hạn độ dài ký tự.
-                        const digits = e.target.value.replace(/\D/g, "").slice(0, 3);
-                        field.onChange(digits === "" ? undefined : Number(digits));
-                      }}
-                      onBlur={() => {
-                        if (typeof field.value === "number" && field.value > 100) {
-                          field.onChange(100);
-                          toast.error(
-                            "Giá trị giảm theo % tối đa là 100, đã tự động điều chỉnh về 100.",
-                          );
-                        }
-                        field.onBlur();
-                      }}
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      onExceedMax={(max) =>
+                        toast.error(
+                          `Giá trị giảm theo % tối đa là ${max}, đã tự động điều chỉnh về ${max}.`,
+                        )
+                      }
                       error={
                         !!visibleFieldError(
                           errors.discountValue?.message,
