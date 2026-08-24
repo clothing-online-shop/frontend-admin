@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { DiscountType } from "@/types/shared-types";
 import { useCreateVoucher, useUpdateVoucher, useVoucherDetail } from "@/hooks/useVouchers";
 import { getErrorMessage } from "@/lib/error";
+import { visibleFieldError } from "@/lib/form";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { DISCOUNT_TYPE_OPTIONS } from "@/lib/voucherDiscountType";
@@ -13,6 +14,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import { ImageUploader } from "@/components/common/ImageUploader";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
+import CurrencyInput from "@/components/form/input/CurrencyInput";
 import Select from "@/components/form/Select";
 import DatePicker from "@/components/form/DatePicker";
 import Switch from "@/components/form/switch/Switch";
@@ -62,7 +64,7 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
     handleSubmit,
     reset,
     trigger,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isValid, isSubmitting, dirtyFields, isSubmitted },
   } = useForm<VoucherFormValues>({
     resolver: yupResolver(voucherSchema),
     defaultValues: EMPTY_VALUES,
@@ -170,9 +172,10 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
               disabled={isEditing}
               placeholder="Ví dụ: SUMMER2026"
               {...register("code")}
-              error={!!errors.code}
+              error={!!visibleFieldError(errors.code?.message, dirtyFields.code, isSubmitted)}
               hint={
-                errors.code?.message ?? (isEditing ? "Không thể sửa mã sau khi tạo." : undefined)
+                visibleFieldError(errors.code?.message, dirtyFields.code, isSubmitted) ??
+                (isEditing ? "Không thể sửa mã sau khi tạo." : undefined)
               }
             />
 
@@ -201,8 +204,18 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                 disabled={viewOnly}
                 placeholder={discountType === DiscountType.PERCENTAGE ? "10" : "50000"}
                 {...register("discountValue")}
-                error={!!errors.discountValue}
-                hint={errors.discountValue?.message}
+                error={
+                  !!visibleFieldError(
+                    errors.discountValue?.message,
+                    dirtyFields.discountValue,
+                    isSubmitted,
+                  )
+                }
+                hint={visibleFieldError(
+                  errors.discountValue?.message,
+                  dirtyFields.discountValue,
+                  isSubmitted,
+                )}
               />
               {discountType === DiscountType.PERCENTAGE && (
                 <Input
@@ -211,8 +224,18 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                   disabled={viewOnly}
                   placeholder="Bỏ trống = không giới hạn"
                   {...register("maxDiscountAmount")}
-                  error={!!errors.maxDiscountAmount}
-                  hint={errors.maxDiscountAmount?.message}
+                  error={
+                    !!visibleFieldError(
+                      errors.maxDiscountAmount?.message,
+                      dirtyFields.maxDiscountAmount,
+                      isSubmitted,
+                    )
+                  }
+                  hint={visibleFieldError(
+                    errors.maxDiscountAmount?.message,
+                    dirtyFields.maxDiscountAmount,
+                    isSubmitted,
+                  )}
                 />
               )}
             </div>
@@ -239,14 +262,31 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
 
       <ComponentCard title="Điều kiện áp dụng" desc="">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Input
-            type="number"
-            label="Giá trị đơn tối thiểu"
-            disabled={viewOnly}
-            placeholder="Bỏ trống = không yêu cầu"
-            {...register("minOrderValue")}
-            error={!!errors.minOrderValue}
-            hint={errors.minOrderValue?.message}
+          <Controller
+            name="minOrderValue"
+            control={control}
+            render={({ field }) => (
+              <CurrencyInput
+                label="Giá trị đơn tối thiểu"
+                disabled={viewOnly}
+                placeholder="Bỏ trống = không yêu cầu"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={
+                  !!visibleFieldError(
+                    errors.minOrderValue?.message,
+                    dirtyFields.minOrderValue,
+                    isSubmitted,
+                  )
+                }
+                hint={visibleFieldError(
+                  errors.minOrderValue?.message,
+                  dirtyFields.minOrderValue,
+                  isSubmitted,
+                )}
+              />
+            )}
           />
           <Controller
             name="startsAt"
@@ -258,8 +298,14 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                 placeholder="Chọn ngày bắt đầu"
                 defaultDate={field.value || undefined}
                 disabled={viewOnly}
-                error={!!errors.startsAt}
-                hint={errors.startsAt?.message}
+                error={
+                  !!visibleFieldError(errors.startsAt?.message, dirtyFields.startsAt, isSubmitted)
+                }
+                hint={visibleFieldError(
+                  errors.startsAt?.message,
+                  dirtyFields.startsAt,
+                  isSubmitted,
+                )}
                 onChange={(_dates, dateStr) => field.onChange(dateStr)}
                 required={true}
               />
@@ -276,8 +322,18 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                 defaultDate={field.value || undefined}
                 minDate={startsAtValue || undefined}
                 disabled={viewOnly}
-                error={!!errors.expiresAt}
-                hint={errors.expiresAt?.message}
+                error={
+                  !!visibleFieldError(
+                    errors.expiresAt?.message,
+                    dirtyFields.expiresAt,
+                    isSubmitted,
+                  )
+                }
+                hint={visibleFieldError(
+                  errors.expiresAt?.message,
+                  dirtyFields.expiresAt,
+                  isSubmitted,
+                )}
                 onChange={(_dates, dateStr) => field.onChange(dateStr)}
               />
             )}
@@ -293,8 +349,14 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
             disabled={viewOnly}
             placeholder="Bỏ trống = không giới hạn"
             {...register("usageLimit")}
-            error={!!errors.usageLimit}
-            hint={errors.usageLimit?.message}
+            error={
+              !!visibleFieldError(errors.usageLimit?.message, dirtyFields.usageLimit, isSubmitted)
+            }
+            hint={visibleFieldError(
+              errors.usageLimit?.message,
+              dirtyFields.usageLimit,
+              isSubmitted,
+            )}
           />
           <Input
             type="number"
@@ -302,8 +364,18 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
             disabled={viewOnly}
             placeholder="Bỏ trống = không giới hạn"
             {...register("perCustomerLimit")}
-            error={!!errors.perCustomerLimit}
-            hint={errors.perCustomerLimit?.message}
+            error={
+              !!visibleFieldError(
+                errors.perCustomerLimit?.message,
+                dirtyFields.perCustomerLimit,
+                isSubmitted,
+              )
+            }
+            hint={visibleFieldError(
+              errors.perCustomerLimit?.message,
+              dirtyFields.perCustomerLimit,
+              isSubmitted,
+            )}
           />
         </div>
         <div className="mt-4">
