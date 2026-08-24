@@ -78,6 +78,13 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
   const discountType = useWatch({ control, name: "discountType" });
   const startsAtValue = useWatch({ control, name: "startsAt" });
 
+  // Không cho chọn ngày bắt đầu trong quá khứ — nhưng nếu đang sửa 1 voucher đã qua ngày
+  // bắt đầu cũ thì phải bỏ ràng buộc này, nếu không flatpickr sẽ âm thầm bỏ qua defaultDate
+  // nằm trước minDate, khiến ngày bắt đầu thật không hiển thị đúng dù dữ liệu form vẫn đúng
+  // (xem cùng pattern ở CollectionFormModal.tsx/BannerFormModal.tsx).
+  const startsAtAlreadyPast =
+    isEditing && voucher ? toDateOnly(voucher.startsAt) < toDateOnly(new Date().toISOString()) : false;
+
   // formState.isValid (dùng với resolver) không tự tính đúng ngay khi mount nếu chưa có
   // tương tác nào — phải tự trigger() 1 lần để nút "Lưu" disable đúng ngay từ đầu ở màn
   // thêm mới (còn trống các trường bắt buộc), không đợi user bấm/gõ vào field nào đó
@@ -350,6 +357,7 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                 label="Ngày bắt đầu"
                 placeholder="Chọn ngày bắt đầu"
                 defaultDate={field.value || undefined}
+                minDate={viewOnly || startsAtAlreadyPast ? undefined : "today"}
                 disabled={viewOnly}
                 error={
                   !!visibleFieldError(errors.startsAt?.message, dirtyFields.startsAt, isSubmitted)
