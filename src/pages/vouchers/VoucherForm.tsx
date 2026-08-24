@@ -64,6 +64,7 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
     handleSubmit,
     reset,
     trigger,
+    setValue,
     formState: { errors, isValid, isSubmitting, dirtyFields, isSubmitted },
   } = useForm<VoucherFormValues>({
     resolver: yupResolver(voucherSchema),
@@ -189,33 +190,85 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
                   disabled={viewOnly}
                   options={DISCOUNT_TYPE_OPTIONS}
                   value={field.value}
-                  onChange={(value) => field.onChange(value ?? DiscountType.PERCENTAGE)}
+                  onChange={(value) => {
+                    field.onChange(value ?? DiscountType.PERCENTAGE);
+                    // Đổi loại giảm giá là đổi hẳn đơn vị của discountValue (10 = 10% khác
+                    // hẳn 10 = 10đ) — giữ nguyên giá trị cũ sẽ sai nghĩa/dễ vượt max(100) nếu
+                    // vừa đổi từ FIXED_AMOUNT sang PERCENTAGE, nên phải reset về trống.
+                    setValue("discountValue", undefined as unknown as number, {
+                      shouldValidate: false,
+                    });
+                  }}
                 />
               )}
             />
 
             <div className="grid grid-cols-2 gap-4">
-              <Input
-                type="number"
-                label={
-                  discountType === DiscountType.PERCENTAGE ? "Giá trị giảm (%)" : "Số tiền giảm"
-                }
-                required
-                disabled={viewOnly}
-                placeholder={discountType === DiscountType.PERCENTAGE ? "10" : "50000"}
-                {...register("discountValue")}
-                error={
-                  !!visibleFieldError(
-                    errors.discountValue?.message,
-                    dirtyFields.discountValue,
-                    isSubmitted,
+              <Controller
+                name="discountValue"
+                control={control}
+                render={({ field }) =>
+                  discountType === DiscountType.PERCENTAGE ? (
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      label="Giá trị giảm (%)"
+                      required
+                      disabled={viewOnly}
+                      placeholder="10"
+                      value={field.value ?? ""}
+                      onChange={(e) => {
+                        // Tối đa 3 chữ số lúc gõ (đủ biểu diễn 0-999) — chặn onBlur bên dưới
+                        // mới ép về đúng khoảng 0-100, ở đây chỉ giới hạn độ dài ký tự.
+                        const digits = e.target.value.replace(/\D/g, "").slice(0, 3);
+                        field.onChange(digits === "" ? undefined : Number(digits));
+                      }}
+                      onBlur={() => {
+                        if (typeof field.value === "number" && field.value > 100) {
+                          field.onChange(100);
+                          toast.error(
+                            "Giá trị giảm theo % tối đa là 100, đã tự động điều chỉnh về 100.",
+                          );
+                        }
+                        field.onBlur();
+                      }}
+                      error={
+                        !!visibleFieldError(
+                          errors.discountValue?.message,
+                          dirtyFields.discountValue,
+                          isSubmitted,
+                        )
+                      }
+                      hint={visibleFieldError(
+                        errors.discountValue?.message,
+                        dirtyFields.discountValue,
+                        isSubmitted,
+                      )}
+                    />
+                  ) : (
+                    <CurrencyInput
+                      label="Số tiền giảm"
+                      required
+                      disabled={viewOnly}
+                      placeholder="50000"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={
+                        !!visibleFieldError(
+                          errors.discountValue?.message,
+                          dirtyFields.discountValue,
+                          isSubmitted,
+                        )
+                      }
+                      hint={visibleFieldError(
+                        errors.discountValue?.message,
+                        dirtyFields.discountValue,
+                        isSubmitted,
+                      )}
+                    />
                   )
                 }
-                hint={visibleFieldError(
-                  errors.discountValue?.message,
-                  dirtyFields.discountValue,
-                  isSubmitted,
-                )}
               />
               {discountType === DiscountType.PERCENTAGE && (
                 <Input

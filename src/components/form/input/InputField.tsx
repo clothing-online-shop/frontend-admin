@@ -5,6 +5,9 @@ import FieldLabel from "@/components/form/FieldLabel";
 
 interface InputProps {
   type?: "text" | "number" | "email" | "password" | "date" | "time" | string;
+  // Gợi ý bàn phím ảo trên mobile (vd "numeric" cho input số nhập dạng type="text" — xem
+  // CurrencyInput.tsx dùng pattern tương tự cho input tiền tệ).
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   id?: string;
   name?: string;
   placeholder?: string;
@@ -31,6 +34,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
       type = "text",
+      inputMode,
       id,
       name,
       placeholder,
@@ -75,6 +79,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={type}
+            inputMode={inputMode}
             id={id}
             name={name}
             placeholder={placeholder}
