@@ -19,9 +19,9 @@ const COLLECTIONS_KEY = ["collections"];
 const PRODUCTS_KEY = "products";
 
 export function useCollections(params: GetCollectionsParams = {}) {
-  const { search, includeDeleted, excludeEnded } = params;
+  const { search, includeDeleted, excludeEnded, page, limit } = params;
   return useQuery({
-    queryKey: [...COLLECTIONS_KEY, search, includeDeleted, excludeEnded],
+    queryKey: [...COLLECTIONS_KEY, search, includeDeleted, excludeEnded, page, limit],
     queryFn: () => getCollections(params),
   });
 }

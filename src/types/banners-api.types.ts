@@ -24,3 +24,9 @@ export interface ReorderBannerItem {
   id: string;
   sortOrder: number;
 }
+
+export interface ListBannersQuery {
+  search?: string;
+  page?: number;
+  limit?: number;
+}

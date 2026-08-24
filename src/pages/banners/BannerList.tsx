@@ -6,11 +6,13 @@ import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { formatDate } from "@/lib/format";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import { BANNER_STATUS_LABEL } from "@/lib/bannerStatus";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Badge from "@/components/ui/badge/Badge";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import Pagination from "@/components/ui/pagination/Pagination";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon, EyeIcon } from "@/icons";
@@ -25,9 +27,11 @@ export default function BannerList() {
   const [editing, setEditing] = useState<Banner | null>(null);
   const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
 
-  const { data, isLoading } = useBanners(search || undefined);
-  const banners = data ?? [];
+  const { data, isLoading } = useBanners({ search: search || undefined, page, limit });
+  const banners = data?.data ?? [];
   const deleteMutation = useDeleteBanner();
   const reorderMutation = useReorderBanners();
 
@@ -63,6 +67,9 @@ export default function BannerList() {
   // Danh sách đã sắp theo sortOrder từ BE — đổi thứ tự bằng cách hoán đổi sortOrder với
   // hàng liền kề trong mảng hiện tại, không cần component drag riêng (không đáng xây với
   // hiệu suất công việc nhỏ của màn này — codebase chỉ có DragTree dạng cây cho danh mục).
+  // Từ khi có phân trang: chỉ hoán đổi được với hàng liền kề TRONG CÙNG TRANG — banner đầu/
+  // cuối trang không đổi được sang trang liền kề (nút lên/xuống tự disable ở 2 đầu mỗi
+  // trang). Chấp nhận được vì số banner trang chủ thực tế luôn nhỏ (vừa 1 trang).
   async function handleMove(index: number, direction: -1 | 1) {
     const target = banners[index];
     const neighbor = banners[index + direction];
@@ -230,7 +237,10 @@ export default function BannerList() {
           <Input
             placeholder="Tìm theo tiêu đề banner"
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
@@ -247,7 +257,20 @@ export default function BannerList() {
           emptyMessage="Chưa có banner nào."
           onRowClick={openView}
           showIndex
+          indexOffset={(page - 1) * limit}
         />
+        <div className="px-5">
+          <Pagination
+            page={page}
+            pageSize={limit}
+            total={data?.meta.total ?? 0}
+            onChange={setPage}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
 
       <BannerFormModal

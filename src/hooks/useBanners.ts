@@ -8,14 +8,19 @@ import {
 } from "@/lib/api/banners-api";
 import type {
   CreateBannerPayload,
+  ListBannersQuery,
   ReorderBannerItem,
   UpdateBannerPayload,
 } from "@/types/banners-api.types";
 
 const BANNERS_KEY = ["banners"];
 
-export function useBanners(search?: string) {
-  return useQuery({ queryKey: [...BANNERS_KEY, search], queryFn: () => getBanners(search) });
+export function useBanners(query: ListBannersQuery = {}) {
+  const { search, page, limit } = query;
+  return useQuery({
+    queryKey: [...BANNERS_KEY, search, page, limit],
+    queryFn: () => getBanners(query),
+  });
 }
 
 export function useCreateBanner() {

@@ -60,10 +60,14 @@ export default function ProductList() {
   const categoryNameById = useCategoryNameMap();
   const brandNameById = useBrandNameMap();
 
-  const { data: collections, isLoading: isLoadingCollections } = useCollections();
+  // limit: 1000 — bộ lọc "Bộ sưu tập" cần đủ mọi lựa chọn, không phải bảng phân trang, theo
+  // đúng pattern ProductCollectionsStep.tsx/useProducts() ở AssignProductsModal.tsx.
+  const { data: collectionsResult, isLoading: isLoadingCollections } = useCollections({
+    limit: 1000,
+  });
   const collectionOptions = useMemo(
-    () => (collections ?? []).map((c) => ({ value: c.id, label: c.name })),
-    [collections],
+    () => (collectionsResult?.data ?? []).map((c) => ({ value: c.id, label: c.name })),
+    [collectionsResult],
   );
 
   const { data, isLoading } = useProductsAdmin({

@@ -6,11 +6,13 @@ import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { formatDate } from "@/lib/format";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import { COLLECTION_STATUS_LABEL, COLLECTION_STATUS_COLOR } from "@/lib/collectionStatus";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Badge from "@/components/ui/badge/Badge";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import Pagination from "@/components/ui/pagination/Pagination";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, BoxCubeIcon, EyeIcon } from "@/icons";
@@ -27,8 +29,10 @@ export default function CollectionList() {
   const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Collection | null>(null);
   const [assigningCollection, setAssigningCollection] = useState<Collection | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
 
-  const { data, isLoading } = useCollections({ search: search || undefined });
+  const { data, isLoading } = useCollections({ search: search || undefined, page, limit });
   const deleteMutation = useDeleteCollection();
 
   function openCreate() {
@@ -210,7 +214,10 @@ export default function CollectionList() {
           <Input
             placeholder="Tìm theo tên bộ sưu tập"
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
          <Button variant="primary" startIcon={<PlusIcon className="h-6 w-6" />} onClick={openCreate}>
@@ -221,13 +228,26 @@ export default function CollectionList() {
       <div className="flex flex-1 flex-col rounded-2xl bg-white">
         <DataTable
           columns={columns}
-          rows={data ?? []}
+          rows={data?.data ?? []}
           rowKey={(collection) => collection.id}
           isLoading={isLoading}
           onRowClick={openView}
           emptyMessage="Chưa có bộ sưu tập nào."
           showIndex
+          indexOffset={(page - 1) * limit}
         />
+        <div className="px-5">
+          <Pagination
+            page={page}
+            pageSize={limit}
+            total={data?.meta.total ?? 0}
+            onChange={setPage}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
 
       <CollectionFormModal

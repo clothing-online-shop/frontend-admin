@@ -20,10 +20,14 @@ export function ProductCollectionsStep({ viewOnly = false }: ProductCollectionsS
   // endedAssignedCollections) lẫn danh sách còn chọn được (selectableCollections). Khi
   // XEM (viewOnly) lấy thêm includeDeleted để hiện đúng những bộ sưu tập sản phẩm này
   // thực sự đã từng được gán, không bị "biến mất" chỉ vì sau đó bị xóa mềm.
-  const { data: collections, isLoading } = useCollections({
+  // limit: 1000 — đây là checkbox chọn TOÀN BỘ bộ sưu tập, không phải bảng phân trang, theo
+  // đúng pattern useProducts() ở AssignProductsModal.tsx.
+  const { data, isLoading } = useCollections({
     excludeEnded: false,
     includeDeleted: viewOnly,
+    limit: 1000,
   });
+  const collections = data?.data;
 
   const status = useWatch({ control, name: "status" });
   // Chỉ sản phẩm ĐANG MỞ BÁN mới được gán vào bộ sưu tập (khớp rule BE —

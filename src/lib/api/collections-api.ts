@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api/api-client";
-import type { Collection } from "@/types/shared-types";
+import type { Collection, PaginatedResult } from "@/types/shared-types";
 import type {
   AssignProductsPayload,
   CreateCollectionPayload,
@@ -7,12 +7,16 @@ import type {
   UpdateCollectionPayload,
 } from "@/types/collections-api.types";
 
-export async function getCollections(params: GetCollectionsParams = {}): Promise<Collection[]> {
-  const { data } = await apiClient.get<Collection[]>("/collections", {
+export async function getCollections(
+  params: GetCollectionsParams = {},
+): Promise<PaginatedResult<Collection>> {
+  const { data } = await apiClient.get<PaginatedResult<Collection>>("/collections", {
     params: {
       ...(params.search ? { search: params.search } : {}),
       ...(params.includeDeleted ? { includeDeleted: true } : {}),
       ...(params.excludeEnded ? { excludeEnded: true } : {}),
+      page: params.page,
+      limit: params.limit,
     },
   });
   return data;

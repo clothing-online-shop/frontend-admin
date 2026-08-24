@@ -1,14 +1,17 @@
 import { apiClient } from "@/lib/api/api-client";
-import type { Banner } from "@/types/shared-types";
+import type { Banner, PaginatedResult } from "@/types/shared-types";
 import type {
   CreateBannerPayload,
+  ListBannersQuery,
   ReorderBannerItem,
   UpdateBannerPayload,
 } from "@/types/banners-api.types";
 
-export async function getBanners(search?: string): Promise<Banner[]> {
-  const { data } = await apiClient.get<Banner[]>("/banners", {
-    params: search ? { search } : {},
+export async function getBanners(
+  query: ListBannersQuery = {},
+): Promise<PaginatedResult<Banner>> {
+  const { data } = await apiClient.get<PaginatedResult<Banner>>("/banners", {
+    params: query,
   });
   return data;
 }
