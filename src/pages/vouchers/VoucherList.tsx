@@ -45,6 +45,7 @@ export default function VoucherList() {
   const [status, setStatus] = useState<VoucherStatus | undefined>();
   const [discountType, setDiscountType] = useState<DiscountType | undefined>();
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const [deleteTarget, setDeleteTarget] = useState<Voucher | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -53,7 +54,7 @@ export default function VoucherList() {
     status,
     discountType,
     page,
-    limit: DEFAULT_PAGE_SIZE,
+    limit,
   });
   const vouchers = data?.data ?? [];
   const deleteMutation = useDeleteVoucher();
@@ -292,7 +293,7 @@ export default function VoucherList() {
                 setStatus(value !== undefined ? (Number(value) as VoucherStatus) : undefined);
                 setPage(1);
               }}
-              placeholder="Tất cả trạng thái"
+              placeholder="Trạng thái"
               allowClear
               placeholderColor="gray-700"
             />
@@ -316,13 +317,18 @@ export default function VoucherList() {
           emptyMessage="Chưa có voucher nào."
           onRowClick={(voucher) => navigate(`/vouchers/${voucher.id}`)}
           showIndex
+          indexOffset={(page - 1) * limit}
         />
         <div className="px-5">
           <Pagination
             page={page}
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={limit}
             total={data?.meta.total ?? 0}
             onChange={setPage}
+            onPageSizeChange={(size) => {
+              setLimit(size);
+              setPage(1);
+            }}
           />
         </div>
       </div>
