@@ -52,14 +52,16 @@ Tailwind (component nội bộ `src/components/ui`, `src/components/form`).
 ### Task 1: Types — `FlashSale`/`FlashSaleStatus` trong shared-types, thêm `price` vào `InventoryItem`
 
 **Files:**
+
 - Modify: `src/types/shared-types.ts`
 
 **Interfaces:**
+
 - Produces: `FlashSaleStatus` (const + type, values `"UPCOMING"|"RUNNING"|"ENDED"`),
   `FlashSaleItem { id, productVariantId, salePrice, quantityLimit, soldCount, isSoldOut,
-  product: {id,name,slug,thumbnail}, variant: {size,color,sku,price,stockQuantity} }`,
+product: {id,name,slug,thumbnail}, variant: {size,color,sku,price,stockQuantity} }`,
   `FlashSale { id, name, startDate, endDate, status, itemCount, items?: FlashSaleItem[],
-  isDelete, createdAt, updatedAt }`. Cập nhật `InventoryItem` thêm field `price: number`.
+isDelete, createdAt, updatedAt }`. Cập nhật `InventoryItem` thêm field `price: number`.
 - Consumes (mọi task sau): toàn bộ page/hook/api Flash Sale import các type này từ
   `@/types/shared-types`.
 
@@ -78,7 +80,8 @@ export const FlashSaleStatus = {
   RUNNING: "RUNNING",
   ENDED: "ENDED",
 } as const;
-export type FlashSaleStatus = (typeof FlashSaleStatus)[keyof typeof FlashSaleStatus];
+export type FlashSaleStatus =
+  (typeof FlashSaleStatus)[keyof typeof FlashSaleStatus];
 
 export interface FlashSaleItem {
   id: string;
@@ -117,7 +120,7 @@ export interface FlashSale {
 ```
 
 - [ ] **Step 2: Thêm field `price` vào interface `InventoryItem` đã có** (tìm khối
-  `export interface InventoryItem { ... }`)
+      `export interface InventoryItem { ... }`)
 
 ```typescript
 export interface InventoryItem {
@@ -139,7 +142,7 @@ export interface InventoryItem {
 ```
 
 - [ ] **Step 3: Build để xác nhận không có nơi nào tạo `InventoryItem` literal thiếu field
-  `price` mới (TypeScript sẽ báo lỗi nếu có)**
+      `price` mới (TypeScript sẽ báo lỗi nếu có)**
 
 ```bash
 pnpm --filter @clothing-shop/cms build
@@ -161,16 +164,18 @@ git commit -m "feat(flash-sales): thêm type FlashSale/FlashSaleStatus, bổ sun
 ### Task 2: `types/flash-sales-api.types.ts` + `lib/api/flash-sales-api.ts`
 
 **Files:**
+
 - Create: `src/types/flash-sales-api.types.ts`
 - Create: `src/lib/api/flash-sales-api.ts`
 
 **Interfaces:**
+
 - Consumes: `apiClient` (`@/lib/api/api-client`), `FlashSale`, `PaginatedResult`,
   `FlashSaleStatus` (`@/types/shared-types`).
 - Produces: `CreateFlashSalePayload`, `UpdateFlashSalePayload`, `FlashSaleItemInput`,
   `ListFlashSalesParams`, `UpdateSoldCountPayload` (types) — và hàm
   `getFlashSales/getFlashSale/createFlashSale/updateFlashSale/endFlashSaleNow/
-  updateFlashSaleItemSoldCount/deleteFlashSale`. Task 3 (hooks) import trực tiếp các hàm này.
+updateFlashSaleItemSoldCount/deleteFlashSale`. Task 3 (hooks) import trực tiếp các hàm này.
 
 - [ ] **Step 1: Tạo `src/types/flash-sales-api.types.ts`**
 
@@ -223,9 +228,12 @@ import type {
 export async function getFlashSales(
   params: ListFlashSalesParams = {},
 ): Promise<PaginatedResult<FlashSale>> {
-  const { data } = await apiClient.get<PaginatedResult<FlashSale>>("/flash-sales", {
-    params,
-  });
+  const { data } = await apiClient.get<PaginatedResult<FlashSale>>(
+    "/flash-sales",
+    {
+      params,
+    },
+  );
   return data;
 }
 
@@ -234,7 +242,9 @@ export async function getFlashSale(id: string): Promise<FlashSale> {
   return data;
 }
 
-export async function createFlashSale(payload: CreateFlashSalePayload): Promise<FlashSale> {
+export async function createFlashSale(
+  payload: CreateFlashSalePayload,
+): Promise<FlashSale> {
   const { data } = await apiClient.post<FlashSale>("/flash-sales", payload);
   return data;
 }
@@ -243,12 +253,17 @@ export async function updateFlashSale(
   id: string,
   payload: UpdateFlashSalePayload,
 ): Promise<FlashSale> {
-  const { data } = await apiClient.patch<FlashSale>(`/flash-sales/${id}`, payload);
+  const { data } = await apiClient.patch<FlashSale>(
+    `/flash-sales/${id}`,
+    payload,
+  );
   return data;
 }
 
 export async function endFlashSaleNow(id: string): Promise<FlashSale> {
-  const { data } = await apiClient.patch<FlashSale>(`/flash-sales/${id}/end-now`);
+  const { data } = await apiClient.patch<FlashSale>(
+    `/flash-sales/${id}/end-now`,
+  );
   return data;
 }
 
@@ -289,9 +304,11 @@ git commit -m "feat(flash-sales): thêm type payload + hàm gọi API flash-sale
 ### Task 3: `hooks/useFlashSales.ts`
 
 **Files:**
+
 - Create: `src/hooks/useFlashSales.ts`
 
 **Interfaces:**
+
 - Consumes: mọi hàm ở `lib/api/flash-sales-api.ts` (Task 2).
 - Produces: `useFlashSales(params)`, `useFlashSaleDetail(id)`, `useCreateFlashSale()`,
   `useUpdateFlashSale()`, `useEndFlashSaleNow()`, `useUpdateFlashSaleItemSoldCount()`,
@@ -338,16 +355,23 @@ export function useCreateFlashSale() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateFlashSalePayload) => createFlashSale(payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
   });
 }
 
 export function useUpdateFlashSale() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateFlashSalePayload }) =>
-      updateFlashSale(id, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateFlashSalePayload;
+    }) => updateFlashSale(id, payload),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
   });
 }
 
@@ -355,7 +379,8 @@ export function useEndFlashSaleNow() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => endFlashSaleNow(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
   });
 }
 
@@ -371,7 +396,8 @@ export function useUpdateFlashSaleItemSoldCount() {
       itemId: string;
       payload: UpdateSoldCountPayload;
     }) => updateFlashSaleItemSoldCount(flashSaleId, itemId, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
   });
 }
 
@@ -379,7 +405,8 @@ export function useDeleteFlashSale() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteFlashSale(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
   });
 }
 ```
@@ -402,10 +429,12 @@ git commit -m "feat(flash-sales): thêm React Query hooks useFlashSales"
 ### Task 4: `lib/errorCodes/flash-sale.ts` + đăng ký vào `errorCodes/index.ts`
 
 **Files:**
+
 - Create: `src/lib/errorCodes/flash-sale.ts`
 - Modify: `src/lib/errorCodes/index.ts`
 
 **Interfaces:**
+
 - Produces: `FlashSaleErrorCode`, `FLASH_SALE_ERROR_MESSAGE` — gộp vào `ErrorCode`/
   `ERROR_CODE_MESSAGE` dùng chung, `getErrorMessage()` (`lib/error.ts`) tự động dùng được mà
   không cần sửa gì thêm ở đó.
@@ -436,7 +465,8 @@ export const FLASH_SALE_ERROR_MESSAGE: Partial<
   Record<(typeof FlashSaleErrorCode)[keyof typeof FlashSaleErrorCode], string>
 > = {
   [FlashSaleErrorCode.FLASH_SALE_NOT_FOUND]: "Không tìm thấy đợt Flash Sale.",
-  [FlashSaleErrorCode.FLASH_SALE_VARIANT_NOT_FOUND]: "Không tìm thấy biến thể sản phẩm.",
+  [FlashSaleErrorCode.FLASH_SALE_VARIANT_NOT_FOUND]:
+    "Không tìm thấy biến thể sản phẩm.",
   [FlashSaleErrorCode.FLASH_SALE_INVALID_SALE_PRICE]:
     "Giá sale phải nhỏ hơn giá gốc của sản phẩm.",
   [FlashSaleErrorCode.FLASH_SALE_QUANTITY_EXCEEDS_STOCK]:
@@ -498,15 +528,17 @@ git commit -m "feat(flash-sales): thêm error code map flash-sale"
 ### Task 5: `lib/flashSaleStatus.ts`
 
 **Files:**
+
 - Create: `src/lib/flashSaleStatus.ts`
 
 **Interfaces:**
+
 - Consumes: `FlashSaleStatus` (`@/types/shared-types`, Task 1).
 - Produces: `FLASH_SALE_STATUS_LABEL`, `FLASH_SALE_STATUS_COLOR` — Task 8 (List) dùng cho
   `Badge`, Task 7 (Form) dùng để hiện banner cảnh báo theo trạng thái.
 
 - [ ] **Step 1: Tạo `src/lib/flashSaleStatus.ts`** (bám sát đúng khuôn
-  `collectionStatus.ts`/`bannerStatus.ts` — cùng 3 trạng thái UPCOMING/RUNNING/ENDED)
+      `collectionStatus.ts`/`bannerStatus.ts` — cùng 3 trạng thái UPCOMING/RUNNING/ENDED)
 
 ```typescript
 import type { FlashSaleStatus } from "@/types/shared-types";
@@ -519,7 +551,10 @@ export const FLASH_SALE_STATUS_LABEL: Record<FlashSaleStatus, string> = {
   ENDED: "Đã kết thúc",
 };
 
-export const FLASH_SALE_STATUS_COLOR: Record<FlashSaleStatus, "info" | "success" | "light"> = {
+export const FLASH_SALE_STATUS_COLOR: Record<
+  FlashSaleStatus,
+  "info" | "success" | "light"
+> = {
   UPCOMING: "info",
   RUNNING: "success",
   ENDED: "light",
@@ -544,11 +579,13 @@ git commit -m "feat(flash-sales): thêm label/màu trạng thái flash-sale"
 ### Task 6: `schemas/flash-sale.schema.ts`
 
 **Files:**
+
 - Create: `src/schemas/flash-sale.schema.ts`
 
 **Interfaces:**
+
 - Produces: `flashSaleSchema` (Yup), `type FlashSaleFormValues = yup.InferType<typeof
-  flashSaleSchema>`, `type FlashSaleItemFormValue` (1 dòng trong mảng `items`). Task 7 (Form)
+flashSaleSchema>`, `type FlashSaleItemFormValue` (1 dòng trong mảng `items`). Task 7 (Form)
   và Task 6.5 (Picker, gộp vào Task 7) import trực tiếp.
 
 Mỗi dòng item trong form giữ theo cả `price`/`stockQuantity` (chỉ để hiển thị + validate
@@ -579,10 +616,14 @@ const flashSaleItemSchema = yup.object({
     .typeError("Nhập giá sale.")
     .positive("Giá sale phải lớn hơn 0.")
     .required("Nhập giá sale.")
-    .test("less-than-price", "Giá sale phải nhỏ hơn giá gốc.", function (value) {
-      const { price } = this.parent as { price?: number };
-      return value === undefined || price === undefined || value < price;
-    }),
+    .test(
+      "less-than-price",
+      "Giá sale phải nhỏ hơn giá gốc.",
+      function (value) {
+        const { price } = this.parent as { price?: number };
+        return value === undefined || price === undefined || value < price;
+      },
+    ),
   quantityLimit: yup
     .number()
     .transform((value, original) => (original === "" ? undefined : value))
@@ -590,22 +631,34 @@ const flashSaleItemSchema = yup.object({
     .integer("Số lượng giới hạn phải là số nguyên.")
     .positive("Số lượng giới hạn phải lớn hơn 0.")
     .required("Nhập số lượng giới hạn.")
-    .test("le-stock", "Không được vượt quá tồn kho hiện tại.", function (value) {
-      const { stockQuantity } = this.parent as { stockQuantity?: number };
-      return value === undefined || stockQuantity === undefined || value <= stockQuantity;
-    }),
+    .test(
+      "le-stock",
+      "Không được vượt quá tồn kho hiện tại.",
+      function (value) {
+        const { stockQuantity } = this.parent as { stockQuantity?: number };
+        return (
+          value === undefined ||
+          stockQuantity === undefined ||
+          value <= stockQuantity
+        );
+      },
+    ),
 });
 
 export const flashSaleSchema = yup.object({
-  name: yup.string().trim().required("Vui lòng nhập tên đợt Flash Sale."),
+  name: yup.string().trim().required("Vui lòng nhập tên Flash Sale."),
   startDate: yup.string().required("Vui lòng chọn ngày bắt đầu."),
   endDate: yup
     .string()
     .required("Vui lòng chọn ngày kết thúc.")
-    .test("after-start", "Ngày kết thúc phải sau ngày bắt đầu.", function (value) {
-      const { startDate } = this.parent as { startDate?: string };
-      return !startDate || !value || value >= startDate;
-    }),
+    .test(
+      "after-start",
+      "Ngày kết thúc phải sau ngày bắt đầu.",
+      function (value) {
+        const { startDate } = this.parent as { startDate?: string };
+        return !startDate || !value || value >= startDate;
+      },
+    ),
   items: yup
     .array()
     .of(flashSaleItemSchema)
@@ -635,14 +688,16 @@ git commit -m "feat(flash-sales): thêm Yup schema cho form flash-sale"
 ### Task 7: `FlashSaleItemPickerModal.tsx` — picker chọn biến thể qua GET /inventory
 
 **Files:**
+
 - Create: `src/pages/flash-sales/FlashSaleItemPickerModal.tsx`
 
 **Interfaces:**
+
 - Consumes: `useInventory(params)` (`@/hooks/useInventory`, đã có sẵn — trả
   `PaginatedResult<InventoryItem>`, `InventoryItem` nay có `price` từ Task 1),
   `FlashSaleItemFormValue` (Task 6).
 - Produces: `FlashSaleItemPickerModalProps { open, onClose, excludeVariantIds: string[],
-  onConfirm: (items: FlashSaleItemFormValue[]) => void }`. Task 8 (Form) render component này.
+onConfirm: (items: FlashSaleItemFormValue[]) => void }`. Task 8 (Form) render component này.
 
 Bê nguyên cấu trúc `AssignProductsModal.tsx` (checkbox nhiều dòng, giữ lựa chọn qua trang, nút
 "Lưu" ở footer) nhưng nguồn dữ liệu là `GET /inventory` (biến thể, không phải sản phẩm) —
@@ -884,9 +939,11 @@ git commit -m "feat(flash-sales): thêm modal chọn sản phẩm/biến thể t
 ### Task 8: `FlashSaleForm.tsx` — form full-page thêm/sửa
 
 **Files:**
+
 - Create: `src/pages/flash-sales/FlashSaleForm.tsx`
 
 **Interfaces:**
+
 - Consumes: `useFlashSaleDetail/useCreateFlashSale/useUpdateFlashSale`
   (`@/hooks/useFlashSales`, Task 3), `flashSaleSchema`/`FlashSaleFormValues`
   (`@/schemas/flash-sale.schema`, Task 6), `FlashSaleItemPickerModal` (Task 7),
@@ -1112,7 +1169,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="sm:col-span-1">
               <Input
-                label="Tên đợt Flash Sale"
+                label="Tên Flash Sale"
                 required
                 disabled={lockCoreFields}
                 placeholder="Ví dụ: Flash Sale 12.12"
@@ -1347,9 +1404,11 @@ git commit -m "feat(flash-sales): thêm form thêm/sửa Flash Sale"
 ### Task 9: `FlashSaleList.tsx` — danh sách + kết thúc sớm + xóa
 
 **Files:**
+
 - Create: `src/pages/flash-sales/FlashSaleList.tsx`
 
 **Interfaces:**
+
 - Consumes: `useFlashSales/useEndFlashSaleNow/useDeleteFlashSale` (`@/hooks/useFlashSales`,
   Task 3), `FLASH_SALE_STATUS_LABEL/COLOR` (Task 5).
 - Produces: `export default function FlashSaleList()` — Task 10 (routing) trỏ `/flash-sales`
@@ -1426,7 +1485,7 @@ export default function FlashSaleList() {
   const columns: DataTableColumn<FlashSale>[] = [
     {
       key: "name",
-      header: "Tên đợt",
+      header: "Tên Flash Sale",
       className: "min-w-56",
       render: (flashSale) => (
         <span className="text-sm text-gray-800 dark:text-white/90">{flashSale.name}</span>
@@ -1542,7 +1601,7 @@ export default function FlashSaleList() {
         <div className="flex items-center gap-3">
           <div className="w-64">
             <Input
-              placeholder="Tìm theo tên đợt Flash Sale"
+              placeholder="Tìm theo tên Flash Sale"
               value={searchInput}
               onChange={(e) => {
                 setSearchInput(e.target.value);
@@ -1641,10 +1700,12 @@ git commit -m "feat(flash-sales): thêm màn danh sách Flash Sale"
 ### Task 10: Routing + menu sidebar
 
 **Files:**
+
 - Modify: `src/routes/index.tsx`
 - Modify: `src/layouts/AdminLayout.tsx`
 
 **Interfaces:**
+
 - Consumes: `FlashSaleList` (Task 9), `FlashSaleForm` (Task 8), `MARKETING_ROLES`
   (`@/lib/permissions`, đã có sẵn — dùng đúng nhóm role của Voucher/Collection/Banner vì Flash
   Sale cùng là công cụ marketing).
@@ -1717,13 +1778,14 @@ git commit -m "feat(flash-sales): đăng ký route + menu sidebar Flash Sale"
 xong, đúng quy trình đã dùng cho các tính năng trước trong session)
 
 **Interfaces:**
+
 - Consumes: server thật `backend-cms` ở `http://localhost:3002` (phải đã hoàn tất plan
   backend, đứng ở nhánh `feature/flash-sale` với API Flash Sale đã chạy được — nếu chưa xong,
   DỪNG task này, báo lại chứ không tự bịa dữ liệu giả), `frontend-admin` dev server ở
   `http://localhost:5173`.
 
 - [ ] **Step 1: Cài Playwright tạm vào thư mục scratchpad** (không thêm vào
-  `package.json` của repo)
+      `package.json` của repo)
 
 ```bash
 cd /tmp && mkdir -p flash-sale-verify && cd flash-sale-verify
@@ -1746,7 +1808,7 @@ cd frontend-admin && pnpm dev
 ```
 
 - [ ] **Step 3: Viết script Playwright headless kiểm tra luồng chính**, lưu vào
-  `flash-sale-verify/verify.js` (thư mục scratchpad, KHÔNG lưu vào repo):
+      `flash-sale-verify/verify.js` (thư mục scratchpad, KHÔNG lưu vào repo):
 
 ```javascript
 const { chromium } = require("playwright");
@@ -1769,7 +1831,10 @@ const { chromium } = require("playwright");
   // 3. Tạo mới 1 đợt Flash Sale
   await page.click("text=Thêm Flash Sale");
   await page.waitForURL("**/flash-sales/new");
-  await page.fill("#flash-sale-name, input[placeholder*='Flash Sale']", "Flash Sale Test Playwright");
+  await page.fill(
+    "#flash-sale-name, input[placeholder*='Flash Sale']",
+    "Flash Sale Test Playwright",
+  );
   // startDate/endDate là <input type="datetime-local"> (không phải flatpickr) — điền thẳng
   // giá trị "YYYY-MM-DDTHH:mm" theo giờ HIỆN TẠI của máy chạy script (Playwright test-runner),
   // +1 giờ cho start / +3 giờ cho end để chắc chắn qua được ràng buộc "không ở quá khứ" phía
@@ -1778,8 +1843,12 @@ const { chromium } = require("playwright");
     const pad = (n) => String(n).padStart(2, "0");
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   }
-  const startDateValue = toDateTimeLocalValue(new Date(Date.now() + 60 * 60 * 1000));
-  const endDateValue = toDateTimeLocalValue(new Date(Date.now() + 3 * 60 * 60 * 1000));
+  const startDateValue = toDateTimeLocalValue(
+    new Date(Date.now() + 60 * 60 * 1000),
+  );
+  const endDateValue = toDateTimeLocalValue(
+    new Date(Date.now() + 3 * 60 * 60 * 1000),
+  );
   await page.fill("#flash-sale-start-date", startDateValue);
   await page.fill("#flash-sale-end-date", endDateValue);
 
@@ -1799,7 +1868,10 @@ const { chromium } = require("playwright");
 
   // 6. Dọn dữ liệu test — tìm dòng vừa tạo, xóa (chỉ khi status không phải RUNNING/chờ
   // UPCOMING mới xóa được, nếu vướng RUNNING thì để lại và báo cho người review dọn tay).
-  await page.fill('input[placeholder*="Tìm theo tên"]', "Flash Sale Test Playwright");
+  await page.fill(
+    'input[placeholder*="Tìm theo tên"]',
+    "Flash Sale Test Playwright",
+  );
   await page.waitForTimeout(600); // đợi debounce 500ms
 
   await browser.close();
@@ -1819,12 +1891,12 @@ mà lint/build không bắt được (vd input datetime-local không nhận giá
 modal không hiện dòng nào do `useInventory` query sai tham số).
 
 - [ ] **Step 5: Vào tay bằng trình duyệt thật (không headless) kiểm tra thêm các luồng
-  script không cover** — sửa 1 đợt Flash Sale UPCOMING (đổi tên/ngày/thêm bớt sản phẩm), xem
-  1 đợt RUNNING (xác nhận field bị khoá đúng, chỉ sửa được ngày kết thúc), bấm "Kết thúc sớm"
-  1 đợt RUNNING xác nhận chuyển ngay sang ENDED, thử xóa 1 đợt RUNNING xác nhận nút xóa bị ẩn.
+      script không cover** — sửa 1 đợt Flash Sale UPCOMING (đổi tên/ngày/thêm bớt sản phẩm), xem
+      1 đợt RUNNING (xác nhận field bị khoá đúng, chỉ sửa được ngày kết thúc), bấm "Kết thúc sớm"
+      1 đợt RUNNING xác nhận chuyển ngay sang ENDED, thử xóa 1 đợt RUNNING xác nhận nút xóa bị ẩn.
 
 - [ ] **Step 6: Dọn dẹp — xóa toàn bộ dữ liệu Flash Sale test đã tạo qua UI, xóa thư mục
-  scratchpad `flash-sale-verify`**
+      scratchpad `flash-sale-verify`**
 
 ```bash
 rm -rf flash-sale-verify
@@ -1834,7 +1906,7 @@ rm -rf flash-sale-verify
 scratchpad ở đầu phiên làm việc.)
 
 - [ ] **Step 7: Báo cáo kết quả verify (pass/fail từng luồng) — không cần commit gì ở task
-  này (không có file source nào thay đổi).**
+      này (không có file source nào thay đổi).**
 
 ---
 
