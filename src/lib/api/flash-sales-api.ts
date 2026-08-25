@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api/api-client";
 import type { FlashSale, PaginatedResult } from "@/types/shared-types";
 import type {
+  AddFlashSaleItemsPayload,
   CreateFlashSalePayload,
   ListFlashSalesParams,
   UpdateFlashSalePayload,
@@ -53,4 +54,12 @@ export async function updateFlashSaleItemSoldCount(
 
 export async function deleteFlashSale(id: string): Promise<void> {
   await apiClient.delete(`/flash-sales/${id}`);
+}
+
+export async function addFlashSaleItems(
+  id: string,
+  payload: AddFlashSaleItemsPayload,
+): Promise<FlashSale> {
+  const { data } = await apiClient.post<FlashSale>(`/flash-sales/${id}/items`, payload);
+  return data;
 }

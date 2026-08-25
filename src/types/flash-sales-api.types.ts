@@ -19,6 +19,12 @@ export interface CreateFlashSalePayload {
 // optional để TypeScript không ép phải gửi field bị khoá.
 export type UpdateFlashSalePayload = Partial<CreateFlashSalePayload>;
 
+// Chỉ dùng khi RUNNING — POST /flash-sales/:id/items CHỈ cộng thêm sản phẩm mới, không đụng
+// tới item đã có sẵn (khác hẳn UpdateFlashSalePayload.items, vốn thay thế toàn bộ khi UPCOMING).
+export interface AddFlashSaleItemsPayload {
+  items: FlashSaleItemInput[];
+}
+
 export interface ListFlashSalesParams {
   search?: string;
   status?: FlashSaleStatus;

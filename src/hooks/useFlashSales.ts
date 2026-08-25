@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  addFlashSaleItems,
   createFlashSale,
   deleteFlashSale,
   endFlashSaleNow,
@@ -9,6 +10,7 @@ import {
   updateFlashSaleItemSoldCount,
 } from "@/lib/api/flash-sales-api";
 import type {
+  AddFlashSaleItemsPayload,
   CreateFlashSalePayload,
   ListFlashSalesParams,
   UpdateFlashSalePayload,
@@ -77,6 +79,15 @@ export function useDeleteFlashSale() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteFlashSale(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
+  });
+}
+
+export function useAddFlashSaleItems() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: AddFlashSaleItemsPayload }) =>
+      addFlashSaleItems(id, payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: FLASH_SALES_KEY }),
   });
 }
