@@ -66,7 +66,7 @@ export default function FlashSaleList() {
   const columns: DataTableColumn<FlashSale>[] = [
     {
       key: "name",
-      header: "Tên đợt",
+      header: "Tên Flash Sale",
       className: "min-w-56",
       render: (flashSale) => (
         <span className="text-sm text-gray-800 dark:text-white/90">{flashSale.name}</span>
@@ -182,7 +182,7 @@ export default function FlashSaleList() {
         <div className="flex items-center gap-3">
           <div className="w-64">
             <Input
-              placeholder="Tìm theo tên đợt Flash Sale"
+              placeholder="Tìm theo tên Flash Sale"
               value={searchInput}
               onChange={(e) => {
                 setSearchInput(e.target.value);

@@ -192,7 +192,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="sm:col-span-1">
               <Input
-                label="Tên đợt Flash Sale"
+                label="Tên Flash Sale"
                 required
                 disabled={lockCoreFields}
                 placeholder="Ví dụ: Flash Sale 12.12"

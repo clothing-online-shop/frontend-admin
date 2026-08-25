@@ -35,7 +35,7 @@ const flashSaleItemSchema = yup.object({
 });
 
 export const flashSaleSchema = yup.object({
-  name: yup.string().trim().required("Vui lòng nhập tên đợt Flash Sale."),
+  name: yup.string().trim().required("Vui lòng nhập tên Flash Sale."),
   startDate: yup.string().required("Vui lòng chọn ngày bắt đầu."),
   endDate: yup
     .string()
