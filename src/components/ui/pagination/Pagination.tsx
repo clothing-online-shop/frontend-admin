@@ -62,60 +62,69 @@ const Pagination: React.FC<PaginationProps> = ({
 
   if (total === 0) return null;
 
-  const items = getPageItems(page, totalPages);
+  // Chỉ 1 trang (total <= pageSize) thì không có gì để điều hướng/đổi số dòng — ẩn cụm nút
+  // trang + "Số dòng/trang", chỉ giữ lại số kết quả (vẫn là thông tin hữu ích dù không phân
+  // trang). Giữ 2 ô còn lại trong lưới 3 cột bằng div rỗng để "N kết quả" không bị lệch layout
+  // so với các màn khác đang có nhiều trang.
+  const hasMultiplePages = totalPages > 1;
+  const items = hasMultiplePages ? getPageItems(page, totalPages) : [];
 
   return (
     <div className="grid grid-cols-3 items-center gap-4 py-4">
       <span className="text-sm text-gray-500 dark:text-gray-400">{total} kết quả</span>
 
-      <nav className="flex items-center justify-center gap-1.5">
-        <button
-          type="button"
-          disabled={page <= 1}
-          onClick={() => onChange(page - 1)}
-          aria-label="Trang trước"
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
-        >
-          <AngleLeftIcon className="size-6" />
-        </button>
+      {hasMultiplePages ? (
+        <nav className="flex items-center justify-center gap-1.5">
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => onChange(page - 1)}
+            aria-label="Trang trước"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
+          >
+            <AngleLeftIcon className="size-6" />
+          </button>
 
-        {items.map((item, index) =>
-          item === "ellipsis" ? (
-            <span
-              key={`ellipsis-${index}`}
-              className="flex h-8 w-8 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
-            >
-              …
-            </span>
-          ) : (
-            <button
-              key={item}
-              type="button"
-              onClick={() => onChange(item)}
-              aria-current={item === page ? "page" : undefined}
-              className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition-colors duration-200 ease-standard ${
-                item === page
-                  ? "bg-brand-500 text-white"
-                  : "border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
-              }`}
-            >
-              {item}
-            </button>
-          ),
-        )}
+          {items.map((item, index) =>
+            item === "ellipsis" ? (
+              <span
+                key={`ellipsis-${index}`}
+                className="flex h-8 w-8 items-center justify-center text-sm text-gray-400 dark:text-gray-500"
+              >
+                …
+              </span>
+            ) : (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onChange(item)}
+                aria-current={item === page ? "page" : undefined}
+                className={`flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium transition-colors duration-200 ease-standard ${
+                  item === page
+                    ? "bg-brand-500 text-white"
+                    : "border border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+                }`}
+              >
+                {item}
+              </button>
+            ),
+          )}
 
-        <button
-          type="button"
-          disabled={page >= totalPages}
-          onClick={() => onChange(page + 1)}
-          aria-label="Trang sau"
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
-        >
-          <AngleRightIcon className="size-6" />
-        </button>
-      </nav>
+          <button
+            type="button"
+            disabled={page >= totalPages}
+            onClick={() => onChange(page + 1)}
+            aria-label="Trang sau"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 transition-colors duration-200 ease-standard hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
+          >
+            <AngleRightIcon className="size-6" />
+          </button>
+        </nav>
+      ) : (
+        <div aria-hidden />
+      )}
 
-      {onPageSizeChange ? (
+      {hasMultiplePages && onPageSizeChange ? (
         <div className="flex items-center justify-end gap-2">
           <span className="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
             Số dòng/trang
