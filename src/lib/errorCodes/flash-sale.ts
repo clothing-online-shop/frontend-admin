@@ -13,6 +13,7 @@ export const FlashSaleErrorCode = {
   FLASH_SALE_END_NOW_NOT_RUNNING: 2211,
   FLASH_SALE_START_DATE_IN_PAST: 2212,
   FLASH_SALE_DUPLICATE_VARIANT: 2213,
+  FLASH_SALE_ADD_ITEMS_NOT_RUNNING: 2214,
 } as const;
 
 export const FLASH_SALE_ERROR_MESSAGE: Partial<
@@ -40,4 +41,6 @@ export const FLASH_SALE_ERROR_MESSAGE: Partial<
     "Ngày bắt đầu không được ở trong quá khứ.",
   [FlashSaleErrorCode.FLASH_SALE_DUPLICATE_VARIANT]:
     "Danh sách sản phẩm có biến thể bị trùng lặp.",
+  [FlashSaleErrorCode.FLASH_SALE_ADD_ITEMS_NOT_RUNNING]:
+    "Chỉ có thể thêm sản phẩm vào đợt Flash Sale đang diễn ra.",
 };
