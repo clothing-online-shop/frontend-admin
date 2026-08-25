@@ -13,7 +13,7 @@ import { visibleFieldError } from "@/lib/form";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
 import { formatPrice } from "@/lib/format";
-import { FLASH_SALE_STATUS_LABEL } from "@/lib/flashSaleStatus";
+import { FLASH_SALE_STATUS_LABEL, FLASH_SALE_STATUS_COLOR } from "@/lib/flashSaleStatus";
 import { flashSaleSchema, type FlashSaleFormValues } from "@/schemas/flash-sale.schema";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
@@ -172,11 +172,11 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   const existingVariantIds = fields.map((field) => field.productVariantId);
 
   return (
-    <form onSubmit={handleSubmit(onValid)}>
+    <form onSubmit={handleSubmit(onValid)} noValidate>
       <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-6 border-0 p-0">
         {isEditing && status && (
           <div className="mb-2 flex items-center gap-2">
-            <Badge color={status === "RUNNING" ? "success" : status === "ENDED" ? "light" : "info"}>
+            <Badge color={FLASH_SALE_STATUS_COLOR[status]}>
               {FLASH_SALE_STATUS_LABEL[status]}
             </Badge>
           </div>
@@ -259,8 +259,10 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
             </Button>
           )}
 
-          {errors.items?.message && (
-            <p className="text-theme-xs text-error-500">{errors.items.message}</p>
+          {visibleFieldError(errors.items?.message, false, isSubmitted) && (
+            <p className="text-theme-xs text-error-500">
+              {visibleFieldError(errors.items?.message, false, isSubmitted)}
+            </p>
           )}
 
           {fields.length === 0 ? (
@@ -393,12 +395,14 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
         )}
       </div>
 
-      <FlashSaleItemPickerModal
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        excludeVariantIds={existingVariantIds}
-        onConfirm={(items) => items.forEach((item) => append(item))}
-      />
+      {pickerOpen && (
+        <FlashSaleItemPickerModal
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          excludeVariantIds={existingVariantIds}
+          onConfirm={(items) => items.forEach((item) => append(item))}
+        />
+      )}
     </form>
   );
 }

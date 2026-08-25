@@ -6,7 +6,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 import { FLASH_SALE_STATUS_LABEL, FLASH_SALE_STATUS_COLOR } from "@/lib/flashSaleStatus";
 import Button from "@/components/ui/button/Button";
@@ -79,7 +79,7 @@ export default function FlashSaleList() {
       className: "min-w-56",
       render: (flashSale) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">
-          {formatDate(flashSale.startDate)} – {formatDate(flashSale.endDate)}
+          {formatDateTime(flashSale.startDate)} – {formatDateTime(flashSale.endDate)}
         </span>
       ),
     },

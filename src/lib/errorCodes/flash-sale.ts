@@ -12,6 +12,7 @@ export const FlashSaleErrorCode = {
   FLASH_SALE_SOLD_COUNT_EXCEEDS_LIMIT: 2210,
   FLASH_SALE_END_NOW_NOT_RUNNING: 2211,
   FLASH_SALE_START_DATE_IN_PAST: 2212,
+  FLASH_SALE_DUPLICATE_VARIANT: 2213,
 } as const;
 
 export const FLASH_SALE_ERROR_MESSAGE: Partial<
@@ -23,8 +24,6 @@ export const FLASH_SALE_ERROR_MESSAGE: Partial<
     "Giá sale phải nhỏ hơn giá gốc của sản phẩm.",
   [FlashSaleErrorCode.FLASH_SALE_QUANTITY_EXCEEDS_STOCK]:
     "Số lượng giới hạn không được vượt quá tồn kho hiện tại.",
-  [FlashSaleErrorCode.FLASH_SALE_VARIANT_OVERLAP]:
-    "Biến thể đã tham gia đợt Flash Sale khác trong cùng khoảng thời gian.",
   [FlashSaleErrorCode.FLASH_SALE_UPDATE_FIELD_BLOCKED_RUNNING]:
     "Đợt Flash Sale đang diễn ra — chỉ có thể sửa ngày kết thúc.",
   [FlashSaleErrorCode.FLASH_SALE_UPDATE_BLOCKED_ENDED]:
@@ -39,4 +38,6 @@ export const FLASH_SALE_ERROR_MESSAGE: Partial<
     "Chỉ có thể kết thúc sớm đợt đang diễn ra.",
   [FlashSaleErrorCode.FLASH_SALE_START_DATE_IN_PAST]:
     "Ngày bắt đầu không được ở trong quá khứ.",
+  [FlashSaleErrorCode.FLASH_SALE_DUPLICATE_VARIANT]:
+    "Danh sách sản phẩm có biến thể bị trùng lặp.",
 };
