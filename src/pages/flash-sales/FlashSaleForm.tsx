@@ -4,6 +4,7 @@ import { useForm, useFieldArray, useWatch, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { FlashSaleStatus } from "@/types/shared-types";
 import {
+  useAddFlashSaleItems,
   useCreateFlashSale,
   useFlashSaleDetail,
   useUpdateFlashSale,
@@ -79,6 +80,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   const { data: flashSale, isLoading: isLoadingDetail } = useFlashSaleDetail(editingId);
   const createMutation = useCreateFlashSale();
   const updateMutation = useUpdateFlashSale();
+  const addItemsMutation = useAddFlashSaleItems();
 
   const {
     control,
@@ -94,6 +96,12 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
+  // Chụp lại tập productVariantId ĐÃ tồn tại trong DB lúc mở form (đóng băng, không đổi theo
+  // fields sau đó) — dùng để phân biệt item CŨ (khoá cứng khi RUNNING) với item MỚI vừa chọn
+  // qua picker trong phiên sửa hiện tại (vẫn sửa/xóa được cho tới khi bấm Lưu). Không dùng
+  // useMemo vì giá trị này PHẢI đứng yên sau khi set 1 lần lúc hydrate, không được tính lại
+  // mỗi khi fields đổi (fields đổi liên tục ngay khi admin thêm/xóa item).
+  const [hydratedVariantIds, setHydratedVariantIds] = useState<Set<string>>(new Set());
 
   const startDateValue = useWatch({ control, name: "startDate" });
   const status = flashSale?.status;
@@ -127,6 +135,9 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
         quantityLimit: item.quantityLimit,
       })),
     });
+    setHydratedVariantIds(
+      new Set((flashSale.items ?? []).map((item) => item.productVariantId)),
+    );
     void trigger();
   }, [flashSale, reset, trigger]);
 
@@ -145,15 +156,54 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
       })),
     };
 
+    if (isEditing && flashSale && isRunning) {
+      // RUNNING: item cũ đóng băng — chỉ item MỚI (không nằm trong hydratedVariantIds lúc mở
+      // form) được gửi qua POST /items; PATCH endDate (nếu có đổi) chạy SAU, không gộp chung 1
+      // request như nhánh UPCOMING/tạo mới, vì BE từ chối PATCH kèm items khi đang RUNNING
+      // (code 2206). Thêm sản phẩm trước, đổi endDate sau: lỗi ở bước thêm thì dừng luôn (chưa
+      // đổi endDate); lỗi ở bước đổi endDate (sau khi thêm đã thành công) thì báo rõ để admin
+      // biết chỉ phần nào bị lỗi — không rollback bước 1 vì dữ liệu vẫn hợp lệ.
+      const newItems = payload.items.filter(
+        (item) => !hydratedVariantIds.has(item.productVariantId),
+      );
+      if (newItems.length > 0) {
+        try {
+          await addItemsMutation.mutateAsync({
+            id: flashSale.id,
+            payload: { items: newItems },
+          });
+        } catch (error) {
+          toast.error(getErrorMessage(error));
+          return;
+        }
+      }
+      // So bằng dirtyFields (React Hook Form tự tính) thay vì so chuỗi ISO thủ công — datetime-
+      // local chỉ có độ chính xác tới PHÚT (không giây/mili-giây), nên toIsoString(giá trị đã
+      // hydrate) gần như luôn KHÁC chuỗi ISO gốc từ API (vốn có giây/mili-giây) dù admin không
+      // hề sửa gì — so sánh thủ công sẽ luôn coi là "đã đổi" và gọi PATCH thừa mỗi lần lưu.
+      if (dirtyFields.endDate) {
+        try {
+          await updateMutation.mutateAsync({
+            id: flashSale.id,
+            payload: { endDate: payload.endDate },
+          });
+        } catch (error) {
+          toast.error(
+            newItems.length > 0
+              ? `Đã thêm sản phẩm nhưng chưa cập nhật được ngày kết thúc — ${getErrorMessage(error)}`
+              : getErrorMessage(error),
+          );
+          return;
+        }
+      }
+      toast.success("Đã cập nhật đợt Flash Sale.");
+      navigate("/flash-sales");
+      return;
+    }
+
     try {
       if (isEditing && flashSale) {
-        // RUNNING: chỉ gửi endDate (BE từ chối kèm field khác khi đang RUNNING) — payload đủ
-        // 4 field lúc này sẽ bị BE trả lỗi 2206 dù UI đã khoá, vì name/startDate/items dù
-        // khoá vẫn còn nguyên giá trị cũ trong `values` (fieldset disabled không xoá value).
-        await updateMutation.mutateAsync({
-          id: flashSale.id,
-          payload: isRunning ? { endDate: payload.endDate } : payload,
-        });
+        await updateMutation.mutateAsync({ id: flashSale.id, payload });
         toast.success("Đã cập nhật đợt Flash Sale.");
       } else {
         await createMutation.mutateAsync(payload);
@@ -248,7 +298,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
           title="Sản phẩm tham gia"
           desc="Giá sale phải nhỏ hơn giá gốc, số lượng giới hạn không vượt quá tồn kho hiện tại."
         >
-          {!lockCoreFields && (
+          {!viewOnly && !isEnded && (
             <Button
               type="button"
               variant="outline"
@@ -269,7 +319,14 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
             <p className="text-sm text-gray-400 dark:text-gray-500">Chưa chọn sản phẩm nào.</p>
           ) : (
             <div className="space-y-3">
-              {fields.map((field, index) => (
+              {fields.map((field, index) => {
+                // Item CŨ (đã hydrate từ DB lúc mở form) đóng băng khi RUNNING — item MỚI vừa
+                // chọn qua picker trong phiên sửa hiện tại vẫn sửa/xóa được như UPCOMING cho
+                // tới khi bấm Lưu. Khi UPCOMING, isRunning=false nên mọi item đều KHÔNG khoá
+                // (giữ nguyên hành vi cũ). Khi ENDED/viewOnly, khoá hết bất kể cũ/mới.
+                const isLockedItem =
+                  viewOnly || isEnded || (isRunning && hydratedVariantIds.has(field.productVariantId));
+                return (
                 <div
                   key={field.id}
                   className="flex items-center gap-4 rounded-lg border border-gray-200 p-3 dark:border-gray-800"
@@ -299,7 +356,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
                       render={({ field: salePriceField }) => (
                         <CurrencyInput
                           ariaLabel="Giá sale"
-                          disabled={lockCoreFields}
+                          disabled={isLockedItem}
                           placeholder="Giá sale"
                           value={salePriceField.value}
                           onChange={salePriceField.onChange}
@@ -333,7 +390,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
                     <Input
                       id={`flash-sale-item-quantity-${index}`}
                       type="number"
-                      disabled={lockCoreFields}
+                      disabled={isLockedItem}
                       placeholder="Số lượng"
                       {...register(`items.${index}.quantityLimit`)}
                       error={
@@ -351,7 +408,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
                     />
                   </div>
 
-                  {!lockCoreFields && (
+                  {!isLockedItem && (
                     <button
                       type="button"
                       onClick={() => remove(index)}
@@ -362,7 +419,8 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
                     </button>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ComponentCard>
