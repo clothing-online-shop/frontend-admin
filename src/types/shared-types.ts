@@ -265,6 +265,10 @@ export interface InventoryItem {
   sku: string;
   size: string;
   color: string;
+  // Giá bán hiện tại của biến thể — BE mới thêm field này vào GET /inventory (xem
+  // backend-cms plan Task 3) để màn picker Flash Sale hiện được giá gốc ngay lúc chọn, không
+  // phải gọi thêm API khác.
+  price: number;
   stockQuantity: number;
   lowStockThreshold: number;
   productId: string;
@@ -381,4 +385,46 @@ export interface SyncLocationsResult {
   provinces: number;
   districts: number;
   wards: number;
+}
+
+export const FlashSaleStatus = {
+  UPCOMING: "UPCOMING",
+  RUNNING: "RUNNING",
+  ENDED: "ENDED",
+} as const;
+export type FlashSaleStatus = (typeof FlashSaleStatus)[keyof typeof FlashSaleStatus];
+
+export interface FlashSaleItem {
+  id: string;
+  productVariantId: string;
+  salePrice: number;
+  quantityLimit: number;
+  soldCount: number;
+  isSoldOut: boolean;
+  product: { id: string; name: string; slug: string; thumbnail: string | null };
+  variant: {
+    size: string;
+    color: string;
+    sku: string;
+    // Giá gốc hiện tại của biến thể — dùng để hiện "Giá gốc: x" cạnh ô nhập giá sale và
+    // validate lại salePrice < price ở FE trước khi submit.
+    price: number;
+    stockQuantity: number;
+  };
+}
+
+export interface FlashSale {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: FlashSaleStatus;
+  // Luôn có ở cả danh sách lẫn chi tiết — đếm nhanh không cần đợi items load đủ.
+  itemCount: number;
+  // Chỉ GET /flash-sales/:id trả field này — GET /flash-sales (danh sách) không kèm để
+  // tránh payload nặng khi có nhiều đợt sale nhiều sản phẩm.
+  items?: FlashSaleItem[];
+  isDelete: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
