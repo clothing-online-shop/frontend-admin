@@ -307,6 +307,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
 
         <ComponentCard
           title="Sản phẩm tham gia"
+          required
           desc="Giá sale phải nhỏ hơn giá gốc, số lượng giới hạn không vượt quá tồn kho hiện tại."
         >
           {!viewOnly && !isEnded && (
