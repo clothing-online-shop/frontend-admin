@@ -107,9 +107,11 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   const status = flashSale?.status;
   const isRunning = status === FlashSaleStatus.RUNNING;
   const isEnded = status === FlashSaleStatus.ENDED;
-  // RUNNING: BE chỉ cho sửa endDate (FlashSaleErrorCode.FLASH_SALE_UPDATE_FIELD_BLOCKED_RUNNING)
-  // — khoá name/startDate/items ở UI tương ứng, đúng cách VoucherForm/CollectionFormModal
-  // khoá field theo status. ENDED: BE chặn sửa mọi field, dùng luôn `viewOnly` để khoá hết.
+  // RUNNING: BE chỉ cho sửa endDate và thêm sản phẩm mới (qua POST /flash-sales/:id/items,
+  // xem nhánh RUNNING trong onValid()) — khoá name/startDate ở UI tương ứng, đúng cách
+  // VoucherForm/CollectionFormModal khoá field theo status. Sản phẩm ĐÃ CÓ vẫn khoá cứng khi
+  // RUNNING (xem `isLockedItem` tính riêng cho từng dòng bên dưới, KHÔNG dùng biến này nữa).
+  // ENDED: BE chặn sửa mọi field, dùng luôn `viewOnly` để khoá hết.
   const lockCoreFields = viewOnly || isRunning || isEnded;
 
   useEffect(() => {
@@ -172,6 +174,15 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
             id: flashSale.id,
             payload: { items: newItems },
           });
+          // Cập nhật NGAY tại đây, không dựa vào việc addItemsMutation's onSuccess/
+          // invalidateQueries() có tình cờ kích hoạt lại effect hydrate hay không (query có
+          // refetch lại và re-run effect hydrate thật, nhưng đó là hiệu ứng phụ ngầm của cache
+          // invalidation, không phải điều onValid() nên phụ thuộc vào) — đảm bảo rõ ràng ngay
+          // trong luồng submit rằng item vừa thêm thành công LẬP TỨC được coi là "đã tồn tại",
+          // để 1 lần thử lại (retry) sau đó không cố POST lại đúng item này lần nữa.
+          setHydratedVariantIds(
+            (prev) => new Set([...prev, ...newItems.map((item) => item.productVariantId)]),
+          );
         } catch (error) {
           toast.error(getErrorMessage(error));
           return;
@@ -234,7 +245,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
 
         {!viewOnly && isRunning && (
           <p className="mb-4 rounded-lg bg-blue-light-50 px-3 py-2 text-xs text-blue-light-500 dark:bg-blue-light-500/15">
-            Đợt Flash Sale đang diễn ra — chỉ có thể sửa ngày kết thúc (kết thúc sớm).
+            Đợt Flash Sale đang diễn ra — chỉ có thể sửa ngày kết thúc và thêm sản phẩm mới; sản phẩm đã có không sửa/xóa được.
           </p>
         )}
 
