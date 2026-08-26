@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm, useFieldArray, useWatch, Controller } from "react-hook-form";
+import { useForm, useFieldArray, useWatch, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { FlashSaleStatus } from "@/types/shared-types";
 import {
@@ -13,17 +13,16 @@ import { getErrorMessage } from "@/lib/error";
 import { visibleFieldError } from "@/lib/form";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { formatPrice } from "@/lib/format";
 import { FLASH_SALE_STATUS_LABEL, FLASH_SALE_STATUS_COLOR } from "@/lib/flashSaleStatus";
 import { flashSaleSchema, type FlashSaleFormValues } from "@/schemas/flash-sale.schema";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
-import CurrencyInput from "@/components/form/input/CurrencyInput";
 import Spinner from "@/components/ui/spinner/Spinner";
 import Badge from "@/components/ui/badge/Badge";
-import { TrashBinIcon, PlusIcon } from "@/icons";
+import { PlusIcon } from "@/icons";
 import FlashSaleItemPickerModal from "./FlashSaleItemPickerModal";
+import FlashSaleItemsTable from "./FlashSaleItemsTable";
 
 const EMPTY_VALUES: FlashSaleFormValues = {
   name: "",
@@ -82,6 +81,11 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   const updateMutation = useUpdateFlashSale();
   const addItemsMutation = useAddFlashSaleItems();
 
+  const methods = useForm<FlashSaleFormValues>({
+    resolver: yupResolver(flashSaleSchema),
+    defaultValues: EMPTY_VALUES,
+    mode: "onChange",
+  });
   const {
     control,
     register,
@@ -89,11 +93,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
     reset,
     trigger,
     formState: { errors, isValid, isSubmitting, dirtyFields, isSubmitted },
-  } = useForm<FlashSaleFormValues>({
-    resolver: yupResolver(flashSaleSchema),
-    defaultValues: EMPTY_VALUES,
-    mode: "onChange",
-  });
+  } = methods;
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   // Chụp lại tập productVariantId ĐÃ tồn tại trong DB lúc mở form (đóng băng, không đổi theo
@@ -233,6 +233,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   const existingVariantIds = fields.map((field) => field.productVariantId);
 
   return (
+    <FormProvider {...methods}>
     <form onSubmit={handleSubmit(onValid)} noValidate>
       <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-6 border-0 p-0">
         {isEditing && status && (
@@ -327,114 +328,17 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
             </p>
           )}
 
-          {fields.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">Chưa chọn sản phẩm nào.</p>
-          ) : (
-            <div className="space-y-3">
-              {fields.map((field, index) => {
-                // Item CŨ (đã hydrate từ DB lúc mở form) đóng băng khi RUNNING — item MỚI vừa
-                // chọn qua picker trong phiên sửa hiện tại vẫn sửa/xóa được như UPCOMING cho
-                // tới khi bấm Lưu. Khi UPCOMING, isRunning=false nên mọi item đều KHÔNG khoá
-                // (giữ nguyên hành vi cũ). Khi ENDED/viewOnly, khoá hết bất kể cũ/mới.
-                const isLockedItem =
-                  viewOnly || isEnded || (isRunning && hydratedVariantIds.has(field.productVariantId));
-                return (
-                <div
-                  key={field.id}
-                  className="flex items-center gap-4 rounded-lg border border-gray-200 p-3 dark:border-gray-800"
-                >
-                  {field.thumbnail ? (
-                    <img
-                      src={field.thumbnail}
-                      className="h-14 w-14 shrink-0 rounded-md object-cover"
-                      alt=""
-                    />
-                  ) : (
-                    <div className="h-14 w-14 shrink-0 rounded-md bg-gray-100 dark:bg-gray-800" />
-                  )}
-
-                  <div className="min-w-40 flex-1">
-                    <p className="text-sm text-gray-800 dark:text-white/90">{field.productName}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">
-                      SKU: {field.sku} · {field.size} / {field.color} · Giá gốc:{" "}
-                      {formatPrice(field.price)} · Tồn kho: {field.stockQuantity}
-                    </p>
-                  </div>
-
-                  <div className="w-40">
-                    <Controller
-                      name={`items.${index}.salePrice`}
-                      control={control}
-                      render={({ field: salePriceField }) => (
-                        <CurrencyInput
-                          ariaLabel="Giá sale"
-                          disabled={isLockedItem}
-                          placeholder="Giá sale"
-                          value={salePriceField.value}
-                          onChange={salePriceField.onChange}
-                          onBlur={salePriceField.onBlur}
-                          error={
-                            !!visibleFieldError(
-                              errors.items?.[index]?.salePrice?.message,
-                              dirtyFields.items?.[index]?.salePrice,
-                              isSubmitted,
-                            )
-                          }
-                          hint={visibleFieldError(
-                            errors.items?.[index]?.salePrice?.message,
-                            dirtyFields.items?.[index]?.salePrice,
-                            isSubmitted,
-                          )}
-                        />
-                      )}
-                    />
-                  </div>
-
-                  <div className="w-36">
-                    {/* InputField (Input) không có prop aria-label như CurrencyInput — dùng
-                        label ẩn hình ảnh (sr-only) + id/htmlFor thay vì tự thêm prop input
-                        gốc, giữ đúng rule CLAUDE.md "input luôn có <label htmlFor>" trong khi
-                        UI hàng ngang không cần hiện label nhìn thấy được cho mỗi ô (đã có mô
-                        tả ở text SKU/size/màu phía trên dòng). */}
-                    <label htmlFor={`flash-sale-item-quantity-${index}`} className="sr-only">
-                      Số lượng giới hạn
-                    </label>
-                    <Input
-                      id={`flash-sale-item-quantity-${index}`}
-                      type="number"
-                      disabled={isLockedItem}
-                      placeholder="Số lượng"
-                      {...register(`items.${index}.quantityLimit`)}
-                      error={
-                        !!visibleFieldError(
-                          errors.items?.[index]?.quantityLimit?.message,
-                          dirtyFields.items?.[index]?.quantityLimit,
-                          isSubmitted,
-                        )
-                      }
-                      hint={visibleFieldError(
-                        errors.items?.[index]?.quantityLimit?.message,
-                        dirtyFields.items?.[index]?.quantityLimit,
-                        isSubmitted,
-                      )}
-                    />
-                  </div>
-
-                  {!isLockedItem && (
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="shrink-0 text-gray-400 transition-colors duration-200 ease-standard hover:text-error-500"
-                      aria-label="Xóa sản phẩm khỏi đợt Flash Sale"
-                    >
-                      <TrashBinIcon className="h-6 w-6" />
-                    </button>
-                  )}
-                </div>
-                );
-              })}
-            </div>
-          )}
+          <FlashSaleItemsTable
+            fields={fields}
+            remove={remove}
+            isLockedItem={(field) =>
+              // Item CŨ (đã hydrate từ DB lúc mở form) đóng băng khi RUNNING — item MỚI vừa
+              // chọn qua picker trong phiên sửa hiện tại vẫn sửa/xóa được như UPCOMING cho
+              // tới khi bấm Lưu. Khi UPCOMING, isRunning=false nên mọi item đều KHÔNG khoá
+              // (giữ nguyên hành vi cũ). Khi ENDED/viewOnly, khoá hết bất kể cũ/mới.
+              viewOnly || isEnded || (isRunning && hydratedVariantIds.has(field.productVariantId))
+            }
+          />
         </ComponentCard>
       </fieldset>
 
@@ -474,5 +378,6 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
         />
       )}
     </form>
+    </FormProvider>
   );
 }

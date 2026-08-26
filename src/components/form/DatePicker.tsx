@@ -86,10 +86,10 @@ export default function DatePicker({
           id={id}
           disabled={disabled}
           placeholder={placeholder}
-          className={`h-11 w-full appearance-none rounded-lg border bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3 disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-300 ${
+          className={`h-11 w-full appearance-none rounded-lg border bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-300 ${
             error
               ? "border-form-error focus:border-form-error"
-              : "border-gray-300 focus:border-brand-300 focus:ring-brand-500/20 dark:border-gray-700 dark:focus:border-brand-800"
+              : "border-gray-300 focus:border-brand-300 dark:border-gray-700 dark:focus:border-brand-800"
           }`}
         />
 
@@ -98,11 +98,15 @@ export default function DatePicker({
         </span>
       </div>
 
-      {hint && (
-        <p className="mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 text-form-error">
-          {hint}
-        </p>
-      )}
+      {/* Luôn render (kể cả khi rỗng) để chừa sẵn chỗ — tránh xê dịch layout khi lỗi
+          xuất hiện/biến mất. */}
+      <p
+        className={`mt-1.5 min-h-[18px] text-xs text-form-error transition-opacity duration-200 ease-standard ${
+          hint ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {hint}
+      </p>
     </div>
   );
 }
