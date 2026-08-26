@@ -100,16 +100,19 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
 
-        {/* Luôn render (kể cả khi rỗng) để chừa sẵn chỗ — nếu chỉ render lúc có hint,
-            input sẽ đổi chiều cao ngay lúc lỗi xuất hiện/biến mất, gây xê dịch layout
-            (rõ nhất ở hàng flex ngang nhiều input như FlashSaleForm.tsx). */}
-        <p
-          className={`mt-1.5 min-h-[18px] text-xs transition-opacity duration-200 ease-standard ${
-            hint ? "opacity-100" : "opacity-0"
-          } ${error ? "text-form-error" : success ? "text-success-500" : "text-gray-500"}`}
-        >
-          {hint}
-        </p>
+        {hint && (
+          <p
+            className={`mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 ${
+              error
+                ? "text-form-error"
+                : success
+                ? "text-success-500"
+                : "text-gray-500"
+            }`}
+          >
+            {hint}
+          </p>
+        )}
       </div>
     );
   },

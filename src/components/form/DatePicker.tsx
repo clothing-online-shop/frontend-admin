@@ -98,15 +98,11 @@ export default function DatePicker({
         </span>
       </div>
 
-      {/* Luôn render (kể cả khi rỗng) để chừa sẵn chỗ — tránh xê dịch layout khi lỗi
-          xuất hiện/biến mất. */}
-      <p
-        className={`mt-1.5 min-h-[18px] text-xs text-form-error transition-opacity duration-200 ease-standard ${
-          hint ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {hint}
-      </p>
+      {hint && (
+        <p className="mt-1.5 text-xs opacity-100 transition-opacity duration-200 ease-standard starting:opacity-0 text-form-error">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
