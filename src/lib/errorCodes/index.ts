@@ -1,6 +1,7 @@
 import { CommonErrorCode, COMMON_ERROR_MESSAGE } from "./common";
 import { CategoryErrorCode, CATEGORY_ERROR_MESSAGE } from "./category";
 import { CollectionErrorCode, COLLECTION_ERROR_MESSAGE } from "./collection";
+import { FlashSaleErrorCode, FLASH_SALE_ERROR_MESSAGE } from "./flash-sale";
 import { ProductErrorCode, PRODUCT_ERROR_MESSAGE } from "./product";
 import { InventoryErrorCode, INVENTORY_ERROR_MESSAGE } from "./inventory";
 import { AuthErrorCode, AUTH_ERROR_MESSAGE } from "./auth";
@@ -21,6 +22,7 @@ export const ErrorCode = {
   ...CommonErrorCode,
   ...CategoryErrorCode,
   ...CollectionErrorCode,
+  ...FlashSaleErrorCode,
   ...ProductErrorCode,
   ...InventoryErrorCode,
   ...AuthErrorCode,
@@ -39,6 +41,7 @@ export const ERROR_CODE_MESSAGE: Partial<Record<ErrorCode, string>> = {
   ...COMMON_ERROR_MESSAGE,
   ...CATEGORY_ERROR_MESSAGE,
   ...COLLECTION_ERROR_MESSAGE,
+  ...FLASH_SALE_ERROR_MESSAGE,
   ...PRODUCT_ERROR_MESSAGE,
   ...INVENTORY_ERROR_MESSAGE,
   ...AUTH_ERROR_MESSAGE,

@@ -11,6 +11,8 @@ import CollectionList from "@/pages/collections/CollectionList";
 import BannerList from "@/pages/banners/BannerList";
 import VoucherList from "@/pages/vouchers/VoucherList";
 import VoucherForm from "@/pages/vouchers/VoucherForm";
+import FlashSaleList from "@/pages/flash-sales/FlashSaleList";
+import FlashSaleForm from "@/pages/flash-sales/FlashSaleForm";
 import OrderList from "@/pages/orders/OrderList";
 import OrderDetail from "@/pages/orders/OrderDetail";
 import InventoryList from "@/pages/inventory/InventoryList";
@@ -42,6 +44,10 @@ export const router = createBrowserRouter([
           { path: "/vouchers/new", element: <VoucherForm /> },
           { path: "/vouchers/:id/edit", element: <VoucherForm /> },
           { path: "/vouchers/:id", element: <VoucherForm viewOnly /> },
+          { path: "/flash-sales", element: <FlashSaleList /> },
+          { path: "/flash-sales/new", element: <FlashSaleForm /> },
+          { path: "/flash-sales/:id/edit", element: <FlashSaleForm /> },
+          { path: "/flash-sales/:id", element: <FlashSaleForm viewOnly /> },
           { path: "/orders", element: <OrderList /> },
           { path: "/orders/:id", element: <OrderDetail /> },
           { path: "/inventory", element: <InventoryList /> },

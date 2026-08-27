@@ -155,10 +155,18 @@ export default function BannerFormModal({
                 <DatePicker
                   id="banner-start-date"
                   label="Ngày bắt đầu"
+                  required
                   placeholder="Chọn ngày bắt đầu"
                   defaultDate={field.value || undefined}
+                  // Chỉ chặn quá khứ khi TẠO MỚI — banner đang sửa có thể đã RUNNING/ENDED,
+                  // startDate lúc đó vốn dĩ đã ở quá khứ; đặt minDate="today" trong trường hợp
+                  // đó khiến flatpickr âm thầm bỏ qua defaultDate nằm trước minDate (giống
+                  // gotcha đã ghi chú ở CollectionFormModal.tsx).
+                  minDate={!editing && !viewOnly ? "today" : undefined}
                   disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                  error={!!errors.startDate}
+                  hint={errors.startDate?.message}
                 />
               )}
             />
@@ -169,23 +177,21 @@ export default function BannerFormModal({
                 <DatePicker
                   id="banner-end-date"
                   label="Ngày kết thúc"
+                  required
                   placeholder="Chọn ngày kết thúc"
                   defaultDate={field.value || undefined}
                   minDate={startDateValue || "today"}
                   disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                  error={!!errors.endDate}
+                  hint={errors.endDate?.message}
                 />
               )}
             />
           </div>
-          {(errors.startDate || errors.endDate) && (
-            <p className="text-theme-xs -mt-2 text-error-500">
-              {errors.startDate?.message ?? errors.endDate?.message}
-            </p>
-          )}
 
           <div>
-            <FieldLabel label="Ảnh banner" />
+            <FieldLabel label="Ảnh banner" required />
             <Controller
               name="image"
               control={control}

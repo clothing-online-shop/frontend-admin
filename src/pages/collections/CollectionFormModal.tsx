@@ -163,6 +163,8 @@ export default function CollectionFormModal({
                   minDate={viewOnly || isRunning ? undefined : "today"}
                   disabled={viewOnly || isRunning}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                  error={!!errors.startDate}
+                  hint={errors.startDate?.message}
                 />
               )}
             />
@@ -178,15 +180,12 @@ export default function CollectionFormModal({
                   minDate={startDateValue || "today"}
                   disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                  error={!!errors.endDate}
+                  hint={errors.endDate?.message}
                 />
               )}
             />
           </div>
-          {(errors.startDate || errors.endDate) && (
-            <p className="text-theme-xs -mt-2 text-error-500">
-              {errors.startDate?.message ?? errors.endDate?.message}
-            </p>
-          )}
 
           <div>
             <label
