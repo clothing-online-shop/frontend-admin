@@ -1,10 +1,13 @@
 export interface CreateBannerPayload {
   title: string;
+  subtitle?: string;
   imageUrl: string;
   // Cloudinary publicId song song với imageUrl — không hiển thị lên UI, chỉ để BE dọn ảnh
   // cũ trên Cloudinary khi thay/xóa ảnh.
   imagePublicId: string;
   linkUrl?: string;
+  ctaLabel?: string;
+  ctaLinkUrl?: string;
   sortOrder?: number;
   startDate: string;
   endDate: string;

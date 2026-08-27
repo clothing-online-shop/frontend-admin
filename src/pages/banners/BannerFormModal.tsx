@@ -23,8 +23,11 @@ interface BannerFormModalProps {
 
 const EMPTY_VALUES: BannerFormValues = {
   title: "",
+  subtitle: "",
   image: [],
   linkUrl: "",
+  ctaLabel: "",
+  ctaLinkUrl: "",
   startDate: "",
   endDate: "",
 };
@@ -66,8 +69,11 @@ export default function BannerFormModal({
     if (open) {
       reset({
         title: editing?.title ?? "",
+        subtitle: editing?.subtitle ?? "",
         image: editing?.imageUrl ? [editing.imageUrl] : [],
         linkUrl: editing?.linkUrl ?? "",
+        ctaLabel: editing?.ctaLabel ?? "",
+        ctaLinkUrl: editing?.ctaLinkUrl ?? "",
         startDate: editing?.startDate ? toDateOnly(editing.startDate) : "",
         endDate: editing?.endDate ? toDateOnly(editing.endDate) : "",
       });
@@ -90,7 +96,10 @@ export default function BannerFormModal({
             ...(imageChanged
               ? { imageUrl: values.image[0], imagePublicId: imagePublicId ?? undefined }
               : {}),
+            subtitle: values.subtitle || undefined,
             linkUrl: values.linkUrl || null,
+            ctaLabel: values.ctaLabel || undefined,
+            ctaLinkUrl: values.ctaLinkUrl || undefined,
             startDate: values.startDate,
             endDate: values.endDate,
           },
@@ -99,9 +108,12 @@ export default function BannerFormModal({
       } else {
         await createMutation.mutateAsync({
           title: values.title,
+          subtitle: values.subtitle || undefined,
           imageUrl: values.image[0],
           imagePublicId: imagePublicId ?? "",
           linkUrl: values.linkUrl || undefined,
+          ctaLabel: values.ctaLabel || undefined,
+          ctaLinkUrl: values.ctaLinkUrl || undefined,
           startDate: values.startDate,
           endDate: values.endDate,
         });
@@ -138,12 +150,42 @@ export default function BannerFormModal({
 
           <div>
             <Input
-              label="Link đích"
+              label="Phụ đề"
+              disabled={viewOnly}
+              placeholder="Ví dụ: Ưu đãi tới 50% cho bộ sưu tập mới"
+              {...register("subtitle")}
+              error={!!errors.subtitle}
+              hint={errors.subtitle?.message}
+            />
+          </div>
+
+          <div>
+            <Input
+              label="Link đích (CTA chính)"
               disabled={viewOnly}
               placeholder="https://..."
               {...register("linkUrl")}
               error={!!errors.linkUrl}
               hint={errors.linkUrl?.message}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Nhãn CTA phụ"
+              disabled={viewOnly}
+              placeholder="Ví dụ: Xem thêm"
+              {...register("ctaLabel")}
+              error={!!errors.ctaLabel}
+              hint={errors.ctaLabel?.message}
+            />
+            <Input
+              label="Link đích CTA phụ"
+              disabled={viewOnly}
+              placeholder="https://..."
+              {...register("ctaLinkUrl")}
+              error={!!errors.ctaLinkUrl}
+              hint={errors.ctaLinkUrl?.message}
             />
           </div>
 
