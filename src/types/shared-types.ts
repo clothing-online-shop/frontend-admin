@@ -204,9 +204,12 @@ export type BannerStatus = (typeof BannerStatus)[keyof typeof BannerStatus];
 export interface Banner {
   id: string;
   title: string;
+  subtitle: string | null;
   imageUrl: string;
   imagePublicId: string | null;
   linkUrl: string | null;
+  ctaLabel: string | null;
+  ctaLinkUrl: string | null;
   sortOrder: number;
   startDate: string;
   endDate: string;
