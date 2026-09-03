@@ -22,8 +22,9 @@ interface BannerFormModalProps {
 }
 
 const EMPTY_VALUES: BannerFormValues = {
+  eyebrow: "",
   title: "",
-  subtitle: "",
+  description: "",
   image: [],
   linkUrl: "",
   ctaLabel: "",
@@ -68,8 +69,9 @@ export default function BannerFormModal({
   useEffect(() => {
     if (open) {
       reset({
+        eyebrow: editing?.eyebrow ?? "",
         title: editing?.title ?? "",
-        subtitle: editing?.subtitle ?? "",
+        description: editing?.description ?? "",
         image: editing?.imageUrl ? [editing.imageUrl] : [],
         linkUrl: editing?.linkUrl ?? "",
         ctaLabel: editing?.ctaLabel ?? "",
@@ -89,6 +91,7 @@ export default function BannerFormModal({
         await updateMutation.mutateAsync({
           id: editing.id,
           payload: {
+            eyebrow: values.eyebrow || undefined,
             title: values.title,
             // Chỉ gửi kèm cặp imageUrl/imagePublicId khi ảnh thực sự đổi — imagePublicId
             // không nullable ở BE nên không có khái niệm "xóa ảnh" ở đây (khác banner
@@ -96,7 +99,7 @@ export default function BannerFormModal({
             ...(imageChanged
               ? { imageUrl: values.image[0], imagePublicId: imagePublicId ?? undefined }
               : {}),
-            subtitle: values.subtitle || undefined,
+            description: values.description || undefined,
             linkUrl: values.linkUrl || null,
             ctaLabel: values.ctaLabel || undefined,
             ctaLinkUrl: values.ctaLinkUrl || undefined,
@@ -107,8 +110,9 @@ export default function BannerFormModal({
         toast.success("Đã cập nhật banner.");
       } else {
         await createMutation.mutateAsync({
+          eyebrow: values.eyebrow || undefined,
           title: values.title,
-          subtitle: values.subtitle || undefined,
+          description: values.description || undefined,
           imageUrl: values.image[0],
           imagePublicId: imagePublicId ?? "",
           linkUrl: values.linkUrl || undefined,
@@ -138,7 +142,18 @@ export default function BannerFormModal({
         <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
           <div>
             <Input
-              label="Tiêu đề"
+              label="Tiêu đề phụ"
+              disabled={viewOnly}
+              placeholder="Ví dụ: BỘ SƯU TẬP THU 2026"
+              {...register("eyebrow")}
+              error={!!errors.eyebrow}
+              hint={errors.eyebrow?.message}
+            />
+          </div>
+
+          <div>
+            <Input
+              label="Tiêu đề chính"
               required
               disabled={viewOnly}
               placeholder="Ví dụ: Sale mùa hè 2026"
@@ -150,12 +165,12 @@ export default function BannerFormModal({
 
           <div>
             <Input
-              label="Phụ đề"
+              label="Mô tả"
               disabled={viewOnly}
               placeholder="Ví dụ: Ưu đãi tới 50% cho bộ sưu tập mới"
-              {...register("subtitle")}
-              error={!!errors.subtitle}
-              hint={errors.subtitle?.message}
+              {...register("description")}
+              error={!!errors.description}
+              hint={errors.description?.message}
             />
           </div>
 

@@ -1,6 +1,7 @@
 export interface CreateBannerPayload {
+  eyebrow?: string;
   title: string;
-  subtitle?: string;
+  description?: string;
   imageUrl: string;
   // Cloudinary publicId song song với imageUrl — không hiển thị lên UI, chỉ để BE dọn ảnh
   // cũ trên Cloudinary khi thay/xóa ảnh.

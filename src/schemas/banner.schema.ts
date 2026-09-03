@@ -1,8 +1,9 @@
 import * as yup from "yup";
 
 export const bannerSchema = yup.object({
+  eyebrow: yup.string().trim().optional(),
   title: yup.string().trim().required("Vui lòng nhập tiêu đề banner."),
-  subtitle: yup.string().trim().optional(),
+  description: yup.string().trim().optional(),
   image: yup
     .array()
     .of(yup.string().required())
