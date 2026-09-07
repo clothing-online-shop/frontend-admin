@@ -239,6 +239,31 @@ export interface PromoBar {
   updatedAt: string;
 }
 
+export const PopupStatus = {
+  UPCOMING: "UPCOMING",
+  RUNNING: "RUNNING",
+  ENDED: "ENDED",
+} as const;
+export type PopupStatus = (typeof PopupStatus)[keyof typeof PopupStatus];
+
+export interface Popup {
+  id: string;
+  eyebrow: string | null;
+  title: string;
+  description: string | null;
+  discountCode: string | null;
+  imageUrl: string;
+  imagePublicId: string | null;
+  ctaLabel: string;
+  ctaLinkUrl: string;
+  sortOrder: number;
+  startDate: string;
+  endDate: string;
+  status: PopupStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const DiscountType = {
   PERCENTAGE: "PERCENTAGE",
   FIXED_AMOUNT: "FIXED_AMOUNT",

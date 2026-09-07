@@ -20,6 +20,7 @@ import {
   DollarLineIcon,
   BoltIcon,
   TimeIcon,
+  ChatIcon,
 } from "@/icons";
 
 interface MenuItem {
@@ -47,6 +48,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
   { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
   { key: "/promo-bar", icon: TimeIcon, label: "Thanh khuyến mãi", allow: MARKETING_ROLES },
+  { key: "/popups", icon: ChatIcon, label: "Popup marketing", allow: MARKETING_ROLES },
   { key: "/vouchers", icon: DollarLineIcon, label: "Voucher", allow: MARKETING_ROLES },
   { key: "/flash-sales", icon: BoltIcon, label: "Flash Sale", allow: MARKETING_ROLES },
   { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ALL_ADMIN_ROLES },
