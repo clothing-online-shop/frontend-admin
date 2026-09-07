@@ -19,6 +19,7 @@ import {
   AngleRightIcon,
   DollarLineIcon,
   BoltIcon,
+  TimeIcon,
 } from "@/icons";
 
 interface MenuItem {
@@ -45,6 +46,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
   { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
   { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
+  { key: "/promo-bar", icon: TimeIcon, label: "Thanh khuyến mãi", allow: MARKETING_ROLES },
   { key: "/vouchers", icon: DollarLineIcon, label: "Voucher", allow: MARKETING_ROLES },
   { key: "/flash-sales", icon: BoltIcon, label: "Flash Sale", allow: MARKETING_ROLES },
   { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ALL_ADMIN_ROLES },

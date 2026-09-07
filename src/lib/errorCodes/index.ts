@@ -10,6 +10,7 @@ import { BrandErrorCode, BRAND_ERROR_MESSAGE } from "./brand";
 import { LocationErrorCode, LOCATION_ERROR_MESSAGE } from "./location";
 import { UploadErrorCode, UPLOAD_ERROR_MESSAGE } from "./upload";
 import { UserErrorCode, USER_ERROR_MESSAGE } from "./user";
+import { PromoBarErrorCode, PROMO_BAR_ERROR_MESSAGE } from "./promo-bar";
 
 // Khớp CHÍNH XÁC giá trị số với backend-cms/src/common/constants/error-codes/ — 2 repo
 // tách biệt, không share type được, sửa/thêm bên BE thì phải đồng bộ lại giá trị ở đây
@@ -31,6 +32,7 @@ export const ErrorCode = {
   ...LocationErrorCode,
   ...UploadErrorCode,
   ...UserErrorCode,
+  ...PromoBarErrorCode,
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
@@ -50,4 +52,5 @@ export const ERROR_CODE_MESSAGE: Partial<Record<ErrorCode, string>> = {
   ...LOCATION_ERROR_MESSAGE,
   ...UPLOAD_ERROR_MESSAGE,
   ...USER_ERROR_MESSAGE,
+  ...PROMO_BAR_ERROR_MESSAGE,
 };

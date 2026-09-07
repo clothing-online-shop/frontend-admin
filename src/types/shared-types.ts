@@ -219,6 +219,26 @@ export interface Banner {
   updatedAt: string;
 }
 
+export const PromoBarStatus = {
+  UPCOMING: "UPCOMING",
+  RUNNING: "RUNNING",
+  ENDED: "ENDED",
+} as const;
+export type PromoBarStatus = (typeof PromoBarStatus)[keyof typeof PromoBarStatus];
+
+export interface PromoBar {
+  id: string;
+  label: string;
+  highlight: string;
+  linkUrl: string;
+  sortOrder: number;
+  startDate: string;
+  endDate: string;
+  status: PromoBarStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const DiscountType = {
   PERCENTAGE: "PERCENTAGE",
   FIXED_AMOUNT: "FIXED_AMOUNT",
