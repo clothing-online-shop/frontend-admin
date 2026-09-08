@@ -21,6 +21,7 @@ import {
   BoltIcon,
   TimeIcon,
   ChatIcon,
+  TableIcon,
 } from "@/icons";
 
 interface MenuItem {
@@ -43,6 +44,7 @@ const MENU_ITEMS: MenuItem[] = [
   { key: "/dashboard", icon: PieChartIcon, label: "Trang chủ", allow: ALL_ADMIN_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
   { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
+  { key: "/colors", icon: TableIcon, label: "Màu sắc", allow: INVENTORY_ROLES },
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
   { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },

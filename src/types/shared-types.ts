@@ -172,6 +172,14 @@ export interface Brand {
   updatedAt: string;
 }
 
+export interface Color {
+  id: string;
+  name: string;
+  hexCode: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const CollectionStatus = {
   UPCOMING: "UPCOMING",
   RUNNING: "RUNNING",

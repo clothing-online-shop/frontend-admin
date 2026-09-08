@@ -7,6 +7,7 @@ import ProductList from "@/pages/products/ProductList";
 import ProductForm from "@/pages/products/ProductForm";
 import CategoryList from "@/pages/categories/CategoryList";
 import BrandList from "@/pages/brands/BrandList";
+import ColorList from "@/pages/colors/ColorList";
 import CollectionList from "@/pages/collections/CollectionList";
 import BannerList from "@/pages/banners/BannerList";
 import PromoBarList from "@/pages/promo-bar/PromoBarList";
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
           { path: "/products/:slug/view", element: <ProductForm viewOnly /> },
           { path: "/categories", element: <CategoryList /> },
           { path: "/brands", element: <BrandList /> },
+          { path: "/colors", element: <ColorList /> },
           { path: "/collections", element: <CollectionList /> },
           { path: "/banners", element: <BannerList /> },
           { path: "/promo-bar", element: <PromoBarList /> },

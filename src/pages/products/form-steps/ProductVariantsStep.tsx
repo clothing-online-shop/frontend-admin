@@ -1,10 +1,13 @@
+import { useMemo } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { slugifyPreview } from "@/lib/slug";
+import { useColors } from "@/hooks/useColors";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import CurrencyInput from "@/components/form/input/CurrencyInput";
+import Select from "@/components/form/Select";
 import { PlusIcon, TrashBinIcon } from "@/icons";
 import { visibleFieldError } from "@/lib/form";
 
@@ -41,6 +44,15 @@ export function ProductVariantsStep({
   const isSubmitted = isSubmittedFromForm || saveAttempted;
   const { fields, append, remove } = useFieldArray({ control, name: "variants" });
 
+  // Màu giờ chọn từ danh sách colors đã có sẵn ở BE (thay vì gõ tay) — khớp validate
+  // assertColorsExist() ở products.service.ts (backend-cms), tránh admin gõ 1 tên màu
+  // không tồn tại rồi bị BE từ chối lúc lưu.
+  const { data: colors } = useColors();
+  const colorOptions = useMemo(
+    () => (colors ?? []).map((c) => ({ value: c.name, label: c.name })),
+    [colors],
+  );
+
   function suggestSku(index: number) {
     const variant = getValues(`variants.${index}`);
     if (!variant || variant.sku) return;
@@ -56,11 +68,11 @@ export function ProductVariantsStep({
     isSubmitted,
   );
 
-  // size/color dùng chung 1 kiểu wiring: onChange tự trigger("variants") lại (rule
-  // "no-duplicate-variants" gắn trên field mảng cha, không tự re-validate theo field con —
-  // xem comment gốc trước đây ở onChange của size), onBlur tự gợi ý SKU, error tra theo
-  // đúng field. Trước đây lặp lại y hệt cho từng field, chỉ khác mỗi field key.
-  function variantFieldProps(index: number, key: "size" | "color") {
+  // onChange tự trigger("variants") lại (rule "no-duplicate-variants" gắn trên field mảng
+  // cha, không tự re-validate theo field con), onBlur tự gợi ý SKU, error tra theo đúng
+  // field. Chỉ còn dùng cho "size" — "color" giờ là Select (Controller riêng bên dưới, xem
+  // colorOptions), không phải input text nên không dùng chung wiring dựa trên register().
+  function variantFieldProps(index: number, key: "size") {
     const field = register(`variants.${index}.${key}`);
     return {
       ...field,
@@ -134,10 +146,26 @@ export function ProductVariantsStep({
                 />
               </div>
               <div className={COLUMN_WIDTH.color}>
-                <Input
-                  placeholder="Đen"
-                  aria-label={`Màu sắc ${rowLabel}`}
-                  {...variantFieldProps(index, "color")}
+                <Controller
+                  name={`variants.${index}.color`}
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      options={colorOptions}
+                      value={field.value || undefined}
+                      onChange={(value) => {
+                        field.onChange(value ?? "");
+                        void trigger("variants");
+                        suggestSku(index);
+                      }}
+                      placeholder="Chọn màu"
+                      error={!!visibleFieldError(
+                        errors.variants?.[index]?.color?.message,
+                        dirtyFields.variants?.[index]?.color,
+                        isSubmitted,
+                      )}
+                    />
+                  )}
                 />
               </div>
               <div className={COLUMN_WIDTH.sku}>

@@ -4,7 +4,7 @@ import { ProductStatus } from "@/types/shared-types";
 const productVariantSchema = yup.object({
   id: yup.string().optional(),
   size: yup.string().trim().required("Nhập size."),
-  color: yup.string().trim().required("Nhập màu."),
+  color: yup.string().trim().required("Chọn màu."),
   sku: yup.string().trim().optional(),
   price: yup
     .number()
