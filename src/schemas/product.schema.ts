@@ -64,6 +64,28 @@ export const productSchema = yup.object({
     .required()
     .default(ProductStatus.DRAFT),
   isFeatured: yup.boolean().default(false),
+  // "Mồi" số liệu hiển thị cho sản phẩm mới chưa có đơn/đánh giá thật (0 đơn/0 đánh giá
+  // nhìn kém tin cậy) — BE cộng dồn với số liệu thật khi trả cho storefront, xem
+  // backend-user products.service.ts buildDisplayRating(). Không tạo review thật kèm nội
+  // dung, chỉ cộng vào con số tổng quan cạnh tên sản phẩm.
+  fakeSoldCount: yup
+    .number()
+    .transform((value, original) => (original === "" ? 0 : value))
+    .integer()
+    .min(0)
+    .default(0),
+  fakeReviewCount: yup
+    .number()
+    .transform((value, original) => (original === "" ? 0 : value))
+    .integer()
+    .min(0)
+    .default(0),
+  fakeRatingAverage: yup
+    .number()
+    .transform((value, original) => (original === "" ? 0 : value))
+    .min(0, "Điểm đánh giá ảo phải từ 0 đến 5.")
+    .max(5, "Điểm đánh giá ảo phải từ 0 đến 5.")
+    .default(0),
   thumbnail: yup
     .array()
     .of(yup.string().required())

@@ -48,6 +48,11 @@ export interface CreateProductPayload {
   salePrice?: number;
   status?: ProductStatus;
   isFeatured?: boolean;
+  // "Mồi" số liệu hiển thị (đã bán/đánh giá) cho sản phẩm mới chưa có đơn/đánh giá thật —
+  // BE cộng dồn với số liệu thật khi trả cho storefront, không tạo review thật kèm nội dung.
+  fakeSoldCount?: number;
+  fakeReviewCount?: number;
+  fakeRatingAverage?: number;
   thumbnail?: string;
   // Cloudinary publicId song song với thumbnail/images — không hiển thị lên UI, chỉ để
   // BE dọn ảnh cũ trên Cloudinary khi thay/xóa ảnh.

@@ -366,6 +366,12 @@ export interface ProductListItem {
   totalStock: number;
   createdAt: string;
   isFeatured: boolean;
+  // "Mồi" số liệu hiển thị (đã bán/đánh giá) cho sản phẩm mới chưa có đơn/đánh giá thật —
+  // backend-user cộng dồn với số liệu thật khi trả cho storefront (xem ProductRatingRow ở
+  // frontend-website), không tạo review thật kèm nội dung.
+  fakeSoldCount: number;
+  fakeReviewCount: number;
+  fakeRatingAverage: number;
   collections: { id: string; name: string; slug: string }[];
 }
 

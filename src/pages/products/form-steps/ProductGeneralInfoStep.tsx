@@ -227,6 +227,58 @@ export function ProductGeneralInfoStep({
       />
 
       <div>
+        <FieldLabel label="Số liệu hiển thị (ảo)" />
+        <p className="mb-3 -mt-1 text-xs text-gray-400 dark:text-gray-500">
+          Cộng dồn với đơn hàng/đánh giá thật khi hiển thị cho khách — dùng để sản phẩm mới
+          chưa có đơn/đánh giá không hiện 0. Bỏ trống hoặc để 0 nếu không cần.
+        </p>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <Input
+              type="number"
+              min="0"
+              label="Số lượt đã bán ảo"
+              disabled={viewOnly}
+              placeholder="0"
+              {...register("fakeSoldCount")}
+            />
+          </div>
+          <div className="flex-1">
+            <Input
+              type="number"
+              min="0"
+              label="Số lượt đánh giá ảo"
+              disabled={viewOnly}
+              placeholder="0"
+              {...register("fakeReviewCount")}
+            />
+          </div>
+          <div className="flex-1">
+            <Input
+              type="number"
+              min="0"
+              max="5"
+              step={0.1}
+              label="Điểm đánh giá ảo (0-5)"
+              disabled={viewOnly}
+              placeholder="0"
+              {...register("fakeRatingAverage")}
+              error={!!visibleFieldError(
+                errors.fakeRatingAverage?.message,
+                dirtyFields.fakeRatingAverage,
+                isSubmitted,
+              )}
+              hint={visibleFieldError(
+                errors.fakeRatingAverage?.message,
+                dirtyFields.fakeRatingAverage,
+                isSubmitted,
+              )}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
         <Input
           label="URL"
           required
