@@ -16,6 +16,11 @@ export async function getBanners(
   return data;
 }
 
+export async function getBanner(id: string): Promise<Banner> {
+  const { data } = await apiClient.get<Banner>(`/banners/${id}`);
+  return data;
+}
+
 export async function createBanner(payload: CreateBannerPayload): Promise<Banner> {
   const { data } = await apiClient.post<Banner>("/banners", payload);
   return data;

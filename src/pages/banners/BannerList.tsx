@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Banner } from "@/types/shared-types";
 import { useBanners, useDeleteBanner, useReorderBanners } from "@/hooks/useBanners";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -16,16 +17,13 @@ import Pagination from "@/components/ui/pagination/Pagination";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon, EyeIcon } from "@/icons";
-import BannerFormModal from "./BannerFormModal";
 
 export default function BannerList() {
+  const navigate = useNavigate();
   const toast = useToast();
   useBreadcrumb([{ label: "Banner trang chủ" }]);
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Banner | null>(null);
-  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Banner | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
@@ -36,21 +34,15 @@ export default function BannerList() {
   const reorderMutation = useReorderBanners();
 
   function openCreate() {
-    setEditing(null);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate("/banners/new");
   }
 
   function openEdit(banner: Banner) {
-    setEditing(banner);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate(`/banners/${banner.id}/edit`);
   }
 
   function openView(banner: Banner) {
-    setEditing(banner);
-    setViewMode(true);
-    setModalOpen(true);
+    navigate(`/banners/${banner.id}`);
   }
 
   async function handleDelete() {
@@ -272,13 +264,6 @@ export default function BannerList() {
           />
         </div>
       </div>
-
-      <BannerFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        editing={editing}
-        viewOnly={viewMode}
-      />
 
       <ConfirmModal
         open={deleteTarget !== null}

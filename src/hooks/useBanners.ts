@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createBanner,
   deleteBanner,
+  getBanner,
   getBanners,
   reorderBanners,
   updateBanner,
@@ -20,6 +21,14 @@ export function useBanners(query: ListBannersQuery = {}) {
   return useQuery({
     queryKey: [...BANNERS_KEY, search, page, limit],
     queryFn: () => getBanners(query),
+  });
+}
+
+export function useBannerDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: [...BANNERS_KEY, "detail", id],
+    queryFn: () => getBanner(id!),
+    enabled: Boolean(id),
   });
 }
 

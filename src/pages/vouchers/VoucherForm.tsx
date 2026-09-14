@@ -37,7 +37,7 @@ const EMPTY_VALUES: VoucherFormValues = {
 };
 
 // Voucher.startsAt/expiresAt về từ API là ISO datetime hoặc null — cắt về "Y-m-d" để khớp
-// định dạng flatpickr đang dùng (giống BannerFormModal.tsx).
+// định dạng flatpickr đang dùng (giống BannerForm.tsx).
 function toDateOnly(iso: string | null): string {
   return iso ? iso.slice(0, 10) : "";
 }
@@ -82,7 +82,7 @@ export default function VoucherForm({ viewOnly = false }: VoucherFormProps) {
   // Không cho chọn ngày bắt đầu trong quá khứ — nhưng nếu đang sửa 1 voucher đã qua ngày
   // bắt đầu cũ thì phải bỏ ràng buộc này, nếu không flatpickr sẽ âm thầm bỏ qua defaultDate
   // nằm trước minDate, khiến ngày bắt đầu thật không hiển thị đúng dù dữ liệu form vẫn đúng
-  // (xem cùng pattern ở CollectionFormModal.tsx/BannerFormModal.tsx).
+  // (xem cùng pattern ở CollectionFormModal.tsx/BannerForm.tsx).
   const startsAtAlreadyPast =
     isEditing && voucher ? toDateOnly(voucher.startsAt) < toDateOnly(new Date().toISOString()) : false;
 

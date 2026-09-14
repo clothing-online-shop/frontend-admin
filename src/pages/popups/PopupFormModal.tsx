@@ -34,7 +34,7 @@ const EMPTY_VALUES: PopupFormValues = {
 };
 
 // Popup.startDate/endDate về từ API là ISO datetime — cắt về "Y-m-d" để khớp định dạng
-// flatpickr đang dùng (giống BannerFormModal.tsx).
+// flatpickr đang dùng (giống BannerForm.tsx).
 function toDateOnly(iso: string): string {
   return iso.slice(0, 10);
 }
@@ -63,7 +63,7 @@ export default function PopupFormModal({
   });
 
   // minDate cho lịch chọn ngày kết thúc bám theo ngày bắt đầu đang chọn, giống
-  // BannerFormModal.tsx.
+  // BannerForm.tsx.
   const startDateValue = useWatch({ control, name: "startDate" });
 
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function PopupFormModal({
             eyebrow: values.eyebrow || undefined,
             title: values.title,
             // Chỉ gửi kèm cặp imageUrl/imagePublicId khi ảnh thực sự đổi — giống
-            // BannerFormModal.tsx.
+            // BannerForm.tsx.
             ...(imageChanged
               ? { imageUrl: values.image[0], imagePublicId: imagePublicId ?? undefined }
               : {}),
@@ -213,7 +213,7 @@ export default function PopupFormModal({
                   required
                   placeholder="Chọn ngày bắt đầu"
                   defaultDate={field.value || undefined}
-                  // Chỉ chặn quá khứ khi TẠO MỚI — xem lý do ở BannerFormModal.tsx.
+                  // Chỉ chặn quá khứ khi TẠO MỚI — xem lý do ở BannerForm.tsx.
                   minDate={!editing && !viewOnly ? "today" : undefined}
                   disabled={viewOnly}
                   onChange={(_dates, dateStr) => field.onChange(dateStr)}

@@ -10,6 +10,7 @@ import BrandList from "@/pages/brands/BrandList";
 import ColorList from "@/pages/colors/ColorList";
 import CollectionList from "@/pages/collections/CollectionList";
 import BannerList from "@/pages/banners/BannerList";
+import BannerForm from "@/pages/banners/BannerForm";
 import PromoBarList from "@/pages/promo-bar/PromoBarList";
 import PopupList from "@/pages/popups/PopupList";
 import VoucherList from "@/pages/vouchers/VoucherList";
@@ -44,6 +45,9 @@ export const router = createBrowserRouter([
           { path: "/colors", element: <ColorList /> },
           { path: "/collections", element: <CollectionList /> },
           { path: "/banners", element: <BannerList /> },
+          { path: "/banners/new", element: <BannerForm /> },
+          { path: "/banners/:id/edit", element: <BannerForm /> },
+          { path: "/banners/:id", element: <BannerForm viewOnly /> },
           { path: "/promo-bar", element: <PromoBarList /> },
           { path: "/popups", element: <PopupList /> },
           { path: "/vouchers", element: <VoucherList /> },
