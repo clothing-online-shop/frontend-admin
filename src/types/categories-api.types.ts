@@ -8,11 +8,25 @@ export interface CreateCategoryPayload {
   imagePublicId?: string | null;
   isActive?: boolean;
   sortOrder?: number;
+  // Chỉ có tác dụng với danh mục cấp 2/3 — hiện danh mục này trong mục "Hàng mới về"/
+  // "Sale corner" ở mega menu của danh mục gốc chứa nó.
+  showInNewArrivals?: boolean;
+  showInSaleCorner?: boolean;
+  // 2 ảnh "look" bookend 2 đầu mega menu — chỉ có tác dụng với danh mục GỐC (parentId null).
+  // Chỉ để xem, không điều hướng.
+  megaMenuLeftImageUrl?: string;
+  megaMenuLeftImagePublicId?: string | null;
+  megaMenuRightImageUrl?: string;
+  megaMenuRightImagePublicId?: string | null;
 }
 
-export type UpdateCategoryPayload = Partial<Omit<CreateCategoryPayload, "image">> & {
+export type UpdateCategoryPayload = Partial<
+  Omit<CreateCategoryPayload, "image" | "megaMenuLeftImageUrl" | "megaMenuRightImageUrl">
+> & {
   // Bỏ trống = giữ nguyên ảnh hiện có; gửi null = xoá ảnh.
   image?: string | null;
+  megaMenuLeftImageUrl?: string | null;
+  megaMenuRightImageUrl?: string | null;
 };
 
 export interface ReorderCategoryItem {

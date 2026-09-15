@@ -6,6 +6,7 @@ import Dashboard from "@/pages/Dashboard";
 import ProductList from "@/pages/products/ProductList";
 import ProductForm from "@/pages/products/ProductForm";
 import CategoryList from "@/pages/categories/CategoryList";
+import CategoryForm from "@/pages/categories/CategoryForm";
 import BrandList from "@/pages/brands/BrandList";
 import ColorList from "@/pages/colors/ColorList";
 import CollectionList from "@/pages/collections/CollectionList";
@@ -41,6 +42,9 @@ export const router = createBrowserRouter([
           { path: "/products/:slug/edit", element: <ProductForm /> },
           { path: "/products/:slug/view", element: <ProductForm viewOnly /> },
           { path: "/categories", element: <CategoryList /> },
+          { path: "/categories/new", element: <CategoryForm /> },
+          { path: "/categories/:id/edit", element: <CategoryForm /> },
+          { path: "/categories/:id", element: <CategoryForm viewOnly /> },
           { path: "/brands", element: <BrandList /> },
           { path: "/colors", element: <ColorList /> },
           { path: "/collections", element: <CollectionList /> },

@@ -157,6 +157,16 @@ export interface CategoryNode {
   parentId: string | null;
   // Số sản phẩm gán trực tiếp vào danh mục này — không cộng dồn từ danh mục con.
   productCount: number;
+  // Đánh dấu hiện trong mục "Hàng mới về"/"Sale corner" ở mega menu của danh mục gốc chứa nó
+  // (chỉ có tác dụng với danh mục cấp 2/3, xem MegaMenu.tsx ở frontend-website).
+  showInNewArrivals: boolean;
+  showInSaleCorner: boolean;
+  // 2 ảnh "look" bookend 2 đầu mega menu — chỉ có tác dụng với danh mục GỐC (parentId null),
+  // chỉ để xem, không điều hướng.
+  megaMenuLeftImageUrl: string | null;
+  megaMenuLeftImagePublicId: string | null;
+  megaMenuRightImageUrl: string | null;
+  megaMenuRightImagePublicId: string | null;
   createdAt: string;
   updatedAt: string;
   children: CategoryNode[];
