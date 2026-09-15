@@ -1,13 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import type { CategoryNode } from "@/types/shared-types";
-import { findNode } from "@/lib/categoryTree";
 import {
   useCategoryTree,
   useDeleteCategory,
   useReorderCategories,
 } from "@/hooks/useCategories";
 import { getErrorMessage } from "@/lib/error";
-import { CategoryFormModal } from "./CategoryFormModal";
 import Button from "@/components/ui/button/Button";
 import Spinner from "@/components/ui/spinner/Spinner";
 import Input from "@/components/form/input/InputField";
@@ -106,6 +105,7 @@ function findParentKey(
 }
 
 export default function CategoryList() {
+  const navigate = useNavigate();
   const toast = useToast();
   useBreadcrumb([{ label: "Danh mục" }]);
   const { data, isLoading, isError, refetch } = useCategoryTree();
@@ -113,9 +113,6 @@ export default function CategoryList() {
   const reorderMutation = useReorderCategories();
 
   const [treeData, setTreeData] = useState<CategoryTreeNode[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -123,25 +120,18 @@ export default function CategoryList() {
     if (data) setTreeData(toTreeData(data));
   }, [data]);
 
-  const editingNode = data && editingId ? findNode(data, editingId) : null;
   const filteredTreeData = filterTreeByName(treeData, search);
 
   function handleAdd() {
-    setEditingId(null);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate("/categories/new");
   }
 
   function handleEdit(id: string) {
-    setEditingId(id);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate(`/categories/${id}/edit`);
   }
 
   function handleView(id: string) {
-    setEditingId(id);
-    setViewMode(true);
-    setModalOpen(true);
+    navigate(`/categories/${id}`);
   }
 
   async function handleDelete() {
@@ -362,13 +352,6 @@ export default function CategoryList() {
           onNodeClick={handleView}
         />
       )}
-
-      <CategoryFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        editing={editingNode}
-        viewOnly={viewMode}
-      />
 
       <ConfirmModal
         open={deleteTarget !== null}
