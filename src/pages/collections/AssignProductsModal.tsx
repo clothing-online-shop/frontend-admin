@@ -3,7 +3,8 @@ import { ProductStatus, type Collection, type ProductListItem } from "@/types/sh
 import { useProductsAdmin } from "@/hooks/useProducts";
 import { useAssignCollectionProducts } from "@/hooks/useCollections";
 import { useCategoryNameMap } from "@/hooks/useCategories";
-import { useBrandNameMap } from "@/hooks/useBrands";
+// Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+// import { useBrandNameMap } from "@/hooks/useBrands";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
@@ -39,7 +40,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const seededRef = useRef(false);
   const categoryNameById = useCategoryNameMap();
-  const brandNameById = useBrandNameMap();
+  // const brandNameById = useBrandNameMap();
 
   // Reset sạch state mỗi lần mở dialog (hoặc đổi sang bộ sưu tập khác trong khi đang mở)
   // — không giữ lại filter/lựa chọn dở dang từ lần mở trước.
@@ -167,17 +168,18 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
         <span className="text-sm text-gray-800 dark:text-white/90">{product.name}</span>
       ),
     },
-    {
-      key: "brand",
-      header: "Thương hiệu",
-      align: "center",
-      className: "min-w-36",
-      render: (product) => (
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
-        </span>
-      ),
-    },
+    // Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+    // {
+    //   key: "brand",
+    //   header: "Thương hiệu",
+    //   align: "center",
+    //   className: "min-w-36",
+    //   render: (product) => (
+    //     <span className="text-sm text-gray-700 dark:text-gray-300">
+    //       {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
+    //     </span>
+    //   ),
+    // },
     {
       key: "category",
       header: "Danh mục",

@@ -9,7 +9,7 @@ import {
   PieChartIcon,
   BoxIcon,
   BoxIconLine,
-  BoxCubeIcon,
+  // BoxCubeIcon, // dùng cho mục "Thương hiệu" — đang tạm ẩn, xem MENU_ITEMS bên dưới.
   GridIcon,
   FolderIcon,
   ListIcon,
@@ -43,7 +43,8 @@ function getInitial(name: string | undefined): string {
 const MENU_ITEMS: MenuItem[] = [
   { key: "/dashboard", icon: PieChartIcon, label: "Trang chủ", allow: ALL_ADMIN_ROLES },
   { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
-  { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
+  // Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+  // { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
   { key: "/colors", icon: TableIcon, label: "Màu sắc", allow: INVENTORY_ROLES },
   { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
   { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },

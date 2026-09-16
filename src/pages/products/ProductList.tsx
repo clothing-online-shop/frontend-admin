@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ProductStatus, type ProductListItem } from "@/types/shared-types";
 import { useCategoryNameMap } from "@/hooks/useCategories";
-import { useBrandNameMap } from "@/hooks/useBrands";
+// Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+// import { useBrandNameMap } from "@/hooks/useBrands";
 import { useCollections } from "@/hooks/useCollections";
 import { useDeleteProduct, useProductsAdmin, useUpdateProduct } from "@/hooks/useProducts";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -58,7 +59,7 @@ export default function ProductList() {
   // riêng, react-query cache chung nên không tốn thêm request) — ở đây chỉ cần map tên
   // theo id để hiển thị trong cột bảng.
   const categoryNameById = useCategoryNameMap();
-  const brandNameById = useBrandNameMap();
+  // const brandNameById = useBrandNameMap();
 
   // limit: 1000 — bộ lọc "Bộ sưu tập" cần đủ mọi lựa chọn, không phải bảng phân trang, theo
   // đúng pattern ProductCollectionsStep.tsx/useProducts() ở AssignProductsModal.tsx.
@@ -225,17 +226,18 @@ export default function ProductList() {
           </span>
         ),
       },
-      {
-        key: "brand",
-        header: "Thương hiệu",
-        align: "center",
-        className: "min-w-36",
-        render: (product) => (
-          <span className="text-sm text-gray-700 dark:text-gray-300">
-            {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
-          </span>
-        ),
-      },
+      // Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+      // {
+      //   key: "brand",
+      //   header: "Thương hiệu",
+      //   align: "center",
+      //   className: "min-w-36",
+      //   render: (product) => (
+      //     <span className="text-sm text-gray-700 dark:text-gray-300">
+      //       {(product.brandId && brandNameById.get(product.brandId)) ?? "—"}
+      //     </span>
+      //   ),
+      // },
       {
         key: "collections",
         header: "Bộ sưu tập",
@@ -343,7 +345,8 @@ export default function ProductList() {
         ),
       },
     ],
-    [categoryNameById, brandNameById, handleToggleLock, handleToggleFeatured, pendingProductId],
+    // [categoryNameById, brandNameById, handleToggleLock, handleToggleFeatured, pendingProductId],
+    [categoryNameById, handleToggleLock, handleToggleFeatured, pendingProductId],
   );
 
   return (
