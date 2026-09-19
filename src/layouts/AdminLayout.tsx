@@ -36,7 +36,7 @@ function getInitial(name: string | undefined): string {
 }
 
 // Sắp theo luồng nghiệp vụ, không theo thứ tự thêm tính năng trước/sau: nền tảng danh mục
-// (Danh mục/Thương hiệu phải có trước khi tạo Sản phẩm) → Sản phẩm + Tồn kho (theo sát
+// (Danh mục phải có trước khi tạo Sản phẩm) → Sản phẩm + Tồn kho (theo sát
 // nhau vì tồn kho gắn trực tiếp vào biến thể sản phẩm) → merchandising/marketing (Bộ sưu
 // tập/Banner/Voucher — đều là công cụ quảng bá, xếp cạnh nhau) → bán hàng (Đơn hàng/Khách
 // hàng) → nội dung chung (CMS) → Cấu hình luôn ở cuối cùng.

@@ -4,6 +4,7 @@ import { useForm, useWatch, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { findNode } from "@/lib/categoryTree";
 import { ImageUploader } from "@/components/common/ImageUploader";
+import { BACKGROUND_IMAGE_HINT } from "@/lib/imageHints";
 import {
   useCategoryTree,
   useCreateCategory,
@@ -254,7 +255,7 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
             <div>
               <FieldLabel label="Ảnh nền banner" />
               <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
-                Khuyến nghị ảnh có độ dài khoảng (khoảng 1200×180).
+                {BACKGROUND_IMAGE_HINT}
               </p>
               <Controller
                 name="bannerImage"

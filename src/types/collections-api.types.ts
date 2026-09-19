@@ -1,16 +1,19 @@
 export interface CreateCollectionPayload {
   name: string;
   banner?: string;
+  // Ảnh nền ngang ở đầu trang bộ sưu tập trên website (khác banner vuông ở trang chủ).
+  backgroundImageUrl?: string;
   description?: string;
   startDate: string;
   endDate: string;
 }
 
 export type UpdateCollectionPayload = Partial<
-  Omit<CreateCollectionPayload, "banner" | "description">
+  Omit<CreateCollectionPayload, "banner" | "backgroundImageUrl" | "description">
 > & {
   // Bỏ trống = giữ nguyên giá trị hiện có; gửi null = xoá.
   banner?: string | null;
+  backgroundImageUrl?: string | null;
   description?: string | null;
 };
 

@@ -3,7 +3,11 @@ import { useForm, useWatch, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { CollectionStatus, type Collection } from "@/types/shared-types";
 import { ImageUploader } from "@/components/common/ImageUploader";
-import { useCreateCollection, useUpdateCollection } from "@/hooks/useCollections";
+import { BACKGROUND_IMAGE_HINT } from "@/lib/imageHints";
+import {
+  useCreateCollection,
+  useUpdateCollection,
+} from "@/hooks/useCollections";
 import { getErrorMessage } from "@/lib/error";
 import { Modal } from "@/components/ui/modal";
 import Button from "@/components/ui/button/Button";
@@ -12,7 +16,11 @@ import TextArea from "@/components/form/input/TextArea";
 import DatePicker from "@/components/form/DatePicker";
 import Spinner from "@/components/ui/spinner/Spinner";
 import { useToast } from "@/hooks/useToast";
-import { collectionSchema, type CollectionFormValues } from "@/schemas/collection.schema";
+import {
+  collectionSchema,
+  type CollectionFormValues,
+} from "@/schemas/collection.schema";
+import FieldLabel from "@/components/form/FieldLabel";
 
 interface CollectionFormModalProps {
   open: boolean;
@@ -25,6 +33,7 @@ const EMPTY_VALUES: CollectionFormValues = {
   name: "",
   description: "",
   banner: [],
+  backgroundImage: [],
   startDate: "",
   endDate: "",
 };
@@ -63,7 +72,7 @@ export default function CollectionFormModal({
   const startDateValue = useWatch({ control, name: "startDate" });
 
   // Bộ sưu tập đang RUNNING: đổi tên kéo theo đổi slug (URL đang chia sẻ/index thật trên
-  // web bị gãy), đổi ngày bắt đầu thì vô nghĩa vì đã diễn ra rồi — chỉ còn banner/mô tả/
+  // web bị gãy), đổi ngày bắt đầu thì vô nghĩa vì đã diễn ra rồi — chỉ còn banner/ảnh nền/mô tả/
   // ngày kết thúc là hợp lý để sửa giữa chừng (kéo dài/rút ngắn chiến dịch). BE
   // (collections.service.ts update()) chặn y hệt 2 field này, đây chỉ là khoá UI tương ứng.
   const isRunning = editing?.status === CollectionStatus.RUNNING;
@@ -74,6 +83,9 @@ export default function CollectionFormModal({
         name: editing?.name ?? "",
         description: editing?.description ?? "",
         banner: editing?.banner ? [editing.banner] : [],
+        backgroundImage: editing?.backgroundImageUrl
+          ? [editing.backgroundImageUrl]
+          : [],
         startDate: editing?.startDate ? toDateOnly(editing.startDate) : "",
         endDate: editing?.endDate ? toDateOnly(editing.endDate) : "",
       });
@@ -85,6 +97,7 @@ export default function CollectionFormModal({
       name: values.name,
       description: values.description || undefined,
       banner: values.banner[0],
+      backgroundImageUrl: values.backgroundImage[0],
       startDate: values.startDate,
       endDate: values.endDate,
     };
@@ -98,6 +111,7 @@ export default function CollectionFormModal({
           payload: {
             ...payload,
             banner: values.banner[0] ?? null,
+            backgroundImageUrl: values.backgroundImage[0] ?? null,
             description: values.description || null,
           },
         });
@@ -113,164 +127,210 @@ export default function CollectionFormModal({
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
-      <form onSubmit={handleSubmit(onValid)} className="p-6">
-        <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
-          {viewOnly ? "Xem bộ sưu tập" : editing ? "Sửa bộ sưu tập" : "Thêm bộ sưu tập"}
+    <Modal isOpen={open} onClose={onClose} className="m-4 max-w-4xl">
+      {/* Modal dùng chung căn giữa bằng flex items-center — nội dung cao hơn màn hình thì phần
+          trên bị cắt và không cuộn tới được. Nên form tự giới hạn chiều cao theo viewport:
+          tiêu đề + nút Lưu/Hủy cố định, chỉ phần thân ở giữa cuộn dọc. */}
+      <form
+        onSubmit={handleSubmit(onValid)}
+        className="flex max-h-[calc(100vh-2rem)] flex-col"
+      >
+        <h3 className="shrink-0 px-6 pb-4 pr-16 pt-6 text-lg font-semibold text-gray-800 dark:text-white/90">
+          {viewOnly
+            ? "Xem bộ sưu tập"
+            : editing
+              ? "Sửa bộ sưu tập"
+              : "Thêm bộ sưu tập"}
         </h3>
 
-        {!viewOnly && isRunning && (
-          <p className="mb-4 rounded-lg bg-blue-light-50 px-3 py-2 text-xs text-blue-light-500 dark:bg-blue-light-500/15">
-            Bộ sưu tập đang diễn ra — chỉ có thể sửa banner, mô tả và ngày kết thúc.
-          </p>
-        )}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+          {!viewOnly && isRunning && (
+            <p className="mb-4 rounded-lg bg-blue-light-50 px-3 py-2 text-xs text-blue-light-500 dark:bg-blue-light-500/15">
+              Bộ sưu tập đang diễn ra — chỉ có thể sửa banner, ảnh nền, mô tả và
+              ngày kết thúc.
+            </p>
+          )}
 
-        {/* fieldset disabled tự vô hiệu hoá Input/TextArea/nút bấm trong ImageUploader (đều
-            là form control gốc) khi xem — riêng DatePicker vẫn truyền disabled riêng vì
-            flatpickr tự mở lịch bằng JS, không dựa theo input[disabled] của trình duyệt. */}
-        <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
-          <div>
-            <label
-              htmlFor="collection-name"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Tên bộ sưu tập <span className="text-error-500">*</span>
-            </label>
-            <Input
-              id="collection-name"
-              placeholder="Ví dụ: Bộ sưu tập Thu Đông 2026"
-              disabled={viewOnly || isRunning}
-              {...register("name")}
-              error={!!errors.name}
-              hint={errors.name?.message}
-            />
-          </div>
+          {/* fieldset disabled tự vô hiệu hoá Input/TextArea/nút bấm trong ImageUploader (đều
+              là form control gốc) khi xem — riêng DatePicker vẫn truyền disabled riêng vì
+              flatpickr tự mở lịch bằng JS, không dựa theo input[disabled] của trình duyệt. */}
+          <fieldset disabled={viewOnly} className="m-0 min-w-0 border-0 p-0">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="min-w-0 space-y-4">
+                <div>
+                  <FieldLabel label="Tên bộ sưu tập" required />
 
-          <div className="grid grid-cols-2 gap-4">
-            <Controller
-              name="startDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  id="collection-start-date"
-                  label="Ngày bắt đầu"
-                  placeholder="Chọn ngày bắt đầu"
-                  defaultDate={field.value || undefined}
-                  // Không cho chọn ngày bắt đầu trong quá khứ — nhưng chỉ áp khi field còn
-                  // sửa được. Field disabled (xem/RUNNING) mà vẫn set minDate="today" thì
-                  // flatpickr âm thầm bỏ qua defaultDate nằm trước minDate, khiến ngày bắt đầu
-                  // thật (đã ở quá khứ) không hiển thị dù data vẫn đúng trong form.
-                  minDate={viewOnly || isRunning ? undefined : "today"}
-                  disabled={viewOnly || isRunning}
-                  onChange={(_dates, dateStr) => field.onChange(dateStr)}
-                  error={!!errors.startDate}
-                  hint={errors.startDate?.message}
-                />
-              )}
-            />
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  id="collection-end-date"
-                  label="Ngày kết thúc"
-                  placeholder="Chọn ngày kết thúc"
-                  defaultDate={field.value || undefined}
-                  minDate={startDateValue || "today"}
-                  disabled={viewOnly}
-                  onChange={(_dates, dateStr) => field.onChange(dateStr)}
-                  error={!!errors.endDate}
-                  hint={errors.endDate?.message}
-                />
-              )}
-            />
-          </div>
+                  <Input
+                    id="collection-name"
+                    placeholder="Ví dụ: Bộ sưu tập Thu Đông 2026"
+                    disabled={viewOnly || isRunning}
+                    {...register("name")}
+                    error={!!errors.name}
+                    hint={errors.name?.message}
+                  />
+                </div>
 
-          <div>
-            <label
-              htmlFor="collection-description"
-              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Mô tả
-            </label>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <TextArea
-                  id="collection-description"
-                  placeholder="Giới thiệu ngắn về bộ sưu tập"
-                  disabled={viewOnly}
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </div>
-
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Banner
-            </label>
-            <Controller
-              name="banner"
-              control={control}
-              render={({ field }) => (
-                <ImageUploader
-                  value={field.value}
-                  onChange={field.onChange}
-                  max={1}
-                  readOnly={viewOnly}
-                />
-              )}
-            />
-          </div>
-        </fieldset>
-
-        {/* Chỉ hiện khi xem — thêm/sửa bộ sưu tập không quản lý sản phẩm ở đây, đi qua
-            AssignProductsModal riêng (nút "Gán sản phẩm" ở CollectionList.tsx). */}
-        {viewOnly && (
-          <div className="mt-4">
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Sản phẩm thuộc bộ sưu tập
-              {editing && editing.products.length > 0 && ` (${editing.products.length})`}
-            </label>
-            {editing && editing.products.length > 0 ? (
-              // max-h + overflow — bộ sưu tập có thể gán hàng chục sản phẩm, không để modal
-              // cao vô hạn theo số lượng. Ảnh nhỏ + tên thay vì badge chữ đơn thuần để dễ
-              // nhận diện đúng sản phẩm hơn (khớp cách AssignProductsModal.tsx hiển thị).
-              <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-gray-200 p-2 dark:border-gray-800">
-                {editing.products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5"
-                  >
-                    {product.thumbnail ? (
-                      <img
-                        src={product.thumbnail}
-                        alt=""
-                        className="h-10 w-10 shrink-0 rounded-md object-contain bg-gray-100 dark:bg-gray-800"
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        id="collection-start-date"
+                        label="Ngày bắt đầu"
+                        placeholder="Chọn ngày bắt đầu"
+                        required
+                        defaultDate={field.value || undefined}
+                        // Không cho chọn ngày bắt đầu trong quá khứ — nhưng chỉ áp khi field còn
+                        // sửa được. Field disabled (xem/RUNNING) mà vẫn set minDate="today" thì
+                        // flatpickr âm thầm bỏ qua defaultDate nằm trước minDate, khiến ngày bắt đầu
+                        // thật (đã ở quá khứ) không hiển thị dù data vẫn đúng trong form.
+                        minDate={viewOnly || isRunning ? undefined : "today"}
+                        disabled={viewOnly || isRunning}
+                        onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                        error={!!errors.startDate}
+                        hint={errors.startDate?.message}
                       />
-                    ) : (
-                      <div className="h-10 w-10 shrink-0 rounded-md bg-gray-100 dark:bg-gray-800" />
                     )}
-                    <span className="truncate text-sm text-gray-800 dark:text-white/90">
-                      {product.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 dark:text-gray-500">
-                Chưa có sản phẩm nào.
-              </p>
-            )}
-          </div>
-        )}
+                  />
+                  <Controller
+                    name="endDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        id="collection-end-date"
+                        label="Ngày kết thúc"
+                        required
+                        placeholder="Chọn ngày kết thúc"
+                        defaultDate={field.value || undefined}
+                        minDate={startDateValue || "today"}
+                        disabled={viewOnly}
+                        onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                        error={!!errors.endDate}
+                        hint={errors.endDate?.message}
+                      />
+                    )}
+                  />
+                </div>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+                <div>
+                  <label
+                    htmlFor="collection-description"
+                    className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                  >
+                    Mô tả
+                  </label>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <TextArea
+                        id="collection-description"
+                        placeholder="Giới thiệu ngắn về bộ sưu tập"
+                        disabled={viewOnly}
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="min-w-0 space-y-4">
+                <div>
+                  <FieldLabel label="Banner" required />
+                  <Controller
+                    name="banner"
+                    control={control}
+                    render={({ field }) => (
+                      <ImageUploader
+                        value={field.value}
+                        onChange={field.onChange}
+                        max={1}
+                        readOnly={viewOnly}
+                      />
+                    )}
+                  />
+                  {errors.banner && (
+                    <p className="text-theme-xs mt-1.5 text-error-500">{errors.banner.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Ảnh nền
+                  </label>
+                  <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                    {BACKGROUND_IMAGE_HINT}
+                  </p>
+                  <Controller
+                    name="backgroundImage"
+                    control={control}
+                    render={({ field }) => (
+                      <ImageUploader
+                        value={field.value}
+                        onChange={field.onChange}
+                        max={1}
+                        readOnly={viewOnly}
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          {/* Chỉ hiện khi xem — thêm/sửa bộ sưu tập không quản lý sản phẩm ở đây, đi qua
+              AssignProductsModal riêng (nút "Gán sản phẩm" ở CollectionList.tsx). */}
+          {viewOnly && (
+            <div className="mt-4">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Sản phẩm thuộc bộ sưu tập
+                {editing &&
+                  editing.products.length > 0 &&
+                  ` (${editing.products.length})`}
+              </label>
+              {editing && editing.products.length > 0 ? (
+                // max-h + overflow — bộ sưu tập có thể gán hàng chục sản phẩm, không để modal
+                // cao vô hạn theo số lượng. Ảnh nhỏ + tên thay vì badge chữ đơn thuần để dễ
+                // nhận diện đúng sản phẩm hơn (khớp cách AssignProductsModal.tsx hiển thị).
+                <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-gray-200 p-2 dark:border-gray-800">
+                  {editing.products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors duration-150 ease-standard hover:bg-gray-50 dark:hover:bg-white/5"
+                    >
+                      {product.thumbnail ? (
+                        <img
+                          src={product.thumbnail}
+                          alt=""
+                          className="h-10 w-10 shrink-0 rounded-md object-contain bg-gray-100 dark:bg-gray-800"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 shrink-0 rounded-md bg-gray-100 dark:bg-gray-800" />
+                      )}
+                      <span className="truncate text-sm text-gray-800 dark:text-white/90">
+                        {product.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 dark:text-gray-500">
+                  Chưa có sản phẩm nào.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSaving}
+          >
             {viewOnly ? "Đóng" : "Hủy"}
           </Button>
           {!viewOnly && (

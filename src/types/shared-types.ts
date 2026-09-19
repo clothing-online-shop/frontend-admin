@@ -205,6 +205,8 @@ export interface Collection {
   name: string;
   slug: string;
   banner: string | null;
+  // Ảnh nền ngang ở đầu trang bộ sưu tập trên website (chữ tiêu đề đè lên trên ảnh).
+  backgroundImageUrl: string | null;
   description: string | null;
   startDate: string;
   endDate: string;
