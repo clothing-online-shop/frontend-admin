@@ -18,15 +18,22 @@ export interface CreateCategoryPayload {
   megaMenuLeftImagePublicId?: string | null;
   megaMenuRightImageUrl?: string;
   megaMenuRightImagePublicId?: string | null;
+  // Ảnh nền banner ở đầu trang danh mục trên website — áp dụng cho mọi cấp danh mục.
+  bannerImageUrl?: string;
+  bannerImagePublicId?: string | null;
 }
 
 export type UpdateCategoryPayload = Partial<
-  Omit<CreateCategoryPayload, "image" | "megaMenuLeftImageUrl" | "megaMenuRightImageUrl">
+  Omit<
+    CreateCategoryPayload,
+    "image" | "megaMenuLeftImageUrl" | "megaMenuRightImageUrl" | "bannerImageUrl"
+  >
 > & {
   // Bỏ trống = giữ nguyên ảnh hiện có; gửi null = xoá ảnh.
   image?: string | null;
   megaMenuLeftImageUrl?: string | null;
   megaMenuRightImageUrl?: string | null;
+  bannerImageUrl?: string | null;
 };
 
 export interface ReorderCategoryItem {

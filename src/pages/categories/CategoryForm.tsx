@@ -4,11 +4,18 @@ import { useForm, useWatch, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { findNode } from "@/lib/categoryTree";
 import { ImageUploader } from "@/components/common/ImageUploader";
-import { useCategoryTree, useCreateCategory, useUpdateCategory } from "@/hooks/useCategories";
+import {
+  useCategoryTree,
+  useCreateCategory,
+  useUpdateCategory,
+} from "@/hooks/useCategories";
 import { getErrorMessage } from "@/lib/error";
 import { useToast } from "@/hooks/useToast";
 import { useBreadcrumb } from "@/hooks/useBreadcrumb";
-import { categorySchema, type CategoryFormValues } from "@/schemas/category.schema";
+import {
+  categorySchema,
+  type CategoryFormValues,
+} from "@/schemas/category.schema";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
@@ -27,6 +34,7 @@ const EMPTY_VALUES: CategoryFormValues = {
   showInSaleCorner: false,
   megaMenuLeftImage: [],
   megaMenuRightImage: [],
+  bannerImage: [],
 };
 
 interface CategoryFormProps {
@@ -38,16 +46,31 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
   const toast = useToast();
   const { id: editingId } = useParams<{ id: string }>();
   const isEditing = Boolean(editingId);
-  const pageTitle = viewOnly ? "Xem danh mục" : isEditing ? "Sửa danh mục" : "Thêm danh mục";
-  useBreadcrumb([{ label: "Danh mục", href: "/categories" }, { label: pageTitle }]);
+  const pageTitle = viewOnly
+    ? "Xem danh mục"
+    : isEditing
+      ? "Sửa danh mục"
+      : "Thêm danh mục";
+  useBreadcrumb([
+    { label: "Danh mục", href: "/categories" },
+    { label: pageTitle },
+  ]);
 
   const [imagePublicId, setImagePublicId] = useState<string | null>(null);
-  const [megaMenuLeftImagePublicId, setMegaMenuLeftImagePublicId] = useState<string | null>(null);
-  const [megaMenuRightImagePublicId, setMegaMenuRightImagePublicId] = useState<string | null>(null);
+  const [megaMenuLeftImagePublicId, setMegaMenuLeftImagePublicId] = useState<
+    string | null
+  >(null);
+  const [megaMenuRightImagePublicId, setMegaMenuRightImagePublicId] = useState<
+    string | null
+  >(null);
+  const [bannerImagePublicId, setBannerImagePublicId] = useState<string | null>(
+    null,
+  );
   // Cây danh mục đã tải sẵn cho CategorySelect ("Danh mục cha") — tận dụng luôn để tra ra
   // node đang sửa (tìm theo id), không cần thêm 1 API GET chi tiết riêng như Voucher/Banner.
   const { data: categoryTree, isLoading: isLoadingTree } = useCategoryTree();
-  const editing = editingId && categoryTree ? findNode(categoryTree, editingId) : null;
+  const editing =
+    editingId && categoryTree ? findNode(categoryTree, editingId) : null;
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
 
@@ -85,12 +108,18 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
       image: editing.image ? [editing.image] : [],
       showInNewArrivals: editing.showInNewArrivals,
       showInSaleCorner: editing.showInSaleCorner,
-      megaMenuLeftImage: editing.megaMenuLeftImageUrl ? [editing.megaMenuLeftImageUrl] : [],
-      megaMenuRightImage: editing.megaMenuRightImageUrl ? [editing.megaMenuRightImageUrl] : [],
+      megaMenuLeftImage: editing.megaMenuLeftImageUrl
+        ? [editing.megaMenuLeftImageUrl]
+        : [],
+      megaMenuRightImage: editing.megaMenuRightImageUrl
+        ? [editing.megaMenuRightImageUrl]
+        : [],
+      bannerImage: editing.bannerImageUrl ? [editing.bannerImageUrl] : [],
     });
     setImagePublicId(editing.imagePublicId ?? null);
     setMegaMenuLeftImagePublicId(editing.megaMenuLeftImagePublicId ?? null);
     setMegaMenuRightImagePublicId(editing.megaMenuRightImagePublicId ?? null);
+    setBannerImagePublicId(editing.bannerImagePublicId ?? null);
     void trigger();
   }, [editing, reset, trigger]);
 
@@ -108,6 +137,8 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
       isActive: values.isActive,
       image: values.image[0] ?? null,
       imagePublicId: values.image[0] ? imagePublicId : null,
+      bannerImageUrl: values.bannerImage[0] ?? null,
+      bannerImagePublicId: values.bannerImage[0] ? bannerImagePublicId : null,
       showInNewArrivals: values.showInNewArrivals,
       showInSaleCorner: values.showInSaleCorner,
       ...(isRoot
@@ -147,7 +178,10 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
       {/* fieldset disabled tự vô hiệu hoá Input/Select/nút bấm trong ImageUploader khi xem —
           riêng Switch dựng từ <label onClick>, không phải form control gốc nên fieldset
           không tự khoá được, phải truyền disabled riêng (giống VoucherForm.tsx). */}
-      <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-6 border-0 p-0">
+      <fieldset
+        disabled={viewOnly}
+        className="m-0 min-w-0 space-y-6 border-0 p-0"
+      >
         <ComponentCard title="Thông tin cơ bản">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-4 lg:col-span-2">
@@ -161,7 +195,12 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
                 hint={errors.name?.message}
               />
 
-              <Input label="URL" disabled={viewOnly} placeholder="ao-nam" {...register("slug")} />
+              <Input
+                label="URL"
+                disabled={viewOnly}
+                placeholder="ao-nam"
+                {...register("slug")}
+              />
 
               <Controller
                 name="parentId"
@@ -204,7 +243,31 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
                     onChange={field.onChange}
                     max={1}
                     readOnly={viewOnly}
-                    onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
+                    onPublicIdChange={(_url, publicId) =>
+                      setImagePublicId(publicId)
+                    }
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <FieldLabel label="Ảnh nền banner" />
+              <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                Khuyến nghị ảnh có độ dài khoảng (khoảng 1200×180).
+              </p>
+              <Controller
+                name="bannerImage"
+                control={control}
+                render={({ field }) => (
+                  <ImageUploader
+                    value={field.value}
+                    onChange={field.onChange}
+                    max={1}
+                    readOnly={viewOnly}
+                    onPublicIdChange={(_url, publicId) =>
+                      setBannerImagePublicId(publicId)
+                    }
                   />
                 )}
               />
@@ -256,7 +319,9 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
                       onChange={field.onChange}
                       max={1}
                       readOnly={viewOnly}
-                      onPublicIdChange={(_url, publicId) => setMegaMenuLeftImagePublicId(publicId)}
+                      onPublicIdChange={(_url, publicId) =>
+                        setMegaMenuLeftImagePublicId(publicId)
+                      }
                     />
                   )}
                 />
@@ -272,7 +337,9 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
                       onChange={field.onChange}
                       max={1}
                       readOnly={viewOnly}
-                      onPublicIdChange={(_url, publicId) => setMegaMenuRightImagePublicId(publicId)}
+                      onPublicIdChange={(_url, publicId) =>
+                        setMegaMenuRightImagePublicId(publicId)
+                      }
                     />
                   )}
                 />
@@ -284,7 +351,11 @@ export default function CategoryForm({ viewOnly = false }: CategoryFormProps) {
 
       <div className="mt-6 flex justify-end gap-3">
         {viewOnly ? (
-          <Button type="button" variant="outline" onClick={() => navigate("/categories")}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate("/categories")}
+          >
             Quay lại
           </Button>
         ) : (

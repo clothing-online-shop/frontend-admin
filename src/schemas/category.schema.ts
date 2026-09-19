@@ -10,6 +10,7 @@ export const categorySchema = yup.object({
   showInSaleCorner: yup.boolean().required().default(false),
   megaMenuLeftImage: yup.array().of(yup.string().required()).default([]),
   megaMenuRightImage: yup.array().of(yup.string().required()).default([]),
+  bannerImage: yup.array().of(yup.string().required()).default([]),
 });
 
 export type CategoryFormValues = yup.InferType<typeof categorySchema>;
