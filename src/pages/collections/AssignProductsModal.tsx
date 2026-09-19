@@ -195,6 +195,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
       key: "price",
       header: "Giá",
       align: "center",
+      className: "min-w-40",
       render: (product) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">
           {formatPrice(product.salePrice ?? product.basePrice)}
@@ -204,6 +205,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
     {
       key: "stock",
       header: "Tồn kho",
+      className: "min-w-40",
       align: "center",
       render: (product) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">{product.totalStock}</span>
@@ -212,6 +214,7 @@ export default function AssignProductsModal({ open, onClose, collection }: Assig
     {
       key: "status",
       header: "Trạng thái",
+      className: "min-w-40",
       align: "center",
       render: (product) => (
         <Badge color={PRODUCT_STATUS_LABEL[product.status].color}>
