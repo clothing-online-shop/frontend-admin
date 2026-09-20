@@ -1,10 +1,11 @@
-import { useMemo, useRef } from "react";
+import { useRef } from "react"; // useMemo tạm không dùng — xem brandOptions (đã comment) bên dưới
 import { Controller, useFormContext } from "react-hook-form";
 import { ProductStatus } from "@/types/shared-types";
 import type { ProductFormValues } from "@/schemas/product.schema";
 import { slugifyPreview } from "@/lib/slug";
 import { visibleFieldError } from "@/lib/form";
-import { useBrands } from "@/hooks/useBrands";
+// Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+// import { useBrands } from "@/hooks/useBrands";
 import { RichTextEditor } from "@/components/common/RichTextEditor";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
@@ -42,11 +43,11 @@ export function ProductGeneralInfoStep({
   const nameField = register("name");
   const slugField = register("slug");
 
-  const { data: brands } = useBrands();
-  const brandOptions = useMemo(
-    () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
-    [brands],
-  );
+  // const { data: brands } = useBrands();
+  // const brandOptions = useMemo(
+  //   () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
+  //   [brands],
+  // );
 
   const listStatus = [
     { value: String(ProductStatus.DRAFT), label: "Chưa mở bán" },
@@ -130,6 +131,7 @@ export function ProductGeneralInfoStep({
             )}
           />
         </div>
+        {/* Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
         <div className="flex-1">
           <Controller
             name="brandId"
@@ -148,6 +150,7 @@ export function ProductGeneralInfoStep({
             )}
           />
         </div>
+        */}
       </div>
 
       <div className="flex gap-4">

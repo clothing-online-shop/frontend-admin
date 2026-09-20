@@ -1,7 +1,8 @@
-import { useMemo } from "react";
 import { ProductStatus } from "@/types/shared-types";
 import type { ProductSort } from "@/types/products-api.types";
-import { useBrands } from "@/hooks/useBrands";
+// Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+// import { useMemo } from "react";
+// import { useBrands } from "@/hooks/useBrands";
 import { PRODUCT_STATUS_LABEL } from "@/lib/productStatus";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
@@ -54,8 +55,10 @@ interface ProductFilterBarProps {
 export default function ProductFilterBar({
   searchInput,
   onSearchInputChange,
-  brandId,
-  onBrandIdChange,
+  // Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng. Đổi tên
+  // có tiền tố "_" để qua được noUnusedParameters (đang bật) trong lúc chưa render dropdown.
+  brandId: _brandId,
+  onBrandIdChange: _onBrandIdChange,
   categoryIds,
   onCategoryIdsChange,
   status,
@@ -67,11 +70,11 @@ export default function ProductFilterBar({
   onSortChange,
   className = "",
 }: ProductFilterBarProps) {
-  const { data: brands } = useBrands();
-  const brandOptions = useMemo(
-    () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
-    [brands],
-  );
+  // const { data: brands } = useBrands();
+  // const brandOptions = useMemo(
+  //   () => (brands ?? []).map((b) => ({ value: b.id, label: b.name })),
+  //   [brands],
+  // );
 
   return (
     <div className={`flex flex-wrap gap-3 ${className}`}>
@@ -82,6 +85,7 @@ export default function ProductFilterBar({
           onChange={(e) => onSearchInputChange(e.target.value)}
         />
       </div>
+      {/* Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
       <div className="w-48">
         <Select
           allowClear
@@ -92,6 +96,7 @@ export default function ProductFilterBar({
           onChange={onBrandIdChange}
         />
       </div>
+      */}
       <div className="w-64">
         <CategoryTreeSelect placeholder="Danh mục" value={categoryIds} onChange={onCategoryIdsChange} />
       </div>

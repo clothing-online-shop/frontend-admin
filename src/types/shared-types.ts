@@ -167,6 +167,9 @@ export interface CategoryNode {
   megaMenuLeftImagePublicId: string | null;
   megaMenuRightImageUrl: string | null;
   megaMenuRightImagePublicId: string | null;
+  // Ảnh nền banner ở đầu trang danh mục trên website (chữ tiêu đề đè lên trên ảnh).
+  bannerImageUrl: string | null;
+  bannerImagePublicId: string | null;
   createdAt: string;
   updatedAt: string;
   children: CategoryNode[];
@@ -202,6 +205,8 @@ export interface Collection {
   name: string;
   slug: string;
   banner: string | null;
+  // Ảnh nền ngang ở đầu trang bộ sưu tập trên website (chữ tiêu đề đè lên trên ảnh).
+  backgroundImageUrl: string | null;
   description: string | null;
   startDate: string;
   endDate: string;

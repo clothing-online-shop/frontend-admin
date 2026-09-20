@@ -7,7 +7,8 @@ import ProductList from "@/pages/products/ProductList";
 import ProductForm from "@/pages/products/ProductForm";
 import CategoryList from "@/pages/categories/CategoryList";
 import CategoryForm from "@/pages/categories/CategoryForm";
-import BrandList from "@/pages/brands/BrandList";
+// Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+// import BrandList from "@/pages/brands/BrandList";
 import ColorList from "@/pages/colors/ColorList";
 import CollectionList from "@/pages/collections/CollectionList";
 import BannerList from "@/pages/banners/BannerList";
@@ -45,7 +46,7 @@ export const router = createBrowserRouter([
           { path: "/categories/new", element: <CategoryForm /> },
           { path: "/categories/:id/edit", element: <CategoryForm /> },
           { path: "/categories/:id", element: <CategoryForm viewOnly /> },
-          { path: "/brands", element: <BrandList /> },
+          // { path: "/brands", element: <BrandList /> },
           { path: "/colors", element: <ColorList /> },
           { path: "/collections", element: <CollectionList /> },
           { path: "/banners", element: <BannerList /> },

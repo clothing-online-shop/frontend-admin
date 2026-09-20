@@ -129,139 +129,158 @@ export default function PopupFormModal({
   }
 
   return (
-    <Modal isOpen={open} onClose={onClose} className="max-w-lg m-4">
-      <form onSubmit={handleSubmit(onValid)} className="p-6">
-        <h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90">
+    <Modal isOpen={open} onClose={onClose} className="m-4 max-w-4xl">
+      {/* Modal dùng chung căn giữa bằng flex items-center — nội dung cao hơn màn hình thì phần
+          trên bị cắt và không cuộn tới được. Nên form tự giới hạn chiều cao theo viewport:
+          tiêu đề + nút Lưu/Hủy cố định, chỉ phần thân ở giữa cuộn dọc. */}
+      <form
+        onSubmit={handleSubmit(onValid)}
+        className="flex max-h-[calc(100vh-2rem)] flex-col"
+      >
+        <h3 className="shrink-0 px-6 pb-4 pr-16 pt-6 text-lg font-semibold text-gray-800 dark:text-white/90">
           {viewOnly ? "Xem popup" : editing ? "Sửa popup" : "Thêm popup"}
         </h3>
 
-        <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
-          <div>
-            <Input
-              label="Tiêu đề phụ"
-              disabled={viewOnly}
-              placeholder="Ví dụ: ƯU ĐÃI THÁNG 8"
-              {...register("eyebrow")}
-              error={!!errors.eyebrow}
-              hint={errors.eyebrow?.message}
-            />
-          </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-4">
+          <fieldset disabled={viewOnly} className="m-0 min-w-0 border-0 p-0">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="min-w-0 space-y-4">
+                <div>
+                  <Input
+                    label="Tiêu đề phụ"
+                    disabled={viewOnly}
+                    placeholder="Ví dụ: ƯU ĐÃI THÁNG 8"
+                    {...register("eyebrow")}
+                    error={!!errors.eyebrow}
+                    hint={errors.eyebrow?.message}
+                  />
+                </div>
 
-          <div>
-            <Input
-              label="Tiêu đề chính"
-              required
-              disabled={viewOnly}
-              placeholder="Ví dụ: Giảm 15% đơn từ 800.000đ"
-              {...register("title")}
-              error={!!errors.title}
-              hint={errors.title?.message}
-            />
-          </div>
+                <div>
+                  <Input
+                    label="Tiêu đề chính"
+                    required
+                    disabled={viewOnly}
+                    placeholder="Ví dụ: Giảm 15% đơn từ 800.000đ"
+                    {...register("title")}
+                    error={!!errors.title}
+                    hint={errors.title?.message}
+                  />
+                </div>
 
-          <div>
-            <Input
-              label="Mô tả"
-              disabled={viewOnly}
-              placeholder="Ví dụ: Nhập mã THU26 ở bước thanh toán"
-              {...register("description")}
-              error={!!errors.description}
-              hint={errors.description?.message}
-            />
-          </div>
+                <div>
+                  <Input
+                    label="Mô tả"
+                    disabled={viewOnly}
+                    placeholder="Ví dụ: Nhập mã THU26 ở bước thanh toán"
+                    {...register("description")}
+                    error={!!errors.description}
+                    hint={errors.description?.message}
+                  />
+                </div>
 
-          <div>
-            <Input
-              label="Mã giảm giá"
-              disabled={viewOnly}
-              placeholder="Ví dụ: THU26"
-              {...register("discountCode")}
-              error={!!errors.discountCode}
-              hint={errors.discountCode?.message}
-            />
-          </div>
+                <div>
+                  <Input
+                    label="Mã giảm giá"
+                    disabled={viewOnly}
+                    placeholder="Ví dụ: THU26"
+                    {...register("discountCode")}
+                    error={!!errors.discountCode}
+                    hint={errors.discountCode?.message}
+                  />
+                </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Nhãn nút CTA"
-              required
-              disabled={viewOnly}
-              placeholder="Ví dụ: Mua sắm ngay"
-              {...register("ctaLabel")}
-              error={!!errors.ctaLabel}
-              hint={errors.ctaLabel?.message}
-            />
-            <Input
-              label="Link đích CTA"
-              required
-              disabled={viewOnly}
-              placeholder="/san-pham"
-              {...register("ctaLinkUrl")}
-              error={!!errors.ctaLinkUrl}
-              hint={errors.ctaLinkUrl?.message}
-            />
-          </div>
+                <div>
+                  <Input
+                    label="Link đích CTA"
+                    required
+                    disabled={viewOnly}
+                    placeholder="/san-pham"
+                    {...register("ctaLinkUrl")}
+                    error={!!errors.ctaLinkUrl}
+                    hint={errors.ctaLinkUrl?.message}
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Controller
-              name="startDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  id="popup-start-date"
-                  label="Ngày bắt đầu"
-                  required
-                  placeholder="Chọn ngày bắt đầu"
-                  defaultDate={field.value || undefined}
-                  // Chỉ chặn quá khứ khi TẠO MỚI — xem lý do ở BannerForm.tsx.
-                  minDate={!editing && !viewOnly ? "today" : undefined}
-                  disabled={viewOnly}
-                  onChange={(_dates, dateStr) => field.onChange(dateStr)}
-                  error={!!errors.startDate}
-                  hint={errors.startDate?.message}
-                />
-              )}
-            />
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  id="popup-end-date"
-                  label="Ngày kết thúc"
-                  required
-                  placeholder="Chọn ngày kết thúc"
-                  defaultDate={field.value || undefined}
-                  minDate={startDateValue || "today"}
-                  disabled={viewOnly}
-                  onChange={(_dates, dateStr) => field.onChange(dateStr)}
-                  error={!!errors.endDate}
-                  hint={errors.endDate?.message}
-                />
-              )}
-            />
-          </div>
+              <div className="min-w-0 space-y-4">
+                <div>
+                  <Input
+                    label="Nhãn nút CTA"
+                    required
+                    disabled={viewOnly}
+                    placeholder="Ví dụ: Mua sắm ngay"
+                    {...register("ctaLabel")}
+                    error={!!errors.ctaLabel}
+                    hint={errors.ctaLabel?.message}
+                  />
+                </div>
 
-          <div>
-            <FieldLabel label="Ảnh popup" required />
-            <Controller
-              name="image"
-              control={control}
-              render={({ field }) => (
-                <ImageUploader
-                  value={field.value}
-                  onChange={field.onChange}
-                  max={1}
-                  readOnly={viewOnly}
-                  onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
-                />
-              )}
-            />
-            {errors.image && <p className="text-theme-xs mt-1.5 text-error-500">{errors.image.message}</p>}
-          </div>
-        </fieldset>
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        id="popup-start-date"
+                        label="Ngày bắt đầu"
+                        required
+                        placeholder="Chọn ngày bắt đầu"
+                        defaultDate={field.value || undefined}
+                        // Chỉ chặn quá khứ khi TẠO MỚI — xem lý do ở BannerForm.tsx.
+                        minDate={!editing && !viewOnly ? "today" : undefined}
+                        disabled={viewOnly}
+                        onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                        error={!!errors.startDate}
+                        hint={errors.startDate?.message}
+                      />
+                    )}
+                  />
+                  <Controller
+                    name="endDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        id="popup-end-date"
+                        label="Ngày kết thúc"
+                        required
+                        placeholder="Chọn ngày kết thúc"
+                        defaultDate={field.value || undefined}
+                        minDate={startDateValue || "today"}
+                        disabled={viewOnly}
+                        onChange={(_dates, dateStr) => field.onChange(dateStr)}
+                        error={!!errors.endDate}
+                        hint={errors.endDate?.message}
+                      />
+                    )}
+                  />
+                </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+                <div>
+                  <FieldLabel label="Ảnh popup" required />
+                  <Controller
+                    name="image"
+                    control={control}
+                    render={({ field }) => (
+                      <ImageUploader
+                        value={field.value}
+                        onChange={field.onChange}
+                        max={1}
+                        readOnly={viewOnly}
+                        onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
+                      />
+                    )}
+                  />
+                  {errors.image && (
+                    <p className="text-theme-xs mt-1.5 text-error-500">{errors.image.message}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
           <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
             {viewOnly ? "Đóng" : "Hủy"}
           </Button>
