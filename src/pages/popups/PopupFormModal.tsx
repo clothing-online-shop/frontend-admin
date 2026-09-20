@@ -96,7 +96,10 @@ export default function PopupFormModal({
             // Chỉ gửi kèm cặp imageUrl/imagePublicId khi ảnh thực sự đổi — giống
             // BannerForm.tsx.
             ...(imageChanged
-              ? { imageUrl: values.image[0], imagePublicId: imagePublicId ?? undefined }
+              ? {
+                  imageUrl: values.image[0],
+                  imagePublicId: imagePublicId ?? undefined,
+                }
               : {}),
             description: values.description || undefined,
             discountCode: values.discountCode || undefined,
@@ -258,6 +261,9 @@ export default function PopupFormModal({
 
                 <div>
                   <FieldLabel label="Ảnh popup" required />
+                  <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                    Khuyến nghị ảnh có kích thức 400x180
+                  </p>
                   <Controller
                     name="image"
                     control={control}
@@ -267,12 +273,16 @@ export default function PopupFormModal({
                         onChange={field.onChange}
                         max={1}
                         readOnly={viewOnly}
-                        onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
+                        onPublicIdChange={(_url, publicId) =>
+                          setImagePublicId(publicId)
+                        }
                       />
                     )}
                   />
                   {errors.image && (
-                    <p className="text-theme-xs mt-1.5 text-error-500">{errors.image.message}</p>
+                    <p className="text-theme-xs mt-1.5 text-error-500">
+                      {errors.image.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -281,7 +291,12 @@ export default function PopupFormModal({
         </div>
 
         <div className="flex shrink-0 justify-end gap-3 border-t border-gray-200 px-6 py-4 dark:border-gray-800">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isSaving}
+          >
             {viewOnly ? "Đóng" : "Hủy"}
           </Button>
           {!viewOnly && (

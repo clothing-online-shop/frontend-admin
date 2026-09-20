@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useBannerDetail, useCreateBanner, useUpdateBanner } from "@/hooks/useBanners";
+import {
+  useBannerDetail,
+  useCreateBanner,
+  useUpdateBanner,
+} from "@/hooks/useBanners";
 import { getErrorMessage } from "@/lib/error";
 import { visibleFieldError } from "@/lib/form";
 import { useToast } from "@/hooks/useToast";
@@ -43,11 +47,19 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
   const toast = useToast();
   const { id: editingId } = useParams<{ id: string }>();
   const isEditing = Boolean(editingId);
-  const pageTitle = viewOnly ? "Xem banner" : isEditing ? "Sửa banner" : "Thêm banner";
-  useBreadcrumb([{ label: "Banner trang chủ", href: "/banners" }, { label: pageTitle }]);
+  const pageTitle = viewOnly
+    ? "Xem banner"
+    : isEditing
+      ? "Sửa banner"
+      : "Thêm banner";
+  useBreadcrumb([
+    { label: "Banner trang chủ", href: "/banners" },
+    { label: pageTitle },
+  ]);
 
   const [imagePublicId, setImagePublicId] = useState<string | null>(null);
-  const { data: banner, isLoading: isLoadingBanner } = useBannerDetail(editingId);
+  const { data: banner, isLoading: isLoadingBanner } =
+    useBannerDetail(editingId);
   const createMutation = useCreateBanner();
   const updateMutation = useUpdateBanner();
 
@@ -108,7 +120,10 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
             // không nullable ở BE nên không có khái niệm "xóa ảnh" ở đây (khác banner
             // của Collection), chỉ có "giữ nguyên" hoặc "thay ảnh mới".
             ...(imageChanged
-              ? { imageUrl: values.image[0], imagePublicId: imagePublicId ?? undefined }
+              ? {
+                  imageUrl: values.image[0],
+                  imagePublicId: imagePublicId ?? undefined,
+                }
               : {}),
             description: values.description || undefined,
             linkUrl: values.linkUrl || null,
@@ -151,7 +166,10 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
           VoucherForm.tsx. ImageUploader vẫn cần readOnly riêng để ẩn hẳn nút thêm/xóa ảnh
           thay vì chỉ vô hiệu hoá, DatePicker vẫn cần disabled riêng vì flatpickr tự mở
           lịch bằng JS, không dựa theo input[disabled] của trình duyệt. */}
-      <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-6 border-0 p-0">
+      <fieldset
+        disabled={viewOnly}
+        className="m-0 min-w-0 space-y-6 border-0 p-0"
+      >
         <ComponentCard title="Thông tin banner">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-4 lg:col-span-2">
@@ -159,8 +177,18 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                 label="Tiêu đề phụ"
                 placeholder="Ví dụ: BỘ SƯU TẬP THU 2026"
                 {...register("eyebrow")}
-                error={!!visibleFieldError(errors.eyebrow?.message, dirtyFields.eyebrow, isSubmitted)}
-                hint={visibleFieldError(errors.eyebrow?.message, dirtyFields.eyebrow, isSubmitted)}
+                error={
+                  !!visibleFieldError(
+                    errors.eyebrow?.message,
+                    dirtyFields.eyebrow,
+                    isSubmitted,
+                  )
+                }
+                hint={visibleFieldError(
+                  errors.eyebrow?.message,
+                  dirtyFields.eyebrow,
+                  isSubmitted,
+                )}
               />
 
               <Input
@@ -168,8 +196,18 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                 required
                 placeholder="Ví dụ: Sale mùa hè 2026"
                 {...register("title")}
-                error={!!visibleFieldError(errors.title?.message, dirtyFields.title, isSubmitted)}
-                hint={visibleFieldError(errors.title?.message, dirtyFields.title, isSubmitted)}
+                error={
+                  !!visibleFieldError(
+                    errors.title?.message,
+                    dirtyFields.title,
+                    isSubmitted,
+                  )
+                }
+                hint={visibleFieldError(
+                  errors.title?.message,
+                  dirtyFields.title,
+                  isSubmitted,
+                )}
               />
 
               <Input
@@ -177,7 +215,11 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                 placeholder="Ví dụ: Ưu đãi tới 50% cho bộ sưu tập mới"
                 {...register("description")}
                 error={
-                  !!visibleFieldError(errors.description?.message, dirtyFields.description, isSubmitted)
+                  !!visibleFieldError(
+                    errors.description?.message,
+                    dirtyFields.description,
+                    isSubmitted,
+                  )
                 }
                 hint={visibleFieldError(
                   errors.description?.message,
@@ -190,8 +232,18 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                 label="Link đích (CTA chính)"
                 placeholder="https://..."
                 {...register("linkUrl")}
-                error={!!visibleFieldError(errors.linkUrl?.message, dirtyFields.linkUrl, isSubmitted)}
-                hint={visibleFieldError(errors.linkUrl?.message, dirtyFields.linkUrl, isSubmitted)}
+                error={
+                  !!visibleFieldError(
+                    errors.linkUrl?.message,
+                    dirtyFields.linkUrl,
+                    isSubmitted,
+                  )
+                }
+                hint={visibleFieldError(
+                  errors.linkUrl?.message,
+                  dirtyFields.linkUrl,
+                  isSubmitted,
+                )}
               />
 
               <div className="grid grid-cols-2 gap-4">
@@ -200,9 +252,17 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                   placeholder="Ví dụ: Xem thêm"
                   {...register("ctaLabel")}
                   error={
-                    !!visibleFieldError(errors.ctaLabel?.message, dirtyFields.ctaLabel, isSubmitted)
+                    !!visibleFieldError(
+                      errors.ctaLabel?.message,
+                      dirtyFields.ctaLabel,
+                      isSubmitted,
+                    )
                   }
-                  hint={visibleFieldError(errors.ctaLabel?.message, dirtyFields.ctaLabel, isSubmitted)}
+                  hint={visibleFieldError(
+                    errors.ctaLabel?.message,
+                    dirtyFields.ctaLabel,
+                    isSubmitted,
+                  )}
                 />
                 <Input
                   label="Link đích CTA phụ"
@@ -289,6 +349,9 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
 
             <div>
               <FieldLabel label="Ảnh banner" required />
+              <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                Khuyến nghị ảnh có kích thức 1200x600
+              </p>
               <Controller
                 name="image"
                 control={control}
@@ -298,12 +361,16 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                     onChange={field.onChange}
                     max={1}
                     readOnly={viewOnly}
-                    onPublicIdChange={(_url, publicId) => setImagePublicId(publicId)}
+                    onPublicIdChange={(_url, publicId) =>
+                      setImagePublicId(publicId)
+                    }
                   />
                 )}
               />
               {errors.image && (
-                <p className="text-theme-xs mt-1.5 text-error-500">{errors.image.message}</p>
+                <p className="text-theme-xs mt-1.5 text-error-500">
+                  {errors.image.message}
+                </p>
               )}
             </div>
           </div>
@@ -312,7 +379,11 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
 
       <div className="mt-6 flex justify-end gap-3">
         {viewOnly ? (
-          <Button type="button" variant="outline" onClick={() => navigate("/banners")}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate("/banners")}
+          >
             Quay lại
           </Button>
         ) : (
