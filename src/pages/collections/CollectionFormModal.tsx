@@ -239,6 +239,9 @@ export default function CollectionFormModal({
               <div className="min-w-0 space-y-4">
                 <div>
                   <FieldLabel label="Banner" required />
+                  <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+                    Khuyến nghị ảnh có kích thức 900x400
+                  </p>
                   <Controller
                     name="banner"
                     control={control}
