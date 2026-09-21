@@ -103,7 +103,7 @@ export default function PopupFormModal({
               : {}),
             description: values.description || undefined,
             discountCode: values.discountCode || undefined,
-            ctaLabel: values.ctaLabel,
+            ctaLabel: values.ctaLabel || undefined,
             ctaLinkUrl: values.ctaLinkUrl,
             startDate: values.startDate,
             endDate: values.endDate,
@@ -118,7 +118,7 @@ export default function PopupFormModal({
           discountCode: values.discountCode || undefined,
           imageUrl: values.image[0],
           imagePublicId: imagePublicId ?? "",
-          ctaLabel: values.ctaLabel,
+          ctaLabel: values.ctaLabel || undefined,
           ctaLinkUrl: values.ctaLinkUrl,
           startDate: values.startDate,
           endDate: values.endDate,
@@ -207,10 +207,12 @@ export default function PopupFormModal({
               </div>
 
               <div className="min-w-0 space-y-4">
-                <div>
+                {/* Tạm ẩn: popup giờ điều hướng bằng click ảnh thay vì nút CTA riêng, xem
+                    PromoPopup.tsx (frontend-website). Không xoá field — giữ lại phòng khi cần
+                    dùng lại nút CTA riêng. */}
+                <div className="hidden">
                   <Input
                     label="Nhãn nút CTA"
-                    required
                     disabled={viewOnly}
                     placeholder="Ví dụ: Mua sắm ngay"
                     {...register("ctaLabel")}

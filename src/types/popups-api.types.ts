@@ -7,7 +7,7 @@ export interface CreatePopupPayload {
   // Cloudinary publicId song song với imageUrl — không hiển thị lên UI, chỉ để BE dọn ảnh
   // cũ trên Cloudinary khi thay/xóa ảnh.
   imagePublicId: string;
-  ctaLabel: string;
+  ctaLabel?: string;
   ctaLinkUrl: string;
   sortOrder?: number;
   startDate: string;
