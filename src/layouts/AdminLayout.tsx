@@ -3,19 +3,20 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/auth-store";
 import { useBreadcrumbStore } from "@/store/breadcrumb-store";
 import { ADMIN_ROLE_LABELS, toAdminRole, type AdminRole } from "@/lib/roles";
-import { ADMIN_ONLY_ROLES, ALL_ADMIN_ROLES, INVENTORY_ROLES, MARKETING_ROLES} from "@/lib/permissions";
+// ADMIN_ONLY_ROLES dùng cho mục "Cấu hình" — đang tạm ẩn, xem MENU_SECTIONS bên dưới.
+import { ALL_ADMIN_ROLES, INVENTORY_ROLES, MARKETING_ROLES } from "@/lib/permissions";
 import { useToast } from "@/hooks/useToast";
 import {
   PieChartIcon,
   BoxIcon,
   BoxIconLine,
-  // BoxCubeIcon, // dùng cho mục "Thương hiệu" — đang tạm ẩn, xem MENU_ITEMS bên dưới.
+  // BoxCubeIcon, // dùng cho mục "Thương hiệu" — đang tạm ẩn, xem MENU_SECTIONS bên dưới.
   GridIcon,
   FolderIcon,
   ListIcon,
   GroupIcon,
   PageIcon,
-  PlugInIcon,
+  // PlugInIcon, // dùng cho mục "Cấu hình" — đang tạm ẩn, xem MENU_SECTIONS bên dưới.
   AngleRightIcon,
   DollarLineIcon,
   BoltIcon,
@@ -79,14 +80,15 @@ const MENU_SECTIONS: MenuSection[] = [
       { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
     ],
   },
-  {
-    title: "Nội dung",
-    items: [{ key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES }],
-  },
-  {
-    title: "Hệ thống",
-    items: [{ key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES }],
-  },
+  // Tạm ẩn "Nội dung CMS" và "Cấu hình" khỏi sidebar — không xoá, theo yêu cầu tạm ẩn.
+  // {
+  //   title: "Nội dung",
+  //   items: [{ key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES }],
+  // },
+  // {
+  //   title: "Hệ thống",
+  //   items: [{ key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES }],
+  // },
 ];
 
 export default function AdminLayout() {
