@@ -31,33 +31,62 @@ interface MenuItem {
   allow: AdminRole[];
 }
 
+interface MenuSection {
+  title: string | null;
+  items: MenuItem[];
+}
+
 function getInitial(name: string | undefined): string {
   return (name?.trim()?.[0] ?? "?").toUpperCase();
 }
 
-// Sắp theo luồng nghiệp vụ, không theo thứ tự thêm tính năng trước/sau: nền tảng danh mục
-// (Danh mục phải có trước khi tạo Sản phẩm) → Sản phẩm + Tồn kho (theo sát
-// nhau vì tồn kho gắn trực tiếp vào biến thể sản phẩm) → merchandising/marketing (Bộ sưu
-// tập/Banner/Voucher — đều là công cụ quảng bá, xếp cạnh nhau) → bán hàng (Đơn hàng/Khách
-// hàng) → nội dung chung (CMS) → Cấu hình luôn ở cuối cùng.
-const MENU_ITEMS: MenuItem[] = [
-  { key: "/dashboard", icon: PieChartIcon, label: "Trang chủ", allow: ALL_ADMIN_ROLES },
-  { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
-  // Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
-  // { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
-  { key: "/colors", icon: TableIcon, label: "Màu sắc", allow: INVENTORY_ROLES },
-  { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
-  { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
-  { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
-  { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
-  { key: "/promo-bar", icon: TimeIcon, label: "Thanh khuyến mãi", allow: MARKETING_ROLES },
-  { key: "/popups", icon: ChatIcon, label: "Popup marketing", allow: MARKETING_ROLES },
-  { key: "/vouchers", icon: DollarLineIcon, label: "Voucher", allow: MARKETING_ROLES },
-  { key: "/flash-sales", icon: BoltIcon, label: "Flash Sale", allow: MARKETING_ROLES },
-  { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ALL_ADMIN_ROLES },
-  { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
-  { key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES },
-  { key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES },
+// Nhóm theo luồng nghiệp vụ (title null = không hiện header, dùng cho "Trang chủ" đứng riêng
+// trên cùng): nền tảng danh mục (Danh mục phải có trước khi tạo Sản phẩm) → Sản phẩm + Tồn
+// kho (theo sát nhau vì tồn kho gắn trực tiếp vào biến thể sản phẩm) → merchandising/marketing
+// (Bộ sưu tập/Banner/Voucher — đều là công cụ quảng bá, xếp cạnh nhau) → bán hàng (Đơn hàng/
+// Khách hàng) → nội dung chung (CMS) → Cấu hình luôn ở cuối cùng.
+const MENU_SECTIONS: MenuSection[] = [
+  {
+    title: null,
+    items: [{ key: "/dashboard", icon: PieChartIcon, label: "Trang chủ", allow: ALL_ADMIN_ROLES }],
+  },
+  {
+    title: "Danh mục & Sản phẩm",
+    items: [
+      { key: "/categories", icon: GridIcon, label: "Danh mục", allow: INVENTORY_ROLES },
+      // Tạm ẩn tính năng Thương hiệu khỏi admin — không xoá, biết đâu sau này lại dùng.
+      // { key: "/brands", icon: BoxCubeIcon, label: "Thương hiệu", allow: INVENTORY_ROLES },
+      { key: "/colors", icon: TableIcon, label: "Màu sắc", allow: INVENTORY_ROLES },
+      { key: "/products", icon: BoxIcon, label: "Sản phẩm", allow: INVENTORY_ROLES },
+      { key: "/inventory", icon: BoxIconLine, label: "Tồn kho", allow: INVENTORY_ROLES },
+    ],
+  },
+  {
+    title: "Marketing",
+    items: [
+      { key: "/collections", icon: FolderIcon, label: "Bộ sưu tập", allow: MARKETING_ROLES },
+      { key: "/banners", icon: PageIcon, label: "Banner trang chủ", allow: MARKETING_ROLES },
+      { key: "/promo-bar", icon: TimeIcon, label: "Thanh khuyến mãi", allow: MARKETING_ROLES },
+      { key: "/popups", icon: ChatIcon, label: "Popup marketing", allow: MARKETING_ROLES },
+      { key: "/vouchers", icon: DollarLineIcon, label: "Voucher", allow: MARKETING_ROLES },
+      { key: "/flash-sales", icon: BoltIcon, label: "Flash Sale", allow: MARKETING_ROLES },
+    ],
+  },
+  {
+    title: "Bán hàng",
+    items: [
+      { key: "/orders", icon: ListIcon, label: "Đơn hàng", allow: ALL_ADMIN_ROLES },
+      { key: "/customers", icon: GroupIcon, label: "Khách hàng", allow: MARKETING_ROLES },
+    ],
+  },
+  {
+    title: "Nội dung",
+    items: [{ key: "/cms-content", icon: PageIcon, label: "Nội dung CMS", allow: MARKETING_ROLES }],
+  },
+  {
+    title: "Hệ thống",
+    items: [{ key: "/settings", icon: PlugInIcon, label: "Cấu hình", allow: ADMIN_ONLY_ROLES }],
+  },
 ];
 
 export default function AdminLayout() {
@@ -69,46 +98,63 @@ export default function AdminLayout() {
   const breadcrumbItems = useBreadcrumbStore((state) => state.items);
   const role = toAdminRole(user?.role ?? "ADMIN");
 
-  const menuItems = useMemo(
-    () => MENU_ITEMS.filter((item) => item.allow.includes(role)),
+  const menuSections = useMemo(
+    () =>
+      MENU_SECTIONS.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item.allow.includes(role)),
+      })).filter((section) => section.items.length > 0),
     [role],
   );
 
   const selectedKey = useMemo(() => {
-    const match = menuItems.find((item) => location.pathname.startsWith(item.key));
+    const allItems = menuSections.flatMap((section) => section.items);
+    const match = allItems.find((item) => location.pathname.startsWith(item.key));
     return match?.key ?? "/dashboard";
-  }, [location.pathname, menuItems]);
+  }, [location.pathname, menuSections]);
 
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-72 shrink-0 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+      {/* sticky + h-screen + overflow-y-auto — trước đây sidebar cuộn chung với nội dung
+          chính, nội dung dài (vd cây danh mục mở nhiều nhánh) kéo sidebar trôi mất khỏi màn
+          hình thay vì đứng yên. */}
+      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <div className="px-6 py-6 text-lg font-semibold text-gray-800 dark:text-white/90">
           Trang quản trị
         </div>
-        <nav className="flex-1 space-y-2 px-4">
-          {menuItems.map((item) => {
-            const isActive = item.key === selectedKey;
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => navigate(item.key)}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ease-standard ${isActive
-                  ? "bg-brand-50 text-brand-600 dark:bg-brand-500/[0.2] dark:text-brand-400"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-                  }`}
-              >
-                <Icon
-                  className={`h-7 w-7 shrink-0 transition-colors duration-200 ease-standard ${isActive
-                    ? "text-brand-500 dark:text-brand-400"
-                    : "text-gray-500 dark:text-gray-400"
-                    }`}
-                />
-                {item.label}
-              </button>
-            );
-          })}
+        <nav className="flex-1 space-y-6 px-4 pb-4">
+          {menuSections.map((section, sectionIndex) => (
+            <div key={section.title ?? `section-${sectionIndex}`} className="space-y-2">
+              {section.title && (
+                <p className="px-4 text-xs font-semibold tracking-wide text-gray-400 uppercase dark:text-gray-500">
+                  {section.title}
+                </p>
+              )}
+              {section.items.map((item) => {
+                const isActive = item.key === selectedKey;
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => navigate(item.key)}
+                    className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-colors duration-200 ease-standard ${isActive
+                      ? "bg-brand-50 text-brand-600 dark:bg-brand-500/[0.2] dark:text-brand-400"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                      }`}
+                  >
+                    <Icon
+                      className={`h-7 w-7 shrink-0 transition-colors duration-200 ease-standard ${isActive
+                        ? "text-brand-500 dark:text-brand-400"
+                        : "text-gray-500 dark:text-gray-400"
+                        }`}
+                    />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </nav>
       </aside>
 
