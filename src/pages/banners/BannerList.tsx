@@ -119,7 +119,9 @@ export default function BannerList() {
 
       render: (banner) => (
         <span className="text-sm text-gray-700 dark:text-gray-300">
-          {formatDate(banner.startDate)} – {formatDate(banner.endDate)}
+          {banner.startDate ? formatDate(banner.startDate) : "Không giới hạn"}
+          {" – "}
+          {banner.endDate ? formatDate(banner.endDate) : "Không giới hạn"}
         </span>
       ),
     },

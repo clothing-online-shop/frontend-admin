@@ -235,8 +235,9 @@ export interface Banner {
   ctaLabel: string | null;
   ctaLinkUrl: string | null;
   sortOrder: number;
-  startDate: string;
-  endDate: string;
+  // null = không giới hạn (banner chạy mãi mãi nếu cả 2 đều null).
+  startDate: string | null;
+  endDate: string | null;
   status: BannerStatus;
   createdAt: string;
   updatedAt: string;

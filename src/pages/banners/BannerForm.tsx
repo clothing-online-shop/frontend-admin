@@ -33,9 +33,10 @@ const EMPTY_VALUES: BannerFormValues = {
 };
 
 // Banner.startDate/endDate về từ API là ISO datetime — cắt về "Y-m-d" để khớp định dạng
-// flatpickr đang dùng (giống VoucherForm.tsx/CollectionForm.tsx).
-function toDateOnly(iso: string): string {
-  return iso.slice(0, 10);
+// flatpickr đang dùng (giống VoucherForm.tsx/CollectionForm.tsx). null (không giới hạn) ->
+// chuỗi rỗng để input hiển thị trống.
+function toDateOnly(iso: string | null): string {
+  return iso ? iso.slice(0, 10) : "";
 }
 
 interface BannerFormProps {
@@ -129,8 +130,10 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
             linkUrl: values.linkUrl || null,
             ctaLabel: values.ctaLabel || undefined,
             ctaLinkUrl: values.ctaLinkUrl || undefined,
-            startDate: values.startDate,
-            endDate: values.endDate,
+            // Bỏ trống = xóa mốc (không giới hạn), khác các field text ở trên (bỏ trống =
+            // giữ nguyên) — banner cần "xóa được" mốc ngày để chuyển sang chạy mãi mãi.
+            startDate: values.startDate || null,
+            endDate: values.endDate || null,
           },
         });
         toast.success("Đã cập nhật banner.");
@@ -144,8 +147,8 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
           linkUrl: values.linkUrl || undefined,
           ctaLabel: values.ctaLabel || undefined,
           ctaLinkUrl: values.ctaLinkUrl || undefined,
-          startDate: values.startDate,
-          endDate: values.endDate,
+          startDate: values.startDate || undefined,
+          endDate: values.endDate || undefined,
         });
         toast.success("Đã tạo banner.");
       }
@@ -291,8 +294,7 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                     <DatePicker
                       id="banner-start-date"
                       label="Ngày bắt đầu"
-                      required
-                      placeholder="Chọn ngày bắt đầu"
+                      placeholder="Bỏ trống = đã bắt đầu"
                       defaultDate={field.value || undefined}
                       // Chỉ chặn quá khứ khi TẠO MỚI — banner đang sửa có thể đã
                       // RUNNING/ENDED, startDate lúc đó vốn dĩ đã ở quá khứ; đặt
@@ -323,8 +325,7 @@ export default function BannerForm({ viewOnly = false }: BannerFormProps) {
                     <DatePicker
                       id="banner-end-date"
                       label="Ngày kết thúc"
-                      required
-                      placeholder="Chọn ngày kết thúc"
+                      placeholder="Bỏ trống = chạy mãi mãi"
                       defaultDate={field.value || undefined}
                       minDate={startDateValue || "today"}
                       disabled={viewOnly}
