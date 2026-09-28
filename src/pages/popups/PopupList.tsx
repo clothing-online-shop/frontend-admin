@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Popup } from "@/types/shared-types";
 import { usePopups, useDeletePopup, useReorderPopups } from "@/hooks/usePopups";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -16,16 +17,13 @@ import Pagination from "@/components/ui/pagination/Pagination";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, AngleUpIcon, AngleDownIcon, EyeIcon } from "@/icons";
-import PopupFormModal from "./PopupFormModal";
 
 export default function PopupList() {
+  const navigate = useNavigate();
   const toast = useToast();
   useBreadcrumb([{ label: "Popup marketing" }]);
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Popup | null>(null);
-  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Popup | null>(null);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
@@ -36,21 +34,15 @@ export default function PopupList() {
   const reorderMutation = useReorderPopups();
 
   function openCreate() {
-    setEditing(null);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate("/popups/new");
   }
 
   function openEdit(popup: Popup) {
-    setEditing(popup);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate(`/popups/${popup.id}/edit`);
   }
 
   function openView(popup: Popup) {
-    setEditing(popup);
-    setViewMode(true);
-    setModalOpen(true);
+    navigate(`/popups/${popup.id}`);
   }
 
   async function handleDelete() {
@@ -264,13 +256,6 @@ export default function PopupList() {
           />
         </div>
       </div>
-
-      <PopupFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        editing={editing}
-        viewOnly={viewMode}
-      />
 
       <ConfirmModal
         open={deleteTarget !== null}

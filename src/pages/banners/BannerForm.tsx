@@ -33,7 +33,7 @@ const EMPTY_VALUES: BannerFormValues = {
 };
 
 // Banner.startDate/endDate về từ API là ISO datetime — cắt về "Y-m-d" để khớp định dạng
-// flatpickr đang dùng (giống VoucherForm.tsx/CollectionFormModal.tsx).
+// flatpickr đang dùng (giống VoucherForm.tsx/CollectionForm.tsx).
 function toDateOnly(iso: string): string {
   return iso.slice(0, 10);
 }

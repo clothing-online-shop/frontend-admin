@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPopup,
   deletePopup,
+  getPopup,
   getPopups,
   reorderPopups,
   updatePopup,
@@ -20,6 +21,14 @@ export function usePopups(query: ListPopupsQuery = {}) {
   return useQuery({
     queryKey: [...POPUPS_KEY, search, page, limit],
     queryFn: () => getPopups(query),
+  });
+}
+
+export function usePopupDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: [...POPUPS_KEY, "detail", id],
+    queryFn: () => getPopup(id!),
+    enabled: Boolean(id),
   });
 }
 

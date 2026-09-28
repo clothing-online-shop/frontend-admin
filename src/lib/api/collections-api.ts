@@ -22,6 +22,11 @@ export async function getCollections(
   return data;
 }
 
+export async function getCollection(id: string): Promise<Collection> {
+  const { data } = await apiClient.get<Collection>(`/collections/${id}`);
+  return data;
+}
+
 export async function createCollection(payload: CreateCollectionPayload): Promise<Collection> {
   const { data } = await apiClient.post<Collection>("/collections", payload);
   return data;

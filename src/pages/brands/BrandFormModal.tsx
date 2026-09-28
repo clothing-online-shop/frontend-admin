@@ -96,7 +96,7 @@ export default function BrandFormModal({
         </h3>
 
         {/* fieldset disabled tự vô hiệu hoá Input/TextArea/nút bấm trong ImageUploader khi
-            xem, khớp cách CollectionFormModal.tsx đang làm. */}
+            xem, khớp cách CollectionForm.tsx đang làm. */}
         <fieldset disabled={viewOnly} className="m-0 min-w-0 space-y-4 border-0 p-0">
           <div>
             <Input

@@ -11,10 +11,12 @@ import CategoryForm from "@/pages/categories/CategoryForm";
 // import BrandList from "@/pages/brands/BrandList";
 import ColorList from "@/pages/colors/ColorList";
 import CollectionList from "@/pages/collections/CollectionList";
+import CollectionForm from "@/pages/collections/CollectionForm";
 import BannerList from "@/pages/banners/BannerList";
 import BannerForm from "@/pages/banners/BannerForm";
 import PromoBarList from "@/pages/promo-bar/PromoBarList";
 import PopupList from "@/pages/popups/PopupList";
+import PopupForm from "@/pages/popups/PopupForm";
 import VoucherList from "@/pages/vouchers/VoucherList";
 import VoucherForm from "@/pages/vouchers/VoucherForm";
 import FlashSaleList from "@/pages/flash-sales/FlashSaleList";
@@ -49,12 +51,18 @@ export const router = createBrowserRouter([
           // { path: "/brands", element: <BrandList /> },
           { path: "/colors", element: <ColorList /> },
           { path: "/collections", element: <CollectionList /> },
+          { path: "/collections/new", element: <CollectionForm /> },
+          { path: "/collections/:id/edit", element: <CollectionForm /> },
+          { path: "/collections/:id", element: <CollectionForm viewOnly /> },
           { path: "/banners", element: <BannerList /> },
           { path: "/banners/new", element: <BannerForm /> },
           { path: "/banners/:id/edit", element: <BannerForm /> },
           { path: "/banners/:id", element: <BannerForm viewOnly /> },
           { path: "/promo-bar", element: <PromoBarList /> },
           { path: "/popups", element: <PopupList /> },
+          { path: "/popups/new", element: <PopupForm /> },
+          { path: "/popups/:id/edit", element: <PopupForm /> },
+          { path: "/popups/:id", element: <PopupForm viewOnly /> },
           { path: "/vouchers", element: <VoucherList /> },
           { path: "/vouchers/new", element: <VoucherForm /> },
           { path: "/vouchers/:id/edit", element: <VoucherForm /> },

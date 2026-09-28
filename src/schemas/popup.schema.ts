@@ -10,7 +10,7 @@ export const popupSchema = yup.object({
     .of(yup.string().required())
     .min(1, "Vui lòng chọn ảnh popup.")
     .required(),
-  // Tạm ẩn field "Nhãn nút CTA" trên form (xem PopupFormModal.tsx) — không còn dùng trên
+  // Tạm ẩn field "Nhãn nút CTA" trên form (xem PopupForm.tsx) — không còn dùng trên
   // trang chủ vì popup giờ điều hướng bằng click ảnh, không phải nút CTA riêng.
   ctaLabel: yup.string().trim().optional(),
   ctaLinkUrl: yup.string().trim().required("Vui lòng nhập link đích CTA."),

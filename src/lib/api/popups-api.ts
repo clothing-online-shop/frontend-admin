@@ -14,6 +14,11 @@ export async function getPopups(query: ListPopupsQuery = {}): Promise<PaginatedR
   return data;
 }
 
+export async function getPopup(id: string): Promise<Popup> {
+  const { data } = await apiClient.get<Popup>(`/popups/${id}`);
+  return data;
+}
+
 export async function createPopup(payload: CreatePopupPayload): Promise<Popup> {
   const { data } = await apiClient.post<Popup>("/popups", payload);
   return data;

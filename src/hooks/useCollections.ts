@@ -3,6 +3,7 @@ import {
   assignCollectionProducts,
   createCollection,
   deleteCollection,
+  getCollection,
   getCollections,
   updateCollection,
 } from "@/lib/api/collections-api";
@@ -23,6 +24,14 @@ export function useCollections(params: GetCollectionsParams = {}) {
   return useQuery({
     queryKey: [...COLLECTIONS_KEY, search, includeDeleted, excludeEnded, page, limit],
     queryFn: () => getCollections(params),
+  });
+}
+
+export function useCollectionDetail(id: string | undefined) {
+  return useQuery({
+    queryKey: [...COLLECTIONS_KEY, "detail", id],
+    queryFn: () => getCollection(id!),
+    enabled: Boolean(id),
   });
 }
 

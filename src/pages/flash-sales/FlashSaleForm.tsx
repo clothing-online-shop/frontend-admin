@@ -109,7 +109,7 @@ export default function FlashSaleForm({ viewOnly = false }: FlashSaleFormProps) 
   const isEnded = status === FlashSaleStatus.ENDED;
   // RUNNING: BE chỉ cho sửa endDate và thêm sản phẩm mới (qua POST /flash-sales/:id/items,
   // xem nhánh RUNNING trong onValid()) — khoá name/startDate ở UI tương ứng, đúng cách
-  // VoucherForm/CollectionFormModal khoá field theo status. Sản phẩm ĐÃ CÓ vẫn khoá cứng khi
+  // VoucherForm/CollectionForm khoá field theo status. Sản phẩm ĐÃ CÓ vẫn khoá cứng khi
   // RUNNING (xem `isLockedItem` tính riêng cho từng dòng bên dưới, KHÔNG dùng biến này nữa).
   // ENDED: BE chặn sửa mọi field, dùng luôn `viewOnly` để khoá hết.
   const lockCoreFields = viewOnly || isRunning || isEnded;

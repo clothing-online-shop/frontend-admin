@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CollectionStatus, type Collection } from "@/types/shared-types";
 import { useCollections, useDeleteCollection } from "@/hooks/useCollections";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -16,17 +17,14 @@ import Pagination from "@/components/ui/pagination/Pagination";
 import Tooltip from "@/components/ui/tooltip/Tooltip";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { PlusIcon, PencilIcon, TrashBinIcon, BoxCubeIcon, EyeIcon } from "@/icons";
-import CollectionFormModal from "./CollectionFormModal";
 import AssignProductsModal from "./AssignProductsModal";
 
 export default function CollectionList() {
+  const navigate = useNavigate();
   const toast = useToast();
   useBreadcrumb([{ label: "Bộ sưu tập" }]);
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounce(searchInput, 500);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Collection | null>(null);
-  const [viewMode, setViewMode] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Collection | null>(null);
   const [assigningCollection, setAssigningCollection] = useState<Collection | null>(null);
   const [page, setPage] = useState(1);
@@ -36,21 +34,15 @@ export default function CollectionList() {
   const deleteMutation = useDeleteCollection();
 
   function openCreate() {
-    setEditing(null);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate("/collections/new");
   }
 
   function openEdit(collection: Collection) {
-    setEditing(collection);
-    setViewMode(false);
-    setModalOpen(true);
+    navigate(`/collections/${collection.id}/edit`);
   }
 
   function openView(collection: Collection) {
-    setEditing(collection);
-    setViewMode(true);
-    setModalOpen(true);
+    navigate(`/collections/${collection.id}`);
   }
 
   async function handleDelete() {
@@ -64,8 +56,7 @@ export default function CollectionList() {
     }
   }
 
-  const columns = useMemo<DataTableColumn<Collection>[]>(
-    () => [
+  const columns: DataTableColumn<Collection>[] = [
       {
         key: "banner",
         header: "Banner",
@@ -202,9 +193,7 @@ export default function CollectionList() {
           );
         },
       },
-    ],
-    [],
-  );
+    ];
 
   return (
     <div className="flex h-full flex-col">
@@ -249,13 +238,6 @@ export default function CollectionList() {
           />
         </div>
       </div>
-
-      <CollectionFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        editing={editing}
-        viewOnly={viewMode}
-      />
 
       <AssignProductsModal
         open={assigningCollection !== null}
