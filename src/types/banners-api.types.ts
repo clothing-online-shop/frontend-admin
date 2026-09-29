@@ -10,18 +10,26 @@ export interface CreateBannerPayload {
   ctaLabel?: string;
   ctaLinkUrl?: string;
   sortOrder?: number;
-  startDate: string;
-  endDate: string;
+  // Bỏ trống = không giới hạn: thiếu startDate coi như đã bắt đầu, thiếu endDate coi như
+  // banner chạy mãi mãi.
+  startDate?: string;
+  endDate?: string;
 }
 
 export type UpdateBannerPayload = Partial<
-  Omit<CreateBannerPayload, "imageUrl" | "imagePublicId" | "linkUrl">
+  Omit<
+    CreateBannerPayload,
+    "imageUrl" | "imagePublicId" | "linkUrl" | "startDate" | "endDate"
+  >
 > & {
   // Bỏ trống cả 2 = giữ ảnh hiện có; nếu gửi phải gửi kèm cả 2 (ảnh không thể xóa về rỗng).
   imageUrl?: string;
   imagePublicId?: string;
   // Bỏ trống = giữ nguyên; gửi null = xóa link đích.
   linkUrl?: string | null;
+  // Bỏ trống = giữ nguyên; gửi null = xóa mốc (không giới hạn).
+  startDate?: string | null;
+  endDate?: string | null;
 };
 
 export interface ReorderBannerItem {
