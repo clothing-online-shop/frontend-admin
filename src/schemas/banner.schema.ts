@@ -12,10 +12,13 @@ export const bannerSchema = yup.object({
   linkUrl: yup.string().trim().optional(),
   ctaLabel: yup.string().trim().optional(),
   ctaLinkUrl: yup.string().trim().optional(),
-  startDate: yup.string().required("Vui lòng chọn ngày bắt đầu."),
+  // Bỏ trống = không giới hạn: thiếu ngày bắt đầu coi như đã bắt đầu, thiếu ngày kết thúc
+  // coi như banner chạy mãi mãi (xem BannersService.findActive() ở backend-user).
+  startDate: yup.string().trim().optional(),
   endDate: yup
     .string()
-    .required("Vui lòng chọn ngày kết thúc.")
+    .trim()
+    .optional()
     .test("after-start", "Ngày kết thúc phải sau ngày bắt đầu.", function (value) {
       const { startDate } = this.parent as { startDate?: string };
       return !startDate || !value || value >= startDate;
